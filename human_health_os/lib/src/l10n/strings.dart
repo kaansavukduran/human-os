@@ -234,6 +234,10 @@ class S {
       'Use one sign before the number: <, <=, >, >=, ≤ or ≥.',
       'Sayıdan önce tek bir işaret kullan: <, <=, >, >=, ≤ ya da ≥.',
     ),
+    'LIMIT_HAS_SPACE' => _t(
+      'Type the number after the sign without spaces, e.g. < 1000 or < 5,4.',
+      'İşaretten sonraki sayıyı boşluksuz yaz, ör. < 1000 ya da < 5,4.',
+    ),
     'TEXT_IS_A_NUMBER' => _t(
       'This is a number. Choose "Number" above so it is kept as one.',
       'Bu bir sayı. Sayı olarak kalması için yukarıdan "Sayı"yı seç.',
@@ -2058,8 +2062,8 @@ class S {
   };
   String labValueHelp(LabValueKind k) => switch (k) {
     LabValueKind.number => _t(
-      'Only the number, e.g. 5,4 or 91. Words or a sign such as <: choose another kind above.',
-      'Yalnız sayı, ör. 5,4 ya da 91. Kelime ya da < gibi bir işaret varsa yukarıdan başka bir tür seç.',
+      'Only the number, e.g. 5,4, 91 or -2. Words or a sign such as <: choose another kind above.',
+      'Yalnız sayı, ör. 5,4, 91 ya da -2. Kelime ya da < gibi bir işaret varsa yukarıdan başka bir tür seç.',
     ),
     LabValueKind.censored => _t(
       'E.g. < 5, <=0,1, > 1000 or ≥ 90. It is kept as a limit, never as the number itself.',

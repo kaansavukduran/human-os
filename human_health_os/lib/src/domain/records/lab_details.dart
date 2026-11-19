@@ -118,6 +118,7 @@ class LabPrintedResult {
         if (comparator == null || l == null || text != null) {
           return 'LAB_RESULT_SHAPE';
         }
+        if (l.length > maxTextLength) return 'LAB_LIMIT_TOO_LONG';
         if (!limitPattern.hasMatch(l)) return 'LAB_LIMIT_NOT_A_NUMBER';
       case LabValueKind.text:
         final t = text;

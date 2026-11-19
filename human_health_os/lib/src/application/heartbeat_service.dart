@@ -114,22 +114,39 @@ final RegExp _unitAfterNumber = RegExp(
 /// A comparator typed first: "<", ">", "≤", "≥" or "=".
 final RegExp _comparatorFirst = RegExp(r'^[<>≤≥=]');
 
+/// A sign typed before a lab number: "-" or the minus sign "\u2212" (U+2212).
+final RegExp _labMinus = RegExp(r'^[\-\u2212]');
+
+/// A ratio or titre as printed ("1/160", "1:80"): text, not a unit.
+final RegExp _titre = RegExp(r'^\d+\s*[/:]\s*\d+');
+
 /// The number of a plain lab value. Besides [parseLabDecimal]'s rules, a
 /// comparator first ("<5") is `VALUE_HAS_COMPARATOR` and a unit after the
 /// number ("5 mg/dL") is `UNIT_IN_VALUE`, so the message says what to do.
+/// A leading "-" or "\u2212" makes it negative (base excess -2): labs print
+/// negative results, while weight and the other measurements never take
+/// one. Spaces after the sign are ignored, as inside the number ("- 2" is
+/// -2); the record keeps what was typed as its original text.
 double parseLabNumber(String raw) {
-  final t = raw.trim();
+  var t = raw.trim();
   if (_comparatorFirst.hasMatch(t)) {
     throw const InputError('VALUE_HAS_COMPARATOR', 'value');
   }
+  final negative = _labMinus.hasMatch(t);
+  if (negative) t = t.substring(1).trim();
   if (_unitAfterNumber.hasMatch(t)) {
     throw const InputError('UNIT_IN_VALUE', 'value');
   }
   try {
     final v = parseLabDecimal(t);
     if (!v.isFinite) throw const InputError('NOT_A_NUMBER');
-    return v;
+    // "-0" is 0: a sign on zero is not a different result.
+    return negative && v != 0 ? -v : v;
   } on InputError catch (e) {
+    // A sign alone ("-") is a number without digits, not a blank field.
+    if (negative && e.code == 'EMPTY') {
+      throw const InputError('NOT_A_NUMBER', 'value');
+    }
     throw InputError(e.code, 'value');
   }
 }
@@ -139,10 +156,17 @@ double parseLabNumber(String raw) {
 /// (`EMPTY`), no comparator (`CENSORED_NEEDS_COMPARATOR`), a comparator
 /// alone (`CENSORED_NEEDS_NUMBER`), two comparators or a stray "="
 /// (`COMPARATOR_UNCLEAR`), a unit in the value (`UNIT_IN_VALUE`), and a
-/// number [parseLabDecimal] refuses. Every error is about the value field.
+/// number [parseLabDecimal] refuses. The limit is stored exactly as typed,
+/// so a limit that is not plain digits as typed ("1 000", "5 ,4") is
+/// `LIMIT_HAS_SPACE` rather than kept in a form the record refuses, and a
+/// value longer than a text result is `TEXT_TOO_LONG`. Every error is about
+/// the value field.
 ({LabComparator comparator, String limitText}) parseCensoredLab(String raw) {
   final t = raw.trim();
   if (t.isEmpty) throw const InputError('EMPTY', 'value');
+  if (t.runes.length > LabPrintedResult.maxTextLength) {
+    throw const InputError('TEXT_TOO_LONG', 'value');
+  }
   LabComparator? comparator;
   var rest = '';
   // Longest typed form first, so "<=" is never read as "<" then "=".
@@ -173,30 +197,62 @@ double parseLabNumber(String raw) {
   } on InputError catch (e) {
     throw InputError(e.code, 'value');
   }
+  // parseLabDecimal drops inner spaces; the limit is kept as typed, so it
+  // must already be plain digits (review R017).
+  if (!LabPrintedResult.limitPattern.hasMatch(rest)) {
+    throw const InputError('LIMIT_HAS_SPACE', 'value');
+  }
   return (comparator: comparator, limitText: rest);
 }
 
-/// A lab result printed as text ("Pozitif", "Reaktif değil", "1+"), kept
-/// verbatim apart from surrounding spaces. A plain number
-/// (`TEXT_IS_A_NUMBER`) or a censored value (`TEXT_IS_CENSORED`) is refused:
-/// it has its own kind, so it is not hidden from what a number can do.
+/// Invisible characters that change the direction of the text around them
+/// (U+202A–U+202E, U+2066–U+2069) and the direction marks U+200E, U+200F
+/// and U+061C. Kept, one of them could reorder a summary line.
+final RegExp _directionMarks = RegExp(
+  r'[\u202A-\u202E\u2066-\u2069\u200E\u200F\u061C]',
+);
+
+/// Control characters (Unicode Cc: tabs, line breaks and the rest).
+final RegExp _controlChars = RegExp(r'[\x00-\x1F\x7F-\x9F]');
+
+/// A plain number, signed or not, once spaces are removed.
+final RegExp _signedNumber = RegExp(r'^[+\-\u2212]?\d+([.,]\d+)?$');
+
+/// A leading sign and the spaces after it.
+final RegExp _leadingSign = RegExp(r'^[+\-\u2212]\s*');
+
+/// The text of a lab result as it is stored: direction marks removed and
+/// each control character (a pasted line break or tab) made a space, then
+/// surrounding spaces trimmed. Nothing visible changes.
+String labTextAsStored(String raw) =>
+    raw.replaceAll(_directionMarks, '').replaceAll(_controlChars, ' ').trim();
+
+/// A lab result printed as text ("Pozitif", "Reaktif değil", "1+", a titre
+/// such as "1/160"), kept verbatim apart from surrounding spaces and the
+/// invisible characters [labTextAsStored] removes. Refused, because each
+/// has its own kind and must not hide from what a number can do: a plain
+/// number, signed or not (`TEXT_IS_A_NUMBER`); a number with a unit after
+/// it, "5 mg/dL" or "6 %" (`UNIT_IN_VALUE`); a sign and a number, with or
+/// without a unit, "<5 mg/dL" (`TEXT_IS_CENSORED`).
 String parseLabText(String raw) {
-  final t = raw.trim();
+  final t = labTextAsStored(raw);
   if (t.isEmpty) throw const InputError('EMPTY', 'value');
   if (t.runes.length > LabPrintedResult.maxTextLength) {
     throw const InputError('TEXT_TOO_LONG', 'value');
   }
-  if (RegExp(r'^[+-]?\d+([.,]\d+)?$').hasMatch(t.replaceAll(' ', ''))) {
+  if (_signedNumber.hasMatch(t.replaceAll(' ', ''))) {
     throw const InputError('TEXT_IS_A_NUMBER', 'value');
   }
-  var censored = false;
-  try {
-    parseCensoredLab(t);
-    censored = true;
-  } on InputError {
-    censored = false;
+  if (_comparatorFirst.hasMatch(t)) {
+    final rest = t.replaceFirst(RegExp(r'^[<>≤≥=\s]+'), '');
+    if (RegExp(r'^\d').hasMatch(rest) && !_titre.hasMatch(rest)) {
+      throw const InputError('TEXT_IS_CENSORED', 'value');
+    }
   }
-  if (censored) throw const InputError('TEXT_IS_CENSORED', 'value');
+  final unsigned = t.replaceFirst(_leadingSign, '');
+  if (_unitAfterNumber.hasMatch(unsigned) && !_titre.hasMatch(unsigned)) {
+    throw const InputError('UNIT_IN_VALUE', 'value');
+  }
   return t;
 }
 
@@ -402,6 +458,11 @@ class HeartbeatService {
         unit: unit,
       ),
     };
+    // A text result's original text is the stored text: no hidden
+    // direction marks or control characters reach a summary line.
+    final typed = printed?.kind == LabValueKind.text
+        ? printed!.text!
+        : input.value.trim();
     final present = value != null || printed != null;
     return HealthRecord(
       id: _ids.newId(),
@@ -410,7 +471,7 @@ class HeartbeatService {
       state: RecordState.reported,
       valueStatus: present ? ValueStatus.present : ValueStatus.notReported,
       quantity: value == null ? null : Quantity(value, unit),
-      originalText: present ? input.value.trim() : null,
+      originalText: present ? typed : null,
       provenance: const Provenance.manual(),
       observedAt: sample,
       recordedAt: now,

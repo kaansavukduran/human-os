@@ -585,4 +585,166 @@ void main() {
       );
     });
   });
+
+  // Review R017: what the input cannot keep as printed is refused at the
+  // field with a message; negative numbers are taken; text keeps no hidden
+  // direction marks.
+  group('R017 review fixes', () {
+    late HeartbeatService svc;
+    late String me;
+    setUp(() async {
+      final repo = inMemoryRepository();
+      await repo.open();
+      svc = HeartbeatService(repo, clock: _At());
+      me = (await svc.ensureSelfProfile()).id;
+    });
+
+    test('a limit with spaces inside ("< 1 000", "< 5 ,4") is refused at the '
+        'field, never thrown as a record error', () async {
+      for (final typed in ['< 1 000', '< 5 ,4', '<5, 4', '> 1 0']) {
+        expect(
+          () => parseCensoredLab(typed),
+          input('LIMIT_HAS_SPACE'),
+          reason: typed,
+        );
+        await expectLater(
+          svc.recordLab(
+            profileId: me,
+            input: li(typed, kind: LabValueKind.censored),
+          ),
+          input('LIMIT_HAS_SPACE'),
+          reason: typed,
+        );
+      }
+      expect(await svc.labTimeline(me), isEmpty);
+      // Spaces around the sign and the number are still fine.
+      expect(parseCensoredLab('  <  1000 ').limitText, '1000');
+    });
+
+    test('the limit is capped like the text field', () {
+      expect(() => parseCensoredLab('< ${'1' * 400}'), input('TEXT_TOO_LONG'));
+      expect(
+        LabPrintedResult.censored(
+          comparator: LabComparator.lessThan,
+          limitText: '1' * 301,
+        ).problem(),
+        'LAB_LIMIT_TOO_LONG',
+      );
+    });
+
+    test(
+      'a lab number may be negative: "-", "\u2212" (U+2212) and a space after '
+      'the sign',
+      () {
+        for (final (typed, v) in [
+          ('-2', -2.0),
+          ('\u22122', -2.0),
+          ('-0,5', -0.5),
+          ('\u2212 0.5', -0.5),
+          ('- 2', -2.0),
+          (' -12,25 ', -12.25),
+        ]) {
+          expect(parseLabNumber(typed), v, reason: typed);
+        }
+        final zero = parseLabNumber('-0');
+        expect(zero, 0);
+        expect(zero.isNegative, isFalse, reason: '-0 is stored as 0');
+        for (final (typed, code) in [
+          ('-', 'NOT_A_NUMBER'),
+          ('--2', 'NOT_A_NUMBER'),
+          ('-\u22122', 'NOT_A_NUMBER'),
+          ('+2', 'NOT_A_NUMBER'),
+          ('-2 mmol/L', 'UNIT_IN_VALUE'),
+          ('-1,000', 'AMBIGUOUS_SEPARATOR'),
+          ('-<2', 'NOT_A_NUMBER'),
+        ]) {
+          expect(() => parseLabNumber(typed), input(code), reason: typed);
+        }
+      },
+    );
+
+    test('a negative lab result is saved as a number, the typed text kept '
+        'exactly', () async {
+      final r = await svc.recordLab(
+        profileId: me,
+        input: li('\u22122', unit: 'mmol/L'),
+      );
+      expect(r.quantity, const Quantity(-2, 'mmol/L'));
+      expect(r.originalText, '\u22122', reason: 'as typed');
+      expect(r.schemaVersion, 3);
+      r.validate();
+      final back = (await svc.labTimeline(me)).single.shown;
+      expect(back.quantity!.value, -2);
+      expect(labNumberFor(back).value, -2);
+    });
+
+    test(
+      'weight and the other measurements still refuse a negative number',
+      () async {
+        await expectLater(
+          svc.recordWeightKg(profileId: me, input: '-2'),
+          throwsA(isA<InputError>()),
+        );
+        await expectLater(
+          svc.recordWeightKg(profileId: me, input: '\u221270'),
+          throwsA(isA<InputError>()),
+        );
+        expect(await svc.currentWeights(me), isEmpty);
+      },
+    );
+
+    test('text refuses a signed number, a number with a unit, and a sign '
+        'with a number', () {
+      for (final (typed, code) in [
+        ('\u22122', 'TEXT_IS_A_NUMBER'),
+        ('\u2212 2', 'TEXT_IS_A_NUMBER'),
+        ('- 2', 'TEXT_IS_A_NUMBER'),
+        ('5 mg/dL', 'UNIT_IN_VALUE'),
+        ('6 %', 'UNIT_IN_VALUE'),
+        ('37mmol/mol', 'UNIT_IN_VALUE'),
+        ('-2 mmol/L', 'UNIT_IN_VALUE'),
+        ('<5 mg/dL', 'TEXT_IS_CENSORED'),
+        ('< 5 mg/dL', 'TEXT_IS_CENSORED'),
+        ('≥ 90 %', 'TEXT_IS_CENSORED'),
+        ('< 1 000', 'TEXT_IS_CENSORED'),
+      ]) {
+        expect(() => parseLabText(typed), input(code), reason: typed);
+      }
+    });
+
+    test('real text, including titres such as "1/160", is kept as printed', () {
+      for (final typed in [
+        '1+',
+        'trace',
+        'Pozitif',
+        'Reaktif değil',
+        '++',
+        '1/160',
+        '1:80',
+        '<1/10',
+        'Negatif (<10)',
+      ]) {
+        expect(parseLabText(typed), typed, reason: typed);
+      }
+    });
+
+    test('direction overrides and control characters never reach the stored '
+        'text or its original text', () async {
+      expect(parseLabText('Pozitif\u202E'), 'Pozitif');
+      expect(parseLabText('\u202EfitizoP\u202C'), 'fitizoP');
+      expect(parseLabText('\u2066Reaktif\u2069 değil\u200F'), 'Reaktif değil');
+      expect(parseLabText('Reaktif\ndeğil\t'), 'Reaktif değil');
+      expect(() => parseLabText('\u202E\u2067'), input('EMPTY'));
+      expect(() => parseLabText('\u202E5,4'), input('TEXT_IS_A_NUMBER'));
+      final r = await svc.recordLab(
+        profileId: me,
+        input: li('Pozitif\u202E', kind: LabValueKind.text, unit: ''),
+      );
+      expect(r.lab!.result!.text, 'Pozitif');
+      expect(r.originalText, 'Pozitif');
+      final hidden = RegExp(r'[\u202A-\u202E\u2066-\u2069\x00-\x1F]');
+      expect(jsonEncode(r.toJson()), isNot(contains('\u202E')));
+      expect(hidden.hasMatch(r.originalText!), isFalse);
+    });
+  });
 }

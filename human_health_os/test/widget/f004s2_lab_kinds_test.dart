@@ -8,6 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:human_health_os/src/app/human_os_app.dart';
 import 'package:human_health_os/src/application/heartbeat_service.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
+import 'package:human_health_os/src/features/report/doctor_summary.dart';
+import 'package:human_health_os/src/l10n/strings.dart';
 
 import 'f004_labs_test.dart'
     show
@@ -143,6 +145,14 @@ void main() {
       (LabValueKind.censored, '5', 'Start with the sign as printed'),
       (LabValueKind.text, '5,4', 'Choose "Number" above'),
       (LabValueKind.text, '', 'Empty is not saved as 0'),
+      // Review R017.
+      (LabValueKind.censored, '< 1 000', 'without spaces, e.g. < 1000'),
+      (LabValueKind.censored, '< 5 ,4', 'without spaces, e.g. < 1000'),
+      (LabValueKind.text, '\u22122', 'Choose "Number" above'),
+      (LabValueKind.text, '5 mg/dL', 'unit in "Unit as printed"'),
+      (LabValueKind.text, '6 %', 'unit in "Unit as printed"'),
+      (LabValueKind.text, '<5 mg/dL', 'Choose "Below or above a limit"'),
+      (LabValueKind.number, '-', 'Use digits'),
     ]) {
       await pick(tester, kind);
       await fill(tester, 'lab-value', typed);
@@ -325,4 +335,99 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  // Review R017.
+  testWidgets('Turkish messages for the new refusals read naturally and '
+      'focus the value field', (tester) async {
+    final s = await start(tester, locale: const Locale('tr'));
+    await go(tester, s, 'Lab');
+    await tapKey(tester, 'lab-add');
+    await fill(tester, 'lab-analyte', 'CRP');
+    await fill(tester, 'lab-date', '2026-10-03');
+    for (final (kind, typed, message) in [
+      (LabValueKind.censored, '< 1 000', 'boşluksuz yaz, ör. < 1000'),
+      (LabValueKind.text, '5 mg/dL', 'birimi "Raporda yazan birim"'),
+      (LabValueKind.text, '<5 mg/dL', '"Bir sınırın altı ya da üstü"nü seç'),
+      (LabValueKind.text, '-2', '"Sayı"yı seç'),
+    ]) {
+      await pick(tester, kind);
+      await fill(tester, 'lab-value', typed);
+      await tester.tap(find.byKey(const ValueKey('lab-analyte')));
+      await tester.pumpAndSettle();
+      await tapKey(tester, 'lab-save');
+      final error = find.byKey(const ValueKey('lab-error'));
+      expect(tester.widget<Text>(error).data, contains(message), reason: typed);
+      expect(valueFocused(tester), isTrue, reason: typed);
+    }
+  });
+
+  testWidgets('a negative number is saved and listed as typed', (tester) async {
+    final s = await start(tester);
+    await go(tester, s, 'Labs');
+    await tapKey(tester, 'lab-add');
+    await fill(tester, 'lab-analyte', 'Base excess');
+    await fill(tester, 'lab-value', '\u22122,5');
+    await fill(tester, 'lab-unit', 'mmol/L');
+    await fill(tester, 'lab-date', '2026-10-03');
+    await tapKey(tester, 'lab-save');
+    expect(find.byKey(const ValueKey('lab-saved')), findsOneWidget);
+    final r = (await tester.runAsync(() => s.heartbeat.labTimeline(s.self.id)))!
+        .single
+        .shown;
+    expect(r.quantity, const Quantity(-2.5, 'mmol/L'));
+    expect(r.originalText, '\u22122,5');
+    expect(
+      textsIn(tester, 'lab-row-').any((t) => t.contains('\u22122,5')),
+      isTrue,
+      reason: '${textsIn(tester, 'lab-row-')}',
+    );
+  });
+
+  testWidgets('a direction override typed into a text result cannot reorder '
+      'the doctor summary', (tester) async {
+    final s = await start(tester);
+    await go(tester, s, 'Labs');
+    await tapKey(tester, 'lab-add');
+    await fill(tester, 'lab-analyte', 'HBsAg');
+    await pick(tester, LabValueKind.text);
+    await fill(tester, 'lab-value', 'Pozitif\u202E (titre)');
+    await fill(tester, 'lab-date', '2026-10-03');
+    await tapKey(tester, 'lab-save');
+    expect(find.byKey(const ValueKey('lab-saved')), findsOneWidget);
+    final summary = (await tester.runAsync(
+      () => DoctorSummary.collect(s, const S(AppLang.en)),
+    ))!;
+    final rows = [
+      for (final sec in summary.sections)
+        for (final r in sec.rows) '${r.when} ${r.value} ${r.note}',
+    ];
+    final lab = rows.where((r) => r.contains('Pozitif')).toList();
+    expect(lab, hasLength(1), reason: '$rows');
+    expect(lab.single, contains('Pozitif (titre)'));
+    final hidden = RegExp(r'[\u202A-\u202E\u2066-\u2069\u200E\u200F]');
+    expect(rows.where(hidden.hasMatch), isEmpty, reason: '$rows');
+    expect(screenTexts(tester).where(hidden.hasMatch), isEmpty);
+  });
+
+  testWidgets('"Kind of result" is one labelled group for a screen reader', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    final s = await start(tester);
+    await go(tester, s, 'Labs');
+    await tapKey(tester, 'lab-add');
+    final group = find.byKey(const ValueKey('lab-kind-group'));
+    expect(group, findsOneWidget);
+    expect(tester.getSemantics(group).label, 'Kind of result');
+    for (final k in LabValueKind.values) {
+      expect(
+        find.descendant(
+          of: group,
+          matching: find.byKey(ValueKey('lab-kind-${k.code}')),
+        ),
+        findsOneWidget,
+      );
+    }
+    handle.dispose();
+  });
 }

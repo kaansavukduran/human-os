@@ -312,6 +312,7 @@ class _LabSheetState extends State<_LabSheet> {
     'CENSORED_NEEDS_COMPARATOR' ||
     'CENSORED_NEEDS_NUMBER' ||
     'COMPARATOR_UNCLEAR' ||
+    'LIMIT_HAS_SPACE' ||
     'TEXT_IS_A_NUMBER' ||
     'TEXT_IS_CENSORED' ||
     'TEXT_TOO_LONG' => 'value',
@@ -374,8 +375,9 @@ class _LabSheetState extends State<_LabSheet> {
       controller: c,
       focusNode: _focus[name],
       enabled: enabled,
+      // Lab numbers may be negative (base excess -2): ask for a minus key.
       keyboardType: number
-          ? const TextInputType.numberWithOptions(decimal: true)
+          ? const TextInputType.numberWithOptions(decimal: true, signed: true)
           : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
@@ -411,26 +413,40 @@ class _LabSheetState extends State<_LabSheet> {
         ),
         // How the value is printed (F004-S2): the field below changes with
         // it. Number is the default; nothing is guessed from the text.
-        Text(s.labKindTitle, style: text.labelLarge),
-        const SizedBox(height: 6),
-        Wrap(
-          key: const ValueKey('lab-kind'),
-          spacing: 8,
-          runSpacing: 6,
-          children: [
-            for (final k in LabValueKind.values)
-              ChoiceChip(
-                key: ValueKey('lab-kind-${k.code}'),
-                label: Text(s.labKind(k)),
-                selected: _f.kind == k,
-                onSelected: _f.notReported
-                    ? null
-                    : (_) => setState(() {
-                        _f.kind = k;
-                        _errorCode = null;
-                      }),
+        // One labelled group, so a screen reader names the question with
+        // each choice (as conditions_screen's choices do).
+        Semantics(
+          key: const ValueKey('lab-kind-group'),
+          container: true,
+          label: s.labKindTitle,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ExcludeSemantics(
+                child: Text(s.labKindTitle, style: text.labelLarge),
               ),
-          ],
+              const SizedBox(height: 6),
+              Wrap(
+                key: const ValueKey('lab-kind'),
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  for (final k in LabValueKind.values)
+                    ChoiceChip(
+                      key: ValueKey('lab-kind-${k.code}'),
+                      label: Text(s.labKind(k)),
+                      selected: _f.kind == k,
+                      onSelected: _f.notReported
+                          ? null
+                          : (_) => setState(() {
+                              _f.kind = k;
+                              _errorCode = null;
+                            }),
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 10),
         _field(

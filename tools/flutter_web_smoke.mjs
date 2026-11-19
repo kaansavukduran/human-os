@@ -208,14 +208,23 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
       await page.waitForTimeout(200);
     };
     try {
-      await typeInto(/Test name as printed/, 'HbA1c');
-      await typeInto(/^Value/, '5,4');
-      await typeInto(/Unit as printed/, '%');
-      await typeInto(/Flag printed by the lab/, 'H');
-      await typeInto(/Reference range as printed/, '4.0 - 6.0');
+      // U030: results come first; the form opens in a sheet from "Add a result".
+      const add = page.getByRole('button', { name: /Add a result/ }).first();
+      await intoView(add);
+      await add.click({ timeout: 10_000 });
+      await page.waitForTimeout(800);
+      // Wheel inside the sheet's left padding, never over a text field.
+      const first = await page.getByRole('textbox', { name: /Test name as printed/ }).first().boundingBox().catch(() => null);
+      const sheetX = first ? Math.max(2, first.x - 8) : wheelX;
+      await typeInto(/Test name as printed/, 'HbA1c', sheetX);
+      await typeInto(/^Value/, '5,4', sheetX);
+      await typeInto(/Unit as printed/, '%', sheetX);
+      await typeInto(/Flag printed by the lab/, 'H', sheetX);
+      await typeInto(/Reference range as printed/, '4.0 - 6.0', sheetX);
       const save = page.getByRole('button', { name: 'Save', exact: true }).first();
-      await intoView(save);
+      await intoView(save, sheetX);
       await save.click({ timeout: 10_000 });
+      await page.waitForTimeout(800);
     } catch (e) {
       check(`${label}: lab form usable`, false, e.message.split('\n')[0]);
     }

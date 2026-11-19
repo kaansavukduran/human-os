@@ -184,7 +184,7 @@ void main() {
     );
     expect(
       find.textContaining(
-        'Kayıtlı giriş 3 bir kayıt kuralına uymuyor (PRESENT_REQUIRES_QUANTITY)',
+        '3. kayıt kurallardan birine uymuyor (PRESENT_REQUIRES_QUANTITY)',
       ),
       findsOneWidget,
     );

@@ -233,7 +233,7 @@ void main() {
 
   for (final (locale, labs) in [
     (const Locale('en'), 'Labs'),
-    (const Locale('tr'), 'Lab'),
+    (const Locale('tr'), 'Tahliller'),
   ]) {
     testWidgets('no screen text interprets a result ($locale)', (tester) async {
       final s = await start(tester, locale: locale);

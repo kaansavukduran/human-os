@@ -14,6 +14,7 @@ import '../domain/settings/appearance.dart';
 import '../domain/settings/date_style.dart';
 import '../domain/units/display_units.dart';
 import '../features/today/backup_file_picker.dart' show maxBrowserBackupBytes;
+import 'casing.dart';
 
 enum AppLang { en, tr }
 
@@ -56,13 +57,15 @@ class S {
   /// ", about 159.6 lb" for a screen reader when US units are chosen.
   String convertedSpoken(double value, String? unit) {
     final c = convertedFor(value, unit, units);
-    return c == null ? '' : ', ${_t('about', 'yaklaşık')} ${c.substring(2)}';
+    return c == null
+        ? ''
+        : ', ${_t('about', 'yaklaşık')} ${decimalIn(lang, c.substring(2))}';
   }
 
   /// " (≈ 159.6 lb)" beside a typed value when US units are chosen.
   String converted(double value, String? unit) {
     final c = convertedFor(value, unit, units);
-    return c == null ? '' : ' ($c)';
+    return c == null ? '' : ' (${decimalIn(lang, c)})';
   }
 
   String _t(String en, String tr) => lang == AppLang.tr ? tr : en;
@@ -154,7 +157,7 @@ class S {
       _t('No weight recorded yet.', 'Henüz kilo kaydı yok.');
   String get latest => _t('Latest', 'Son');
   String get history => _t('History', 'Geçmiş');
-  String get enteredAs => _t('entered as', 'girilen');
+  String get enteredAs => _t('entered as', 'girilen değer:');
   String inputError(String code) => switch (code) {
     'FUTURE_TIME' => _t('This date is in the future.', 'Bu tarih gelecekte.'),
     'FOOD_NUTRIENT_NOT_A_NUMBER' => _t(
@@ -291,7 +294,7 @@ class S {
     ),
     'TARGET_NOT_FOUND' => _t(
       'This entry no longer exists here.',
-      'Bu giriş artık burada yok.',
+      'Bu kayıt artık burada yok.',
     ),
     'TARGET_NOT_CURRENT' => _t(
       'Only the current version can be changed; reopen the timeline.',
@@ -299,7 +302,7 @@ class S {
     ),
     'TARGET_WRONG_KIND' => _t(
       'This entry is of another kind; correct it from its own row.',
-      'Bu giriş başka bir türde; kendi satırından düzelt.',
+      'Bu kayıt başka türden; kendi satırından düzelt.',
     ),
     // Measurements (F007): 0 is never stored for a value not known.
     'NOT_POSITIVE' || 'VALUE_NOT_POSITIVE' => _t(
@@ -338,7 +341,7 @@ class S {
     ),
     'CHECKPOINT_FAILED' => _t(
       'Not saved: this entry changes the record format, and a backup of your earlier data could not be made first. Nothing was written; check the free space and try again.',
-      'Kaydedilmedi: bu giriş kayıt biçimini değiştiriyor ve önceki verilerinin yedeği önce alınamadı. Hiçbir şey yazılmadı; boş alanı kontrol edip tekrar dene.',
+      'Kaydedilmedi: bunu kaydetmek kayıt biçimini değiştiriyor ve önce eski verilerinin yedeği alınamadı. Hiçbir şey yazılmadı; boş alanı kontrol edip tekrar dene.',
     ),
     // Record rules the form cannot break; shown with their code if a bug
     // ever lets one through.
@@ -351,12 +354,12 @@ class S {
     'CONTEXT_NOT_SUPPORTED' ||
     'CONTEXT_EMPTY' => _t(
       'Not saved: this entry breaks a record rule ($code). Nothing was written.',
-      'Kaydedilmedi: bu giriş bir kayıt kuralına uymuyor ($code). Hiçbir şey yazılmadı.',
+      'Kaydedilmedi: bu kayıt kurallardan birine uymuyor ($code). Hiçbir şey yazılmadı.',
     ),
     // Also after a restore that failed half-way: no promise of restored data.
     'RESTART_REQUIRED' => _t(
       'Not saved: a restore ran in this session. Restart Human OS first.',
-      'Kaydedilmedi: bu oturumda bir geri yükleme çalıştı. Önce Human OS\'u yeniden başlat.',
+      'Kaydedilmedi: bu oturumda bir geri yükleme çalıştı. Önce uygulamayı yeniden başlat.',
     ),
     'VAULT_READ_ONLY' => _t(
       'Not saved: your saved data is open read-only (see the note above).',
@@ -364,11 +367,11 @@ class S {
     ),
     'VAULT_MISSING' => _t(
       'Not saved: the data file is no longer in its folder. Nothing was written; restart Human OS.',
-      'Kaydedilmedi: veri dosyası artık klasöründe değil. Hiçbir şey yazılmadı; Human OS\'u yeniden başlat.',
+      'Kaydedilmedi: veri dosyası artık klasöründe değil. Hiçbir şey yazılmadı; uygulamayı yeniden başlat.',
     ),
     'VAULT_CHANGED' => _t(
       'Not saved: the data file now holds another vault (replaced by another window or program). Nothing was written; restart Human OS.',
-      'Kaydedilmedi: veri dosyasında artık başka bir kasa var (başka bir pencere ya da program değiştirmiş). Hiçbir şey yazılmadı; Human OS\'u yeniden başlat.',
+      'Kaydedilmedi: veri dosyasında artık başka bir kasa var (başka bir pencere ya da program değiştirmiş). Hiçbir şey yazılmadı; uygulamayı yeniden başlat.',
     ),
     'VAULT_WRITE_REFUSED' => _t(
       'Not saved: the data file could not be opened for writing (another program may be using it, or its permissions changed). Nothing was written; try again.',
@@ -378,7 +381,7 @@ class S {
     // that failed afterwards), so the text promises nothing either way.
     'SAVE_FAILED' => _t(
       'Storage failed: this entry may not be saved. Try again; if it later shows up twice, mark one copy entered in error.',
-      'Depolama hata verdi: bu giriş kaydedilmemiş olabilir. Tekrar dene; daha sonra iki kez görünürse birini yanlışlıkla girildi olarak işaretle.',
+      'Depolama hata verdi: bu kayıt yazılmamış olabilir. Tekrar dene; daha sonra iki kez görünürse birini yanlışlıkla girildi olarak işaretle.',
     ),
     _ => _t('This value could not be saved.', 'Bu değer kaydedilemedi.'),
   };
@@ -392,27 +395,27 @@ class S {
     null || StorageReason.saving => null,
     StorageReason.profilePolicy => _t(
       'This $profile browser build does not save health data: it never stores them unencrypted, and encrypted browser storage is not built yet. Entries last until the page closes.',
-      'Bu $profile tarayıcı sürümü sağlık verisi kaydetmez: onları asla şifresiz saklamaz ve şifreli tarayıcı depolaması henüz hazır değil. Girişler sayfa kapanana kadar kalır.',
+      'Bu $profile tarayıcı sürümü sağlık verisi kaydetmez: onları asla şifresiz saklamaz ve şifreli tarayıcı depolaması henüz hazır değil. Yazdıkların sayfa kapanana kadar kalır.',
     ),
     StorageReason.sessionOnly when detail == 'LOCKED_VAULT_KEPT' => _t(
       'Your encrypted vault stays locked and untouched. This session is kept in memory only; entries last until the app closes.',
-      'Şifreli kasan kilitli ve dokunulmamış olarak kalıyor. Bu oturum yalnız bellekte tutuluyor; girişler uygulama kapanana kadar kalır.',
+      'Şifreli kasan kilitli ve dokunulmamış olarak kalıyor. Bu oturum yalnız bellekte tutuluyor; yazdıkların uygulama kapanana kadar kalır.',
     ),
     StorageReason.sessionOnly => _t(
       'You chose to keep this session in memory only. Nothing is saved; entries last until the app closes.',
-      'Bu oturumu yalnız bellekte tutmayı seçtin. Hiçbir şey kaydedilmez; girişler uygulama kapanana kadar kalır.',
+      'Bu oturumu yalnız bellekte tutmayı seçtin. Hiçbir şey kaydedilmez; yazdıkların uygulama kapanana kadar kalır.',
     ),
     StorageReason.platformNotBuilt => _t(
       'Saving on this platform is not built yet. Entries are kept only until the app closes.',
-      'Bu platformda kayıt henüz hazır değil. Girişler yalnız uygulama kapanana kadar tutulur.',
+      'Bu platformda kayıt henüz hazır değil. Yazdıkların yalnız uygulama kapanana kadar tutulur.',
     ),
     StorageReason.dataDirInvalid => _t(
       '${detail ?? 'The data folder setting'} must be an absolute folder path. Nothing is saved until it is fixed; entries last until the app closes.',
-      '${detail ?? 'Veri klasörü ayarı'} mutlak bir klasör yolu olmalı. Düzeltilene kadar hiçbir şey kaydedilmez; girişler uygulama kapanana kadar kalır.',
+      '${detail ?? 'Veri klasörü ayarı'} mutlak bir klasör yolu olmalı. Düzeltilene kadar hiçbir şey kaydedilmez; yazdıkların uygulama kapanana kadar kalır.',
     ),
     StorageReason.browserBlocked => _t(
       'This browser blocks local storage. Entries are kept only until the page closes.',
-      'Bu tarayıcı yerel depolamayı engelliyor. Girişler yalnız sayfa kapanana kadar tutulur.',
+      'Bu tarayıcı yerel depolamayı engelliyor. Yazdıkların yalnız sayfa kapanana kadar tutulur.',
     ),
     StorageReason.vaultUnreadable
         when detail == 'VAULT_NEWER' ||
@@ -420,15 +423,15 @@ class S {
             detail == 'ENVELOPE_NEWER' =>
       _t(
         'Your saved data was written by a newer version of Human OS, so this version does not open it. Nothing was changed on disk; update the app to see it. New entries are kept in memory only.',
-        'Kayıtlı verilerin Human OS\'un daha yeni bir sürümüyle yazılmış; bu sürüm onları açmaz. Diskte hiçbir şey değiştirilmedi; görmek için uygulamayı güncelle. Yeni girişler yalnız bellekte tutulur.',
+        'Kayıtlı verilerin uygulamanın daha yeni bir sürümüyle yazılmış; bu sürüm onları açmaz. Diskte hiçbir şey değiştirilmedi; görmek için uygulamayı güncelle. Yeni kayıtlar yalnız bellekte tutulur.',
       ),
     StorageReason.vaultUnreadable => _t(
       'Your saved data could not be opened. Nothing was changed on disk. New entries are kept in memory only until this is fixed.\n${technicalDetail(detail ?? 'unknown error')}',
-      'Kayıtlı verilerin açılamadı. Diskte hiçbir şey değiştirilmedi. Bu düzelene kadar yeni girişler yalnız bellekte tutulur.\n${technicalDetail(detail ?? 'bilinmeyen hata')}',
+      'Kayıtlı verilerin açılamadı. Diskte hiçbir şey değiştirilmedi. Bu düzelene kadar yeni kayıtlar yalnız bellekte tutulur.\n${technicalDetail(detail ?? 'bilinmeyen hata')}',
     ),
     StorageReason.vaultReadOnly => _t(
       'Your saved data uses an older format. It is shown as it is, but new entries are not saved until an upgrade with a backup exists in a later version. The file was not changed.',
-      'Kayıtlı verilerin eski bir biçimde. Olduğu gibi gösteriliyor, ama ileriki bir sürümde yedekli bir yükseltme gelene kadar yeni girişler kaydedilmez. Dosya değiştirilmedi.',
+      'Kayıtlı verilerin eski bir biçimde. Olduğu gibi gösteriliyor, ama ileriki bir sürümde yedekli bir yükseltme gelene kadar yeni kayıtlar saklanmaz. Dosya değiştirilmedi.',
     ),
   };
 
@@ -450,19 +453,19 @@ class S {
   String loadWarning(LoadWarning w) => switch (w.kind) {
     LoadWarningKind.lastEntryIncomplete => _t(
       'The last saved entry was incomplete (probably an interrupted save) and was skipped. Earlier entries are intact.',
-      'Son kaydedilen giriş yarım kalmış (muhtemelen kayıt kesildi) ve atlandı. Önceki girişler sağlam.',
+      'Son kayıt yarım kalmış (muhtemelen kaydetme yarıda kesildi) ve atlandı. Önceki kayıtlar sağlam.',
     ),
     LoadWarningKind.entryUnreadable => _t(
       'Saved entry ${w.line} could not be read and was skipped. The file was not changed.',
-      'Kayıtlı giriş ${w.line} okunamadı ve atlandı. Dosya değiştirilmedi.',
+      '${w.line}. kayıt okunamadı ve atlandı. Dosya değiştirilmedi.',
     ),
     LoadWarningKind.entryInvalid => _t(
       'Saved entry ${w.line} breaks a record rule (${w.code}) and was skipped. The file was not changed.',
-      'Kayıtlı giriş ${w.line} bir kayıt kuralına uymuyor (${w.code}) ve atlandı. Dosya değiştirilmedi.',
+      '${w.line}. kayıt kurallardan birine uymuyor (${w.code}) ve atlandı. Dosya değiştirilmedi.',
     ),
     LoadWarningKind.entryMissing => _t(
       'Entry ${w.line} is missing from the encrypted vault: it was removed from the file, or a save that failed never reached it. Nothing replaces it; any other problem found is listed here.',
-      'Giriş ${w.line} şifreli kasada yok: dosyadan çıkarılmış ya da başarısız bir kayıt dosyaya hiç ulaşmamış. Yerine hiçbir şey konmadı; bulunan başka sorunlar da burada listelenir.',
+      '${w.line}. kayıt şifreli kasada yok: dosyadan çıkarılmış ya da başarısız bir kayıt dosyaya hiç ulaşmamış. Yerine hiçbir şey konmadı; bulunan başka sorunlar da burada listelenir.',
     ),
   };
 
@@ -506,7 +509,7 @@ class S {
   );
   String get versionsDisagree => _t('Versions disagree', 'Sürümler çelişiyor');
   String get versions => _t('Versions', 'Sürümler');
-  String get enteredOn => _t('entered', 'girildi');
+  String get enteredOn => _t('entered', 'kayıt zamanı:');
   String get cancel => _t('Cancel', 'Vazgeç');
 
   /// The device capability texts (written in English in the pure core) in
@@ -521,9 +524,9 @@ class S {
         'Android bağlantısı ileriki bir sürümde gelecek.',
     'iOS connection planned for a later version.':
         'iOS bağlantısı ileriki bir sürümde gelecek.',
-    'No HealthKit or Health Connect on this platform. Typing entries works now; importing from other health apps is not built.': 'Bu platformda HealthKit ya da Health Connect yok. Elle giriş şimdi çalışıyor; başka sağlık uygulamalarından aktarma henüz hazır değil.',
+    'No HealthKit or Health Connect on this platform. Typing entries works now; importing from other health apps is not built.': 'Bu platformda HealthKit ya da Health Connect yok. Elle kayıt şimdi çalışıyor; başka sağlık uygulamalarından aktarma henüz hazır değil.',
     'Browser: no system key store, and encrypted browser storage is not built yet.': 'Tarayıcı: sistem anahtar deposu yok ve şifreli tarayıcı depolaması henüz hazır değil.',
-    'Your passphrase protects the encrypted vault (staging, production and portable builds). The system key store is not used yet.': 'Parolan şifreli kasayı korur (test, üretim ve taşınabilir sürümler). Sistem anahtar deposu henüz kullanılmıyor.',
+    'Your passphrase protects the encrypted vault (staging, production and portable builds). The system key store is not used yet.': 'Parolan şifreli kasayı korur (test, yayın ve taşınabilir sürümler). Sistem anahtar deposu henüz kullanılmıyor.',
     'Not required. This build makes no network calls.':
         'Gerekmiyor. Bu sürüm hiçbir ağ isteği yapmaz.',
     'Saved in an encrypted vault on this device (Argon2id + ChaCha20-Poly1305). It opens only with your passphrase or recovery key.': 'Bu cihazda şifreli bir kasada saklanır (Argon2id + ChaCha20-Poly1305). Yalnız parolan ya da kurtarma anahtarınla açılır.',
@@ -538,15 +541,15 @@ class S {
     'Not saved: the saved data could not be opened and was left untouched.':
         'Saklanmaz: kayıtlı veri açılamadı ve olduğu gibi bırakıldı.',
     'Saved data is shown read-only: its format needs an upgrade, which comes with backups in a later version.': 'Kayıtlı veri yalnız okunur gösterilir: biçiminin yükseltilmesi gerekiyor; bu, ileriki bir sürümde yedeklerle gelecek.',
-    'Not saved on this platform yet: entries last only until the app closes.': 'Bu platformda henüz saklanmaz: girişler yalnız uygulama kapanana kadar kalır.',
+    'Not saved on this platform yet: entries last only until the app closes.': 'Bu platformda henüz saklanmaz: yazdıkların yalnız uygulama kapanana kadar kalır.',
     'Not saved right now: entries last only until the app closes.':
-        'Şu an saklanmaz: girişler yalnız uygulama kapanana kadar kalır.',
+        'Şu an saklanmaz: yazdıkların yalnız uygulama kapanana kadar kalır.',
   };
   String get saveCorrection => _t('Save correction', 'Düzeltmeyi kaydet');
 
   String recordKind(RecordKind k) => switch (k) {
     RecordKind.bodyWeight => _t('Body weight', 'Vücut ağırlığı'),
-    RecordKind.labResult => _t('Lab result', 'Lab sonucu'),
+    RecordKind.labResult => _t('Lab result', 'Tahlil sonucu'),
     RecordKind.waistCircumference => _t('Waist circumference', 'Bel çevresi'),
     RecordKind.restingHeartRate => _t('Resting heart rate', 'Dinlenme nabzı'),
     RecordKind.bloodPressure => _t('Blood pressure', 'Tansiyon'),
@@ -712,7 +715,7 @@ class S {
     ConditionSource.selfReported => _t('my own account', 'kendi anlatımım'),
     ConditionSource.toldByClinician => _t(
       'what a clinician told me',
-      'bir sağlık çalışanının bana söylediği',
+      'bir hekimin bana söylediği',
     ),
     ConditionSource.fromDocument => _t(
       'a document I was given',
@@ -1035,7 +1038,7 @@ class S {
   String? measurementHint(RecordKind k) => switch (k) {
     RecordKind.height => _t(
       'A new height is a new entry, not a correction of an old one.',
-      'Yeni bir boy, eskisinin düzeltmesi değil yeni bir giriştir.',
+      'Yeni bir boy ölçümü yeni bir kayıttır, eskisinin düzeltmesi değil.',
     ),
     RecordKind.bodyTemperature => _t(
       'Write where you measured (mouth, ear, armpit) in the note.',
@@ -1059,8 +1062,8 @@ class S {
     'YYYY-MM-DD HH:MM or HH:MM, your device\'s time. Empty = now.',
     'YYYY-AA-GG SS:DD ya da SS:DD, cihazının saati. Boş = şimdi.',
   );
-  String measuredAtLabel(String when) => _t('measured $when', 'ölçüm $when');
-  String savedAtLabel(String when) => _t('saved $when', 'kayıt $when');
+  String measuredAtLabel(String when) => _t('measured $when', 'ölçüm: $when');
+  String savedAtLabel(String when) => _t('saved $when', 'kayıt: $when');
   String get contextField => _t(
     'Note (optional), e.g. sitting, left arm',
     'Not (isteğe bağlı), ör. oturarak, sol kol',
@@ -1146,7 +1149,7 @@ class S {
   );
   String checkpointSaved(String where) => _t(
     'Saved. Before saving this entry, a backup of your earlier data was saved at $where: older versions of Human OS cannot open the new record format.',
-    'Kaydedildi. Bu girişi kaydetmeden önce önceki verilerinin yedeği şuraya kaydedildi: $where. Human OS\'un eski sürümleri yeni kayıt biçimini açamaz.',
+    'Kaydedildi. Kaydetmeden önce eski verilerinin yedeği şuraya alındı: $where. Uygulamanın eski sürümleri yeni kayıt biçimini açamaz.',
   );
   String get contextLabel => _t('note', 'not');
 
@@ -1266,7 +1269,7 @@ class S {
     'Made with Human OS on $when',
     'Human OS ile $when tarihinde hazırlandı',
   );
-  String get summaryLabs => _t('Lab results', 'Lab sonuçları');
+  String get summaryLabs => _t('Lab results', 'Tahlil sonuçları');
   String get summaryFooterTyped => _t(
     'Values are shown exactly as the person typed them, newest first, with the time each was measured.',
     'Değerler kişinin yazdığı gibi, en yeniden başlayarak, ölçüldüğü saatle gösterilir.',
@@ -1404,7 +1407,7 @@ class S {
   String get firstWelcomeTitle => _t('What Human OS does', 'Human OS ne yapar');
   String get firstWelcomeBody => _t(
     'A place for your own health numbers: weight, blood pressure, lab results and more. You type them in, and find them again with their dates. Human OS does not judge values or give medical advice.',
-    'Kendi sağlık sayıların için bir yer: kilo, tansiyon, lab sonuçları ve daha fazlası. Onları sen girersin ve tarihleriyle yeniden bulursun. Human OS değerleri yargılamaz ve tıbbi tavsiye vermez.',
+    'Kendi sağlık sayıların için bir yer: kilo, tansiyon, tahlil sonuçları ve daha fazlası. Onları sen girersin ve tarihleriyle yeniden bulursun. Human OS değerleri yargılamaz ve tıbbi tavsiye vermez.',
   );
   String get firstPrivateTitle =>
       _t('It stays on this device', 'Bu cihazda kalır');
@@ -1544,7 +1547,7 @@ class S {
   String startScreenName(StartScreen x) => switch (x) {
     StartScreen.today => _t('Today', 'Bugün'),
     StartScreen.timeline => _t('Timeline', 'Zaman çizelgesi'),
-    StartScreen.labs => _t('Labs', 'Lab'),
+    StartScreen.labs => _t('Labs', 'Tahliller'),
   };
   String get settingsToday => _t('Today screen', 'Bugün ekranı');
   String get settingsTiles => _t(
@@ -1552,9 +1555,9 @@ class S {
     'Ölçüm kutuları: göstermek için işaretle, sırayı oklarla değiştir',
   );
   String settingsMoveUp(String what) =>
-      _t('Move $what up', '$what yukarı taşı');
+      _t('Move $what up', 'Yukarı taşı: $what');
   String settingsMoveDown(String what) =>
-      _t('Move $what down', '$what aşağı taşı');
+      _t('Move $what down', 'Aşağı taşı: $what');
   String get settingsSections => _t('Sections', 'Bölümler');
   String todaySectionName(TodaySection x) => switch (x) {
     TodaySection.sleep => _t('Sleep', 'Uyku'),
@@ -1649,10 +1652,10 @@ class S {
       ),
     ),
     (
-      _t('Add a lab result', 'Bir lab sonucu ekle'),
+      _t('Add a lab result', 'Bir tahlil sonucu ekle'),
       _t(
         'On Labs, type the test name, value, unit and range exactly as the report prints them.',
-        'Lab ekranında test adını, değeri, birimi ve aralığı raporda yazdığı gibi gir.',
+        'Tahliller ekranında test adını, değeri, birimi ve aralığı raporda yazdığı gibi gir.',
       ),
     ),
     (
@@ -1702,13 +1705,13 @@ class S {
   ];
   String get geneticsChoose => _t('Choose a DNA file', 'DNA dosyası seç');
   String get geneticsSample =>
-      _t('Try an invented sample file', 'Uydurma bir örnek dosya dene');
+      _t('Try an invented sample file', 'Kurgusal bir örnek dosya dene');
   String get geneticsReading => _t('Reading the file…', 'Dosya okunuyor…');
   String geneticsLoadedFrom(String name) =>
       _t('Read from $name', '$name dosyasından okundu');
   String get geneticsSampleLoaded => _t(
     'Invented sample file: not a real person',
-    'Uydurma örnek dosya: gerçek bir kişi değil',
+    'Kurgusal örnek dosya: gerçek bir kişi değil',
   );
   String get geneticsKeptOnly => _t(
     'Kept only while this page is open, or until you clear it. Not saved by Human OS.',
@@ -1960,7 +1963,7 @@ class S {
   );
   String get geneticsPackSynthetic => _t(
     'INVENTED demonstration pack: not real knowledge',
-    'UYDURMA gösterim paketi: gerçek bilgi değil',
+    'KURGUSAL gösterim paketi: gerçek bilgi değil',
   );
   String get geneticsPackSource => _t('Source', 'Kaynak');
   String get geneticsPackLicence => _t('Licence', 'Lisans');
@@ -2029,7 +2032,7 @@ class S {
   // what the intro does not say (R016).
   String get labsNoInterpretation => _t(
     'Human OS does not interpret lab results or say whether they are good or bad.',
-    'Human OS lab sonuçlarını yorumlamaz, iyi ya da kötü olduklarını söylemez.',
+    'Human OS tahlil sonuçlarını yorumlamaz, iyi ya da kötü olduklarını söylemez.',
   );
   String get labAddTitle =>
       _t('Add a result from a report', 'Rapordan sonuç ekle');
@@ -2098,7 +2101,7 @@ class S {
   String labValueHelp(LabValueKind k) => switch (k) {
     LabValueKind.number => _t(
       'Only the number, e.g. 5,4, 91 or -2. Words or a sign such as <: choose another kind above.',
-      'Yalnız sayı, ör. 5,4, 91 ya da -2. Kelime ya da < gibi bir işaret varsa yukarıdan başka bir tür seç.',
+      'Yalnız sayı, ör. 5,4, 91 ya da -2. Sözcük ya da < gibi bir işaret varsa yukarıdan başka bir tür seç.',
     ),
     LabValueKind.censored => _t(
       'E.g. < 5, <=0,1, > 1000 or ≥ 90. It is kept as a limit, never as the number itself.',
@@ -2285,7 +2288,7 @@ class S {
     ),
     AmendReason.enteredInError => _t(
       'Use this when this entry should never have been saved (for example, a whole wrong entry). It stops counting and stays in history marked as withdrawn. If it was a correction, the previous version counts again.',
-      'Bu giriş hiç kaydedilmemeliydiyse kullan (ör. tamamen yanlış bir giriş). Artık hesaba katılmaz ve geçmişte geri çekildi olarak kalır. Bir düzeltmeyse önceki sürüm yeniden geçerli olur.',
+      'Bu kayıt hiç kaydedilmemeliydiyse kullan (ör. baştan sona yanlış bir kayıt). Artık hesaba katılmaz ve geçmişte geri çekildi olarak kalır. Bir düzeltmeyse önceki sürüm yeniden geçerli olur.',
     ),
     AmendReason.deleted => _t(
       'Use this to remove a measurement you no longer want counted. Every version leaves your views; it stays only in history, and a later correction cannot bring it back. Completely erasing it is not built yet.',
@@ -2480,7 +2483,7 @@ class S {
   String restoredEncrypted(int n, String? keptAt) =>
       _t(
         'Restored $n records. Close and reopen Human OS, then unlock it with the backup\'s passphrase or recovery key.',
-        '$n kayıt geri yüklendi. Human OS\'u kapatıp yeniden aç, sonra yedeğin parolası ya da kurtarma anahtarıyla kilidini aç.',
+        '$n kayıt geri yüklendi. Uygulamayı kapatıp yeniden aç, sonra yedeğin parolası ya da kurtarma anahtarıyla kilidini aç.',
       ) +
       (keptAt == null
           ? ''
@@ -2490,7 +2493,7 @@ class S {
             ));
   String get restartToUse => _t(
     'A restore ran in this session: close and reopen Human OS before going on. Saving, backups and exports are paused until then.',
-    'Bu oturumda bir geri yükleme çalıştı: devam etmeden önce Human OS\'u kapatıp yeniden aç. O zamana kadar kayıt, yedek ve dışa aktarma durduruldu.',
+    'Bu oturumda bir geri yükleme çalıştı: devam etmeden önce uygulamayı kapatıp yeniden aç. O zamana kadar kayıt, yedek ve dışa aktarma durduruldu.',
   );
   String get restoreTitle =>
       _t('Restore this backup?', 'Bu yedek geri yüklensin mi?');
@@ -2501,7 +2504,7 @@ class S {
   String restored(int n, String? keptAt) =>
       _t(
         'Restored $n records. Close and reopen Human OS to use them.',
-        '$n kayıt geri yüklendi. Kullanmak için Human OS\'u kapatıp yeniden aç.',
+        '$n kayıt geri yüklendi. Kullanmak için uygulamayı kapatıp yeniden aç.',
       ) +
       (keptAt == null
           ? ''
@@ -2558,7 +2561,7 @@ class S {
         when detail == 'RECORD_SCHEMA_NEWER' || detail == 'VAULT_NEWER' =>
       _t(
         'This backup holds data from a newer Human OS. Update the app to restore it. Nothing was changed.',
-        'Bu yedek daha yeni bir Human OS\'un verilerini içeriyor. Geri yüklemek için uygulamayı güncelle. Hiçbir şey değişmedi.',
+        'Bu yedekte uygulamanın daha yeni bir sürümüne ait veriler var. Geri yüklemek için uygulamayı güncelle. Hiçbir şey değişmedi.',
       ),
     'VAULT_INCOMPATIBLE' => _t(
       'The data in this backup cannot be read by this version (${detail ?? '?'}). Nothing was changed.',
@@ -2574,11 +2577,11 @@ class S {
     ),
     'RESTORE_SWITCH_FAILED' when detail == null || detail.isEmpty => _t(
       'The restore could not be finished: the restored copy could not be moved into place. The previous data file is back where it was. Restart Human OS before saving anything.',
-      'Geri yükleme tamamlanamadı: geri yüklenen kopya yerine taşınamadı. Önceki veri dosyası eski yerinde. Bir şey kaydetmeden önce Human OS\'u yeniden başlat.',
+      'Geri yükleme tamamlanamadı: geri yüklenen kopya yerine taşınamadı. Önceki veri dosyası eski yerinde. Bir şey kaydetmeden önce uygulamayı yeniden başlat.',
     ),
     'RESTORE_SWITCH_FAILED' => _t(
       'The restore could not be finished: the restored copy could not be moved into place, and the previous data file is now at $detail. Nothing was deleted. Restart Human OS before saving anything.',
-      'Geri yükleme tamamlanamadı: geri yüklenen kopya yerine taşınamadı; önceki veri dosyası şimdi şurada: $detail. Hiçbir şey silinmedi. Bir şey kaydetmeden önce Human OS\'u yeniden başlat.',
+      'Geri yükleme tamamlanamadı: geri yüklenen kopya yerine taşınamadı; önceki veri dosyası şimdi şurada: $detail. Hiçbir şey silinmedi. Bir şey kaydetmeden önce uygulamayı yeniden başlat.',
     ),
     'RESTORE_VERIFY_FAILED' => _t(
       'The restored copy did not read back identically. Nothing was changed.',
@@ -2756,7 +2759,7 @@ class S {
   String unreadableBody(String code) => code == 'VAULT_READ_FAILED'
       ? _t(
           'The vault file could not be read: another program may be using it, or your user may not be allowed to read it. It was not changed. Close Human OS and try again, or keep this session in memory only.',
-          'Kasa dosyası okunamadı: başka bir program onu kullanıyor olabilir ya da kullanıcının onu okuma izni olmayabilir. Dosya değiştirilmedi. Human OS\'u kapatıp tekrar dene ya da bu oturumu yalnız bellekte tut.',
+          'Kasa dosyası okunamadı: başka bir program onu kullanıyor olabilir ya da kullanıcının onu okuma izni olmayabilir. Dosya değiştirilmedi. Uygulamayı kapatıp tekrar dene ya da bu oturumu yalnız bellekte tut.',
         )
       : const {
           'ENVELOPE_NEWER',
@@ -2765,7 +2768,7 @@ class S {
         }.contains(code)
       ? _t(
           'It was written by a newer version of Human OS. Update the app to open it. The file was not changed.',
-          'Human OS\'un daha yeni bir sürümüyle yazılmış. Açmak için uygulamayı güncelle. Dosya değiştirilmedi.',
+          'Uygulamanın daha yeni bir sürümüyle yazılmış. Açmak için uygulamayı güncelle. Dosya değiştirilmedi.',
         )
       : _t(
           'The vault file is damaged or not a Human OS vault ($code). It was not changed.',

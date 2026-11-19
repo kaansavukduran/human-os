@@ -165,7 +165,7 @@ void main() {
       testWidgets('the "as printed" sentence appears once '
           '(${locale.languageCode})', (tester) async {
         final s = await labs.start(tester, locale: locale);
-        await labs.go(tester, s, locale == tr ? 'Lab' : 'Labs');
+        await labs.go(tester, s, locale == tr ? 'Tahliller' : 'Labs');
         final texts = find
             .descendant(
               of: find.byKey(const ValueKey('screen-labs')),

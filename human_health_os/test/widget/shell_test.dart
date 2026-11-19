@@ -307,7 +307,7 @@ void main() {
   testWidgets('Turkish locale localizes navigation', (tester) async {
     await pumpApp(tester, size: desktop, locale: const Locale('tr'));
     expect(find.text('Bugün'), findsWidgets);
-    expect(find.text('Lab'), findsWidgets);
+    expect(find.text('Tahliller'), findsWidgets);
   });
 
   testWidgets(
@@ -330,7 +330,7 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     expect(find.textContaining('GELİŞTİRME SÜRÜMÜ'), findsOneWidget);
-    await tester.tap(find.text('Lab'));
+    await tester.tap(find.text('Tahliller'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byKey(const ValueKey('screen-labs')), findsOneWidget);

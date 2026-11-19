@@ -5,6 +5,7 @@ import '../../domain/derived/derived_from_records.dart';
 import '../../domain/engines/core_derived.dart'
     show coreDerivedPackId, coreDerivedPackVersion;
 import '../../domain/records/health_record.dart';
+import '../../l10n/casing.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../measurements/measurement_format.dart';
@@ -117,11 +118,14 @@ class _DerivedCard extends StatelessWidget {
     final m = row.model;
     final name = s.derivedModelName(m.modelId);
     String kinds(List<RecordKind> ks) =>
-        s.derivedNeeds([for (final k in ks) s.recordKind(k).toLowerCase()]);
+        s.derivedNeeds([for (final k in ks) lowerIn(s.lang, s.recordKind(k))]);
     final key = 'derived-${m.modelId}';
     final Widget headline;
     if (row.computed) {
-      final value = row.result.value!.toStringAsFixed(_decimals(m.modelId));
+      final value = decimalIn(
+        s.lang,
+        row.result.value!.toStringAsFixed(_decimals(m.modelId)),
+      );
       final unit = s.derivedUnit(m.unit);
       headline = Semantics(
         label: s.derivedSpoken(name, value, unit),
@@ -146,7 +150,8 @@ class _DerivedCard extends StatelessWidget {
       headline = Text(
         row.unresolved.isNotEmpty
             ? s.derivedUnresolved([
-                for (final k in row.unresolved) s.recordKind(k).toLowerCase(),
+                for (final k in row.unresolved)
+                  lowerIn(s.lang, s.recordKind(k)),
               ])
             : row.needs.isNotEmpty
             ? kinds(row.needs)

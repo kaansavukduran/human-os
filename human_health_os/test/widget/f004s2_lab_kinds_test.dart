@@ -254,7 +254,7 @@ void main() {
     ),
     (
       const Locale('tr'),
-      'Lab',
+      'Tahliller',
       'Zaman çizelgesi',
       '0,1 ve altı (birim verilmedi; raporda: <=0,1)',
       '1+ (raporda yazan metin)',
@@ -308,7 +308,7 @@ void main() {
 
   for (final (locale, labs) in [
     (const Locale('en'), 'Labs'),
-    (const Locale('tr'), 'Lab'),
+    (const Locale('tr'), 'Tahliller'),
   ]) {
     testWidgets('the sheet fits 320 dp at 2x text with every kind ($locale)', (
       tester,
@@ -340,7 +340,7 @@ void main() {
   testWidgets('Turkish messages for the new refusals read naturally and '
       'focus the value field', (tester) async {
     final s = await start(tester, locale: const Locale('tr'));
-    await go(tester, s, 'Lab');
+    await go(tester, s, 'Tahliller');
     await tapKey(tester, 'lab-add');
     await fill(tester, 'lab-analyte', 'CRP');
     await fill(tester, 'lab-date', '2026-10-03');

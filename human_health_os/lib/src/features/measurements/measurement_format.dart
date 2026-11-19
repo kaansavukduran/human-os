@@ -7,6 +7,7 @@ library;
 import 'package:flutter/services.dart';
 
 import '../../domain/records/health_record.dart';
+import '../../l10n/casing.dart';
 import '../../l10n/strings.dart';
 
 /// [v] with exactly the decimals of [typed] when [typed] is that number,
@@ -27,17 +28,22 @@ String fmtMeasured(double v, String? typed) {
   return v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toString();
 }
 
+/// [fmtMeasured] in the decimal mark of the shown language (Turkish
+/// "72,4"); the stored value and the typed text are unchanged.
+String fmtShown(S s, double v, String? typed) =>
+    decimalIn(s.lang, fmtMeasured(v, typed));
+
 /// The value of a measurement record with its unit, or its value status.
 String measurementValue(S s, HealthRecord r) {
   if (r.valueStatus != ValueStatus.present) return s.valueStatus(r.valueStatus);
   final d = r.details;
   if (d is BloodPressureDetails) {
-    return '${fmtMeasured(d.systolic, d.systolicText)}/'
-        '${fmtMeasured(d.diastolic, d.diastolicText)} ${s.unit(d.unit)}';
+    return '${fmtShown(s, d.systolic, d.systolicText)}/'
+        '${fmtShown(s, d.diastolic, d.diastolicText)} ${s.unit(d.unit)}';
   }
   final q = r.quantity;
   if (q == null) return s.valueStatus(r.valueStatus);
-  return '${fmtMeasured(q.value, r.originalText)} ${s.unit(q.unit ?? '')}'
+  return '${fmtShown(s, q.value, r.originalText)} ${s.unit(q.unit ?? '')}'
       '${s.converted(q.value, q.unit)}';
 }
 
@@ -46,12 +52,12 @@ String spokenMeasurement(S s, HealthRecord r) {
   if (r.valueStatus != ValueStatus.present) return s.valueStatus(r.valueStatus);
   final d = r.details;
   if (d is BloodPressureDetails) {
-    return '${s.spokenBloodPressure(fmtMeasured(d.systolic, d.systolicText), fmtMeasured(d.diastolic, d.diastolicText))} '
+    return '${s.spokenBloodPressure(fmtShown(s, d.systolic, d.systolicText), fmtShown(s, d.diastolic, d.diastolicText))} '
         '${s.spokenUnit(d.unit)}';
   }
   final q = r.quantity;
   if (q == null) return s.valueStatus(r.valueStatus);
-  return '${fmtMeasured(q.value, r.originalText)} ${s.spokenUnit(q.unit ?? '')}'
+  return '${fmtShown(s, q.value, r.originalText)} ${s.spokenUnit(q.unit ?? '')}'
       '${s.convertedSpoken(q.value, q.unit)}';
 }
 

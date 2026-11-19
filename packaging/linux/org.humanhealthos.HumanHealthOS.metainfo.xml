@@ -5,6 +5,7 @@
   <project_license>LicenseRef-proprietary</project_license>
   <name>Human OS</name>
   <summary>Offline-first personal health timeline</summary>
+  <summary xml:lang="tr">Çevrimdışı çalışan kişisel sağlık zaman çizelgesi</summary>
   <description>
     <p>
       Human OS keeps health records on one timeline with their source. This is a
@@ -13,6 +14,14 @@
     </p>
     <p>
       It never sends data over the network and never stores a missing value as zero.
+    </p>
+    <p xml:lang="tr">
+      Human OS sağlık kayıtlarını kaynaklarıyla birlikte tek bir zaman çizelgesinde tutar.
+      Bu bir test önizlemesidir: vücut ağırlığını elle kaydeder, kayıtları yalnız uygulama
+      kapanana kadar tutar (şifreli kasa henüz yok) ve klinik karar için değildir.
+    </p>
+    <p xml:lang="tr">
+      Verileri asla ağ üzerinden göndermez ve eksik bir değeri asla sıfır olarak saklamaz.
     </p>
   </description>
   <url type="homepage">https://github.com/kaansavukduran/claudereponewscience</url>

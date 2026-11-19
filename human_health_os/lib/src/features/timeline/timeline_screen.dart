@@ -6,6 +6,7 @@ import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
 import '../../domain/ports/health_repository.dart';
 import '../../domain/records/health_record.dart';
+import '../../l10n/casing.dart';
 import '../../l10n/strings.dart';
 import '../../navigation/destination_switch.dart';
 import '../../navigation/destinations.dart';
@@ -167,10 +168,13 @@ String fmtValue(S s, HealthRecord r) {
   final v = r.kind == RecordKind.labResult
       ? (r.originalText ?? q.value.toString())
       : r.kind == RecordKind.bodyWeight
-      ? fmtMeasured(q.value, r.originalText)
-      : q.value == q.value.roundToDouble()
-      ? q.value.toStringAsFixed(0)
-      : q.value.toStringAsFixed(1);
+      ? fmtShown(s, q.value, r.originalText)
+      : decimalIn(
+          s.lang,
+          q.value == q.value.roundToDouble()
+              ? q.value.toStringAsFixed(0)
+              : q.value.toStringAsFixed(1),
+        );
   final unit = q.unit;
   return unit == null ? '$v (${s.unitNotGiven})' : '$v $unit';
 }

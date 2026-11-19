@@ -42,7 +42,7 @@ const browserVersion = browser.version();
 const RUNS = [
   { label: 'desktop-en', viewport: { width: 1440, height: 900 }, locale: 'en-US', today: 'Today', timeline: 'Timeline', timelineText: /A correction adds a new version/, labs: 'Labs', labsText: /Reference interval ≠ optimal target/, banner: /DEVELOPMENT BUILD/ },
   { label: 'phone-en', viewport: { width: 390, height: 844 }, locale: 'en-US', today: 'Today', timeline: 'Timeline', timelineText: /A correction adds a new version/, labs: 'Labs', labsText: /Reference interval ≠ optimal target/, banner: /DEVELOPMENT BUILD/ },
-  { label: 'phone-tr', viewport: { width: 390, height: 844 }, locale: 'tr-TR', today: 'Bugün', timeline: 'Zaman çizelgesi', timelineText: /Düzeltme yeni bir sürüm ekler/, labs: 'Lab', labsText: /Referans aralığı ≠ optimal hedef/, banner: /GELİŞTİRME SÜRÜMÜ/ },
+  { label: 'phone-tr', viewport: { width: 390, height: 844 }, locale: 'tr-TR', today: 'Bugün', timeline: 'Zaman çizelgesi', timelineText: /Düzeltme yeni bir sürüm ekler/, labs: 'Tahliller', labsText: /Referans aralığı ≠ optimal hedef/, banner: /GELİŞTİRME SÜRÜMÜ/ },
 ];
 const expectFlutter = process.env.EXPECT_FLUTTER_VERSION;
 for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel, timelineText, labs: labsLabel, labsText, banner } of RUNS) {

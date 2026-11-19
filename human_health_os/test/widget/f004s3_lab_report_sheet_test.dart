@@ -366,7 +366,7 @@ void main() {
     ),
     (
       const Locale('tr'),
-      'Lab',
+      'Tahliller',
       'Zaman çizelgesi',
       'Raporda yazan referans aralığı: -2 – 2 mmol/L (adult)',
       'Raporda yazan yöntem: HPLC',

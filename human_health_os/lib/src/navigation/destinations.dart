@@ -124,18 +124,19 @@ const List<Destination> destinations = [
   Destination(
     id: DestinationId.labs,
     en: 'Labs',
-    tr: 'Lab',
+    tr: 'Tahliller',
     icon: Icons.science_outlined,
     selectedIcon: Icons.science,
     purposeEn: 'Lab results as the report printed them: value, unit, specimen, the lab’s flag and its own reference range.',
-    purposeTr: 'Lab sonuçları raporda yazdığı gibi: değer, birim, numune, laboratuvarın işareti ve kendi referans aralığı.',
+    purposeTr: 'Tahlil sonuçları raporda yazdığı gibi: değer, birim, numune, laboratuvarın işareti ve kendi referans aralığı.',
     // Built in F004 (manual entry as printed). Interpretation is not part of
     // this purpose; it is planned with the deterministic engines (F011).
     plannedForge: null,
     principleEn: 'Reference interval ≠ optimal target ≠ decision limit. Out of range ≠ critical.',
     principleTr: 'Referans aralığı ≠ optimal hedef ≠ karar sınırı. Aralık dışı ≠ kritik.',
     canDoEn: 'Type a result from your lab report, then correct it later if you typed it wrong.',
-    canDoTr: 'Lab raporundaki bir sonucu yaz; yanlış yazdıysan sonra düzelt.',
+    canDoTr:
+        'Tahlil raporundaki bir sonucu yaz; yanlış yazdıysan sonra düzelt.',
   ),
   Destination(
     id: DestinationId.medications,

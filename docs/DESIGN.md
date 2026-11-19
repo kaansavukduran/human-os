@@ -32,6 +32,17 @@ Score each item pass or fail; any fail is fixed or recorded with a reason.
 - [ ] Spoken label for each value and each error?
 - [ ] Before/after screenshots at phone and desktop width kept as evidence?
 
+## Turkish text (L001)
+Every visible string has a Turkish version (`lib/src/l10n/strings.dart`, the guide data and `destinations.dart`); `test/unit/l001_turkish_test.dart` fails on an empty Turkish value, Turkish equal to English outside a short allow-list, common English words, raw codes and placeholders that differ between the two languages.
+
+- **Address: "sen"**, friendly and direct, everywhere ("yaz", "seç", "kayıtların"). No "siz" forms, no "lütfen".
+- **One word per concept:** record or entry → **kayıt** (what the person typed during a session that is not saved: **yazdıkların**); measurement or reading → **ölçüm**; lab result → **tahlil sonucu**, the Labs area → **Tahliller** (the laboratory as an institution stays **laboratuvar**); clinician → **hekim**; build → **sürüm**; staging/production → **test/yayın**; invented sample data → **kurgusal**; pulse oximeter → **nabız oksimetresi**; word → **sözcük**.
+- **Suffixes after inserted values:** choose wording that needs no suffix on a placeholder ("Yukarı taşı: $what", "$name dosyasından", "${n}. kayıt"). Write suffixes after numbers and abbreviations with an apostrophe by pronunciation ("100'ü", "50 MB'tan", "112'yi", "HbA1c'nin"). The product name takes no suffix ("uygulamayı yeniden başlat", not "Human OS'u"), because its reading (English or letter by letter) decides the vowel.
+- **No plural after a number:** "$n kayıt", never "$n kayıtlar".
+- **Casing:** shown text is upper- or lower-cased only through `upperIn`/`lowerIn` (`lib/src/l10n/casing.dart`), which keep i/İ and ı/I; Dart's own `toUpperCase` is language-neutral.
+- **Numbers and dates:** values the app formats show a decimal comma in Turkish (`decimalIn`: "72,4 kg", "≈ 154,3 lb"); text kept as printed (lab results, the typed "girilen değer") is shown unchanged. The Today date line is day-month ("19 Kasım Perşembe"); timestamps follow the date setting (ISO by default, day.month.year available) and the 24-hour clock or ÖÖ/ÖS.
+- Names of external sites' buttons ("Download these results as: CSV", "Send to > File") stay in English inside quotes because the person sees them in English there.
+
 ## Tokens (see `lib/src/presentation/theme/human_os_theme.dart`)
 Accent teal `#1F6F78` (dark mode `#7FC4CB`); surface `#F6F8F8` / card `#FFFFFF` / hairline `#DDE4E4`; text `#1B2B2E`. Radius 12 dp. Spacing 4 / 8 / 12 / 16 / 24 / 32. The development-build strip is a quiet neutral band with a small label, not a coloured alert.
 

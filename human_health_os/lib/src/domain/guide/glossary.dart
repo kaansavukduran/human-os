@@ -112,7 +112,7 @@ const List<GlossaryEntry> glossary = [
     term: ('Oxygen saturation (SpO2)', 'Oksijen satürasyonu (SpO2)'),
     what: (
       'The share of the blood\'s oxygen carriers that carry oxygen, read by a clip on a finger (pulse oximeter).',
-      'Kandaki oksijen taşıyıcılarının oksijen taşıyan payı; parmağa takılan bir mandalla (pulse oksimetre) okunur.',
+      'Kandaki oksijen taşıyıcılarının oksijen taşıyan payı; parmağa takılan bir mandalla (nabız oksimetresi) okunur.',
     ),
     unit: ('percent (%)', 'yüzde (%)'),
     howToMeasure: [
@@ -131,7 +131,7 @@ const List<GlossaryEntry> glossary = [
     ],
     source: (
       'Pulse oximeter accuracy notes after the US FDA safety communication on pulse oximeters (2021, updated 2024).',
-      'Pulse oksimetre doğruluğu notları ABD FDA\'nın pulse oksimetre güvenlik bildirimine (2021, 2024 güncellemesi) dayanır.',
+      'Nabız oksimetresi doğruluğu notları ABD FDA\'nın nabız oksimetreleri hakkındaki güvenlik bildirimine (2021, 2024 güncellemesi) dayanır.',
     ),
   ),
   GlossaryEntry(
@@ -228,7 +228,7 @@ const List<GlossaryEntry> glossary = [
   ),
   GlossaryEntry(
     id: 'flag',
-    term: ('Lab flag (H, L)', 'Lab işareti (H, L)'),
+    term: ('Lab flag (H, L)', 'Laboratuvar işareti (H, L)'),
     what: (
       'A letter the laboratory adds when a result is above (H) or below (L) its printed interval. Human OS shows it as the lab\'s, not its own.',
       'Laboratuvarın, sonuç yazdığı aralığın üstünde (H) ya da altında (L) olduğunda eklediği harf. Human OS bunu laboratuvarınki olarak gösterir, kendi yorumu olarak değil.',

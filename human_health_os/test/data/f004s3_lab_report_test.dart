@@ -253,6 +253,100 @@ void main() {
         DateTime.utc(2026, 11, 1, 21, 30),
       );
     });
+
+    test('R019: a bare time is refused, never read as today; a full date '
+        'and time is required', () {
+      final zone = OffsetRuleZone((_) => const Duration(hours: 3));
+      // A March report entered on 19 November with "14:30".
+      for (final typed in ['14:30', ' 09:00 ', '00:00']) {
+        expect(
+          () => parseReportTime(
+            typed,
+            nowUtc: t0,
+            sampleDay: DateTime.utc(2026, 3, 10),
+            zone: zone,
+          ),
+          input('REPORT_TIME_NEEDS_DATE', 'reportTime'),
+          reason: typed,
+        );
+      }
+      // The same in the device's own zone.
+      expect(
+        () => parseReportTime(
+          '14:30',
+          nowUtc: t0,
+          sampleDay: DateTime.utc(2026, 3, 10),
+        ),
+        input('REPORT_TIME_NEEDS_DATE', 'reportTime'),
+      );
+      // A bare time with an offset stays a format error.
+      expect(
+        () => parseReportTime(
+          '14:30 +03:00',
+          nowUtc: t0,
+          sampleDay: DateTime.utc(2026, 3, 10),
+        ),
+        input('TIME_FORMAT', 'reportTime'),
+      );
+      expect(
+        parseReportTime(
+          '2026-03-10 14:30',
+          nowUtc: t0,
+          sampleDay: DateTime.utc(2026, 3, 10),
+          zone: zone,
+        ),
+        DateTime.utc(2026, 3, 10, 11, 30),
+      );
+    });
+
+    test('R019: with an offset typed, the sample day is compared with the '
+        'date as typed, in any device zone', () {
+      final sample = DateTime.utc(2026, 3, 10);
+      for (final zone in <LocalZone>[
+        const SystemLocalZone(),
+        OffsetRuleZone((_) => const Duration(hours: -5)),
+        OffsetRuleZone((_) => const Duration(hours: 14)),
+      ]) {
+        // 2026-03-09 22:00 UTC, which is still 9 March in New York.
+        expect(
+          parseReportTime(
+            '2026-03-10 01:00 +03:00',
+            nowUtc: t0,
+            sampleDay: sample,
+            zone: zone,
+          ),
+          DateTime.utc(2026, 3, 9, 22),
+          reason: '$zone',
+        );
+        // 2026-03-10 04:00 UTC, but typed as 9 March: before the sample.
+        expect(
+          () => parseReportTime(
+            '2026-03-09 23:00 -05:00',
+            nowUtc: t0,
+            sampleDay: sample,
+            zone: zone,
+          ),
+          input('REPORT_BEFORE_SAMPLE', 'reportTime'),
+          reason: '$zone',
+        );
+        expect(
+          parseReportTime(
+            '2026-03-10 00:00 Z',
+            nowUtc: t0,
+            sampleDay: sample,
+            zone: zone,
+          ),
+          DateTime.utc(2026, 3, 10),
+          reason: '$zone',
+        );
+      }
+    });
+
+    test('R019: a bound with a plus sign is a sign, not a space', () {
+      expect(() => iv('+4', '6'), input('INTERVAL_BOUND_HAS_SIGN', 'refLow'));
+      expect(() => iv('', '+130'), input('INTERVAL_BOUND_HAS_SIGN', 'refHigh'));
+      expect(() => iv('+ 4', ''), input('INTERVAL_BOUND_HAS_SIGN', 'refLow'));
+    });
   });
 
   group('record rules (schema 15)', () {
@@ -312,6 +406,35 @@ void main() {
           unit: 'mmol/L',
         ),
       ).validate();
+    });
+
+    test('R019: a stored report time without "Z" is refused on read, '
+        'never shifted', () {
+      final j = rec(reportedAt: DateTime.utc(2026, 11, 3, 14, 20)).toJson();
+      for (final stored in [
+        '2026-11-03T14:20:00.000',
+        '2026-11-03T14:20:00.000+03:00',
+        '2026-11-03 14:20',
+      ]) {
+        final crafted = (jsonDecode(jsonEncode(j)) as Map)
+            .cast<String, Object?>();
+        (crafted['lab']! as Map)['reported_at'] = stored;
+        final back = HealthRecord.fromJson(crafted);
+        expect(back.lab!.reportedAt!.isUtc, isFalse, reason: stored);
+        expect(back.validate, rule('LAB_REPORTED_AT_NOT_UTC'), reason: stored);
+      }
+      // No offset: the wall time is kept as written, not moved.
+      final crafted = (jsonDecode(jsonEncode(j)) as Map)
+          .cast<String, Object?>();
+      (crafted['lab']! as Map)['reported_at'] = '2026-11-03T14:20:00.000';
+      expect(HealthRecord.fromJson(crafted).lab!.reportedAt!.hour, 14);
+      // "Z" reads back exactly.
+      expect(
+        HealthRecord.fromJson(
+          (jsonDecode(jsonEncode(j)) as Map).cast<String, Object?>(),
+        ).lab!.reportedAt,
+        DateTime.utc(2026, 11, 3, 14, 20),
+      );
     });
 
     test('JSON round trip keeps every field; keys are written only when '

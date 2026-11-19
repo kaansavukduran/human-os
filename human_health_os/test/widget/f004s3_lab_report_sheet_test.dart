@@ -249,15 +249,111 @@ void main() {
     await fill(tester, 'lab-report-time', '2026-10-04 09:00');
     await tapKey(tester, 'lab-save');
     // The next result of the same report keeps the report time, and the
-    // collapsed section says one field is filled.
+    // collapsed section shows it itself, not only a count (R019).
     await tapKey(tester, 'lab-add');
     expect(find.byKey(const ValueKey('lab-report-time')), findsNothing);
     expect(
       tester.widget<Text>(find.byKey(const ValueKey('lab-more-note'))).data,
-      '1 field filled',
+      'Report time: 2026-10-04 09:00 · 1 field filled',
     );
     await openMore(tester);
     expect(textOf(tester, 'lab-report-time'), '2026-10-04 09:00');
+  });
+
+  String note(WidgetTester tester) =>
+      tester.widget<Text>(find.byKey(const ValueKey('lab-more-note'))).data!;
+
+  for (final (field, typed) in [
+    ('lab-date', '2026-10-20'),
+    ('lab-laboratory', 'Other lab'),
+  ]) {
+    testWidgets('R019: a carried report time is cleared when $field changes '
+        '(another report), and the collapsed line says so', (tester) async {
+      final s = await start(tester);
+      await go(tester, s, 'Labs');
+      await tapKey(tester, 'lab-add');
+      await fillBasics(tester);
+      await fill(tester, 'lab-laboratory', 'Lab A');
+      await openMore(tester);
+      await fill(tester, 'lab-report-time', '2026-10-04 09:00');
+      await tapKey(tester, 'lab-save');
+      expect(find.byKey(const ValueKey('lab-saved')), findsOneWidget);
+      await tapKey(tester, 'lab-add');
+      expect(note(tester), 'Report time: 2026-10-04 09:00 · 1 field filled');
+      await fill(tester, field, typed);
+      await tester.pump();
+      expect(
+        note(tester),
+        'Optional: report time, method and reference interval.',
+      );
+      await openMore(tester);
+      expect(textOf(tester, 'lab-report-time'), '');
+      // Saving the next result keeps no report time from the old report.
+      await fill(tester, 'lab-analyte', 'LDL');
+      await fill(tester, 'lab-value', '120');
+      await fill(tester, 'lab-unit', 'mg/dL');
+      await tapKey(tester, 'lab-save');
+      final rows = (await tester.runAsync(
+        () => s.heartbeat.labTimeline(s.self.id),
+      ))!;
+      final ldl = rows.firstWhere(
+        (e) => e.heads.single.lab!.analyteLabel == 'LDL',
+      );
+      expect(ldl.heads.single.lab!.reportedAt, isNull);
+    });
+  }
+
+  testWidgets('R019: a typed report time stays when the sample date changes '
+      'first; only a carried one is cleared', (tester) async {
+    final s = await start(tester);
+    await go(tester, s, 'Labs');
+    await tapKey(tester, 'lab-add');
+    await openMore(tester);
+    await fill(tester, 'lab-report-time', '2026-10-04 09:00');
+    await fillBasics(tester);
+    expect(textOf(tester, 'lab-report-time'), '2026-10-04 09:00');
+  });
+
+  testWidgets('R019: a bare time in the report time is refused with a clear '
+      'error on that field; the quick picks give full date-times', (
+    tester,
+  ) async {
+    final s = await start(tester);
+    await go(tester, s, 'Labs');
+    await tapKey(tester, 'lab-add');
+    await fillBasics(tester);
+    await openMore(tester);
+    await fill(tester, 'lab-report-time', '14:30');
+    await tapKey(tester, 'lab-save');
+    expect(
+      find.textContaining('Type the date the lab printed too'),
+      findsOneWidget,
+    );
+    expect(focused(tester, 'lab-report-time'), isTrue);
+    final rows = (await tester.runAsync(
+      () => s.heartbeat.labTimeline(s.self.id),
+    ))!;
+    expect(rows, isEmpty);
+    final chips = tester.widgetList<ActionChip>(
+      find.byWidgetPredicate(
+        (w) =>
+            w is ActionChip &&
+            w.key is ValueKey<String> &&
+            (w.key! as ValueKey<String>).value.startsWith(
+              'lab-report-time-pick-',
+            ),
+      ),
+    );
+    expect(chips, isNotEmpty);
+    for (final chip in chips.where((c) => c.onPressed != null)) {
+      chip.onPressed!();
+      await tester.pump();
+      expect(
+        textOf(tester, 'lab-report-time'),
+        matches(RegExp(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$')),
+        reason: '${chip.key}',
+      );
+    }
   });
 
   for (final (locale, labs, timeline, interval, method) in [

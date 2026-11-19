@@ -249,6 +249,10 @@ class S {
     ),
     // More from the lab report (F004-S3, D-045): about the typing only,
     // never about the result.
+    'REPORT_TIME_NEEDS_DATE' => _t(
+      'Type the date the lab printed too: YYYY-MM-DD HH:MM, e.g. 2026-03-10 14:30.',
+      'Laboratuvarın yazdığı tarihi de yaz: YYYY-AA-GG SS:DD, ör. 2026-03-10 14:30.',
+    ),
     'REPORT_BEFORE_SAMPLE' => _t(
       'The report time is before the sample date. Check both dates.',
       'Rapor zamanı numune tarihinden önce. İki tarihi de kontrol et.',
@@ -2147,6 +2151,8 @@ class S {
       _t('More from the report', 'Rapordaki diğer bilgiler');
   String labMoreFilled(int n) =>
       _t(n == 1 ? '1 field filled' : '$n fields filled', '$n alan dolu');
+  String labMoreReportTime(String typed) =>
+      _t('Report time: $typed', 'Rapor zamanı: $typed');
   String get labMoreHint => _t(
     'Optional: report time, method and reference interval.',
     'İsteğe bağlı: rapor zamanı, yöntem ve referans aralığı.',

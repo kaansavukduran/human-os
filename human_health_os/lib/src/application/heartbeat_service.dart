@@ -286,7 +286,8 @@ String parseLabText(String raw) {
 /// (`NOT_A_NUMBER`, `AMBIGUOUS_SEPARATOR`). A negative low is allowed.
 String parseIntervalBound(String raw, String field) {
   final t = raw.trim();
-  if (_comparatorFirst.hasMatch(t)) {
+  // A plus sign is a sign too ("+4"), never a space problem.
+  if (_comparatorFirst.hasMatch(t) || t.startsWith('+')) {
     throw InputError('INTERVAL_BOUND_HAS_SIGN', field);
   }
   final negative = _labMinus.hasMatch(t);
@@ -359,24 +360,48 @@ String? parseLabMethod(String raw) {
   return m;
 }
 
+/// A report time starts with the date the laboratory printed.
+final RegExp _reportDate = RegExp(r'^(\d{4})-(\d{2})-(\d{2}) ');
+
+/// A clock time alone, as the "When" fields accept it.
+final RegExp _bareTime = RegExp(r'^\d{1,2}:\d{2}$');
+
 /// When the laboratory reported the result, or null when blank. The "When"
-/// rules of [parseMeasuredAt], every error on the field `reportTime`; a
-/// report dated before the sample day is `REPORT_BEFORE_SAMPLE`.
+/// rules of [parseMeasuredAt], every error on the field `reportTime`, except
+/// that a bare time ("14:30") is refused with `REPORT_TIME_NEEDS_DATE`: a
+/// report is often entered days after it was printed, so a time alone is
+/// never read as today. A report dated before the sample day, compared by
+/// the date as typed (also when an offset is typed), is
+/// `REPORT_BEFORE_SAMPLE`.
 DateTime? parseReportTime(
   String raw, {
   required DateTime nowUtc,
   required DateTime sampleDay,
   LocalZone zone = const SystemLocalZone(),
 }) {
+  final text = raw.trim();
+  if (text.isEmpty) return null;
+  // Checked before the time itself, so "14:30" later today is not
+  // reported as a future time either.
+  if (_bareTime.hasMatch(text)) {
+    throw const InputError('REPORT_TIME_NEEDS_DATE', 'reportTime');
+  }
   final DateTime? t;
   try {
-    t = parseMeasuredAt(raw, nowUtc: nowUtc, zone: zone);
+    t = parseMeasuredAt(text, nowUtc: nowUtc, zone: zone);
   } on InputError catch (e) {
     throw InputError(e.code, 'reportTime');
   }
-  if (t == null) return null;
-  final local = zone.toLocal(t);
-  if (DateTime.utc(local.year, local.month, local.day).isBefore(sampleDay)) {
+  final typed = _reportDate.firstMatch(text);
+  if (t == null || typed == null) {
+    throw const InputError('REPORT_TIME_NEEDS_DATE', 'reportTime');
+  }
+  final day = DateTime.utc(
+    int.parse(typed[1]!),
+    int.parse(typed[2]!),
+    int.parse(typed[3]!),
+  );
+  if (day.isBefore(sampleDay)) {
     throw const InputError('REPORT_BEFORE_SAMPLE', 'reportTime');
   }
   return t;

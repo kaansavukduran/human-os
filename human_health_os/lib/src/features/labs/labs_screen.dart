@@ -36,6 +36,11 @@ class LabsScreen extends StatefulWidget {
 /// sample date and laboratory stay for the next result from the same
 /// report, and a closed add sheet keeps what was typed.
 class _LabForm {
+  _LabForm() {
+    date.addListener(_dropCarriedIfReportChanged);
+    laboratory.addListener(_dropCarriedIfReportChanged);
+  }
+
   final analyte = TextEditingController();
   final value = TextEditingController();
   final unit = TextEditingController();
@@ -47,7 +52,9 @@ class _LabForm {
 
   /// More from the report (F004-S3, D-045), in a section collapsed by
   /// default. The report time stays for the next result from the same
-  /// report, like the sample date and the laboratory.
+  /// report, like the sample date and the laboratory, but only while both
+  /// stay as they were (R019): a new sample date or laboratory means
+  /// another report, so the carried report time is cleared.
   final reportTime = TextEditingController();
   final method = TextEditingController();
   final refLow = TextEditingController();
@@ -65,6 +72,19 @@ class _LabForm {
   /// correction borrows the form (review finding: a cancelled correction
   /// left the old result's date in the next new entry).
   ({String date, String laboratory, String reportTime})? addMode;
+
+  /// The sample date and laboratory a carried report time belongs to;
+  /// null when the report time was not carried over from a saved result.
+  ({String date, String laboratory})? carriedFor;
+
+  void _dropCarriedIfReportChanged() {
+    final c = carriedFor;
+    if (c == null) return;
+    if (date.text != c.date || laboratory.text != c.laboratory) {
+      carriedFor = null;
+      reportTime.clear();
+    }
+  }
 
   List<TextEditingController> get _all => [
     analyte,
@@ -117,6 +137,8 @@ class _LabForm {
       laboratory: laboratory.text,
       reportTime: reportTime.text,
     );
+    // Remembered in addMode; the correction's own values must not clear it.
+    carriedFor = null;
     correcting = r;
     analyte.text = lab.analyteLabel;
     notReported = r.valueStatus != ValueStatus.present;
@@ -170,6 +192,9 @@ class _LabForm {
       reportTime.text = add.reportTime;
       addMode = null;
     }
+    carriedFor = reportTime.text.trim().isEmpty
+        ? null
+        : (date: date.text, laboratory: laboratory.text);
   }
 
   void dispose() {
@@ -463,12 +488,24 @@ class _LabSheetState extends State<_LabSheet> {
     ),
   );
 
+  /// The line under "More from the report". Collapsed, it shows the report
+  /// time itself (a value carried from the previous result is never hidden
+  /// behind a count) and how many fields hold text.
+  String _moreNote(S s, bool open) {
+    final filled = _f.moreFilled;
+    if (open || filled == 0) return s.labMoreHint;
+    final rt = _f.reportTime.text.trim();
+    return [
+      if (rt.isNotEmpty) s.labMoreReportTime(rt),
+      s.labMoreFilled(filled),
+    ].join(' · ');
+  }
+
   /// "More from the report": collapsed by default so the usual form stays
   /// short; opened by a tap, by a correction of a result that holds these
   /// details, or by an error about one of its fields.
   List<Widget> _moreSection(S s, TextTheme text) {
     final open = _f.moreOpen;
-    final filled = _f.moreFilled;
     final now = DateTime.now();
     final picks = [
       (s.presetNow, typedWall(now), true),
@@ -492,12 +529,15 @@ class _LabSheetState extends State<_LabSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(s.labMoreTitle, style: text.titleSmall),
-                        Text(
-                          !open && filled > 0
-                              ? s.labMoreFilled(filled)
-                              : s.labMoreHint,
-                          key: const ValueKey('lab-more-note'),
-                          style: text.bodySmall,
+                        // Repaints when a carried report time is cleared
+                        // by a new sample date or laboratory.
+                        ListenableBuilder(
+                          listenable: Listenable.merge(_f.more),
+                          builder: (context, _) => Text(
+                            _moreNote(s, open),
+                            key: const ValueKey('lab-more-note'),
+                            style: text.bodySmall,
+                          ),
                         ),
                       ],
                     ),

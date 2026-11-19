@@ -346,6 +346,15 @@ class LabDetails {
       'reference_interval': referenceInterval!.toJson(),
   };
 
+  /// A stored report time is read exactly as written: only a value ending
+  /// in "Z" is UTC. Anything else (no offset, or an offset such as
+  /// "+03:00") stays a non-UTC time, so [problem] refuses it with
+  /// `LAB_REPORTED_AT_NOT_UTC` instead of shifting it silently.
+  static DateTime _storedInstant(String raw) {
+    final t = DateTime.parse(raw);
+    return raw.endsWith('Z') ? t : t.toLocal();
+  }
+
   static LabDetails fromJson(Map<String, Object?> j) => LabDetails(
     analyteLabel: j['analyte_label']! as String,
     specimen: j['specimen'] as String?,
@@ -359,7 +368,7 @@ class LabDetails {
           ),
     reportedAt: j['reported_at'] == null
         ? null
-        : DateTime.parse(j['reported_at']! as String).toUtc(),
+        : _storedInstant(j['reported_at']! as String),
     method: j['method'] as String?,
     referenceInterval: j['reference_interval'] == null
         ? null

@@ -240,6 +240,14 @@ class _EntryTile extends StatelessWidget {
                 ].join(' · '),
                 style: text.bodySmall,
               ),
+              // What else the report printed (D-045), when present.
+              if (entry.status != EntryStatus.conflict)
+                if (r.lab case final lab? when lab.hasReportDetails)
+                  Text(
+                    labReportLines(s, lab, fmtWhen).join(' · '),
+                    key: ValueKey('timeline-lab-report-${r.id}'),
+                    style: text.bodySmall,
+                  ),
               if (entry.corrected || !entry.isLive) ...[
                 const SizedBox(height: 6),
                 Wrap(
@@ -543,6 +551,8 @@ class _EntryDetailState extends State<_EntryDetail> {
                         '${s.contextLabel}: "$note"',
                     ] else if (v.originalText != null)
                       '"${v.originalText}"',
+                    if (v.lab case final lab?)
+                      ...labReportLines(s, lab, fmtWhen),
                   ].join(' · '),
                 ),
               ),

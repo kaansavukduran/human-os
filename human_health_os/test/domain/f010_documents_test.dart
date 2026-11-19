@@ -28,7 +28,7 @@ void main() {
     expect(r.kind.code, 'document.reference');
     expect(r.schemaVersion, 13);
     expect(r.kind.minSchema, 13);
-    expect(HealthRecord.currentSchemaVersion, 14);
+    expect(HealthRecord.currentSchemaVersion, 15);
     expect(r.quantity, isNull);
     expect(r.originalText, isNull);
     expect(d.toJson().keys.toSet(), {

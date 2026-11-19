@@ -381,6 +381,87 @@ void main() {
     dir.deleteSync(recursive: true);
   });
 
+  testWidgets('F004-S3: report time, method and the reference interval as '
+      'printed survive a relaunch on the real file vault, after the one '
+      'upgrade checkpoint', (tester) async {
+    final dir = Directory.systemTemp.createTempSync('hhos-it-f004s3-');
+    final vault = File('${dir.path}/$vaultFileName');
+    LogRepository open() => LogRepository(
+      sink: FileLogSink(vault),
+      durability: StorageDurability.localFile,
+      location: vault.path,
+    );
+    final a = open();
+    await a.open();
+    final s1 = await servicesFor(dev, HostPlatform.linux, a);
+    final plain = await s1.heartbeat.recordLab(
+      profileId: s1.self.id,
+      input: const LabInput(
+        analyte: 'TSH',
+        value: '1,9',
+        notReported: false,
+        unit: 'mIU/L',
+        sampleDate: '2026-10-03',
+      ),
+    );
+    var checkpoints = 0;
+    final previous = a.beforeSchemaUpgrade;
+    a.beforeSchemaUpgrade = () async {
+      checkpoints++;
+      await previous?.call();
+    };
+    final detailed = await s1.heartbeat.recordLab(
+      profileId: s1.self.id,
+      input: const LabInput(
+        analyte: 'HbA1c',
+        value: '5,4',
+        notReported: false,
+        unit: '%',
+        sampleDate: '2026-10-03',
+        referenceText: '4,0 - 6,0',
+        reportTime: '2026-10-04 14:20',
+        method: 'HPLC',
+        refLow: '4,0',
+        refHigh: '6,0',
+        refUnit: '%',
+        refPartition: 'Kadın 20-49 yaş',
+      ),
+    );
+    expect(checkpoints, 1, reason: 'the first schema 15 record');
+    expect(plain.schemaVersion, 3);
+    expect(detailed.schemaVersion, 15);
+
+    final b = open(); // relaunch
+    final report = await b.open();
+    expect(report.warnings, isEmpty);
+    final s2 = await servicesFor(dev, HostPlatform.linux, b, report: report);
+    final again = {
+      for (final e in await s2.heartbeat.labTimeline(s2.self.id))
+        e.shown.id: e.shown,
+    };
+    expect(again[detailed.id]!.toJson(), detailed.toJson());
+    expect(again[plain.id]!.toJson(), plain.toJson());
+    expect(again[detailed.id]!.lab!.referenceText, '4,0 - 6,0');
+    await tester.pumpWidget(HumanOsApp(services: s2, appearance: english()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Labs').first);
+    await tester.pumpAndSettle();
+    final list = find
+        .descendant(
+          of: find.byKey(const ValueKey('screen-labs')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    for (final t in [
+      'Method as printed: HPLC',
+      'Reference interval as printed: 4,0–6,0 % (Kadın 20-49 yaş)',
+    ]) {
+      await tester.scrollUntilVisible(find.text(t), 200, scrollable: list);
+      expect(find.text(t), findsOneWidget);
+    }
+    dir.deleteSync(recursive: true);
+  });
+
   testWidgets('F005 restore drill: backup -> lose the vault -> fresh start '
       '-> restore -> relaunch shows the same records', (tester) async {
     if (!Platform.isLinux) return;

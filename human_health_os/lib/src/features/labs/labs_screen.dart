@@ -15,7 +15,9 @@ import '../../presentation/widgets/loading_line.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/status_chip.dart';
-import '../timeline/timeline_screen.dart' show fmtValue;
+import '../../presentation/widgets/term_link.dart';
+import '../measurements/measurement_format.dart' show labReportLines;
+import '../timeline/timeline_screen.dart' show fmtValue, fmtWhen;
 
 /// Labs (ladder F004): the list of current results first, and a sheet to
 /// enter a result exactly as the report printed it (U030: results before
@@ -42,16 +44,27 @@ class _LabForm {
   final laboratory = TextEditingController();
   final flag = TextEditingController();
   final range = TextEditingController();
+
+  /// More from the report (F004-S3, D-045), in a section collapsed by
+  /// default. The report time stays for the next result from the same
+  /// report, like the sample date and the laboratory.
+  final reportTime = TextEditingController();
+  final method = TextEditingController();
+  final refLow = TextEditingController();
+  final refHigh = TextEditingController();
+  final refUnit = TextEditingController();
+  final refPartition = TextEditingController();
+  bool moreOpen = false;
   bool notReported = false;
 
   /// How the report prints the value (F004-S2): Number by default.
   LabValueKind kind = LabValueKind.number;
   HealthRecord? correcting;
 
-  /// The add form's sample date and laboratory, kept while a correction
-  /// borrows the form (review finding: a cancelled correction left the old
-  /// result's date in the next new entry).
-  ({String date, String laboratory})? addMode;
+  /// The add form's sample date, laboratory and report time, kept while a
+  /// correction borrows the form (review finding: a cancelled correction
+  /// left the old result's date in the next new entry).
+  ({String date, String laboratory, String reportTime})? addMode;
 
   List<TextEditingController> get _all => [
     analyte,
@@ -62,7 +75,21 @@ class _LabForm {
     laboratory,
     flag,
     range,
+    ...more,
   ];
+
+  /// The fields of the "More from the report" section.
+  List<TextEditingController> get more => [
+    reportTime,
+    method,
+    refLow,
+    refHigh,
+    refUnit,
+    refPartition,
+  ];
+
+  /// How many of them hold text (shown while the section is collapsed).
+  int get moreFilled => more.where((c) => c.text.trim().isNotEmpty).length;
 
   LabInput input() => LabInput(
     analyte: analyte.text,
@@ -75,11 +102,21 @@ class _LabForm {
     sourceFlag: flag.text,
     referenceText: range.text,
     kind: kind,
+    reportTime: reportTime.text,
+    method: method.text,
+    refLow: refLow.text,
+    refHigh: refHigh.text,
+    refUnit: refUnit.text,
+    refPartition: refPartition.text,
   );
 
   void startCorrection(HealthRecord r) {
     final lab = r.lab!;
-    addMode ??= (date: date.text, laboratory: laboratory.text);
+    addMode ??= (
+      date: date.text,
+      laboratory: laboratory.text,
+      reportTime: reportTime.text,
+    );
     correcting = r;
     analyte.text = lab.analyteLabel;
     notReported = r.valueStatus != ValueStatus.present;
@@ -91,15 +128,38 @@ class _LabForm {
     laboratory.text = lab.laboratory ?? '';
     flag.text = lab.sourceFlag ?? '';
     range.text = lab.referenceText ?? '';
+    final reported = lab.reportedAt;
+    reportTime.text = reported == null ? '' : typedLocal(reported);
+    method.text = lab.method ?? '';
+    final iv = lab.referenceInterval;
+    refLow.text = iv?.lowText ?? '';
+    refHigh.text = iv?.highText ?? '';
+    refUnit.text = iv?.unit ?? '';
+    refPartition.text = iv?.partition ?? '';
+    // A correction shows what the stored version holds.
+    moreOpen = lab.hasReportDetails;
   }
 
-  /// Clears one result's fields. Sample date and laboratory stay for the
-  /// next result from the same report, except after a correction, which
-  /// gives back the add form's own values.
+  /// Clears one result's fields. Sample date, laboratory and report time
+  /// stay for the next result from the same report, except after a
+  /// correction, which gives back the add form's own values.
   void clear() {
-    for (final c in [analyte, value, unit, specimen, flag, range]) {
+    for (final c in [
+      analyte,
+      value,
+      unit,
+      specimen,
+      flag,
+      range,
+      method,
+      refLow,
+      refHigh,
+      refUnit,
+      refPartition,
+    ]) {
       c.clear();
     }
+    moreOpen = false;
     notReported = false;
     kind = LabValueKind.number;
     correcting = null;
@@ -107,6 +167,7 @@ class _LabForm {
     if (add != null) {
       date.text = add.date;
       laboratory.text = add.laboratory;
+      reportTime.text = add.reportTime;
       addMode = null;
     }
   }
@@ -298,6 +359,15 @@ class _LabSheetState extends State<_LabSheet> {
     super.dispose();
   }
 
+  static const _moreFields = {
+    'reportTime',
+    'method',
+    'refLow',
+    'refHigh',
+    'refUnit',
+    'refPartition',
+  };
+
   /// The field an error code is about, when the service names none.
   static String? _fieldOf(String code) => switch (code) {
     'LAB_ANALYTE_EMPTY' => 'analyte',
@@ -353,7 +423,12 @@ class _LabSheetState extends State<_LabSheet> {
         if (saved) {
           Navigator.of(context).pop(true);
         } else {
-          setState(() => _busy = false);
+          setState(() {
+            _busy = false;
+            // An error in the collapsed section opens it, so the field it
+            // is about can take focus.
+            if (_moreFields.contains(field)) _f.moreOpen = true;
+          });
           _focus.focusAfterFrame(this, field);
         }
       }
@@ -387,6 +462,116 @@ class _LabSheetState extends State<_LabSheet> {
       ),
     ),
   );
+
+  /// "More from the report": collapsed by default so the usual form stays
+  /// short; opened by a tap, by a correction of a result that holds these
+  /// details, or by an error about one of its fields.
+  List<Widget> _moreSection(S s, TextTheme text) {
+    final open = _f.moreOpen;
+    final filled = _f.moreFilled;
+    final now = DateTime.now();
+    final picks = [
+      (s.presetNow, typedWall(now), true),
+      ...TimePicks.recent(s, now: now).skip(1),
+    ];
+    return [
+      Semantics(
+        button: true,
+        expanded: open,
+        child: InkWell(
+          key: const ValueKey('lab-more'),
+          onTap: () => setState(() => _f.moreOpen = !open),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(s.labMoreTitle, style: text.titleSmall),
+                        Text(
+                          !open && filled > 0
+                              ? s.labMoreFilled(filled)
+                              : s.labMoreHint,
+                          key: const ValueKey('lab-more-note'),
+                          style: text.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  ExcludeSemantics(
+                    child: Icon(open ? Icons.expand_less : Icons.expand_more),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      if (open) ...[
+        const SizedBox(height: 8),
+        _field(
+          _f.reportTime,
+          s.labReportTime,
+          'lab-report-time',
+          'reportTime',
+          helper: s.labReportTimeHelp,
+        ),
+        TimePicks(
+          keyPrefix: 'lab-report-time',
+          controller: _f.reportTime,
+          picks: picks,
+          onPicked: () => setState(() {}),
+        ),
+        _field(
+          _f.method,
+          s.labMethod,
+          'lab-method',
+          'method',
+          helper: s.labMethodHelp,
+        ),
+        Semantics(
+          header: true,
+          child: Text(s.labIntervalTitle, style: text.titleSmall),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          s.labIntervalExplain,
+          key: const ValueKey('lab-interval-explain'),
+          style: text.bodySmall,
+        ),
+        const TermLink('reference_interval'),
+        const SizedBox(height: 6),
+        _field(
+          _f.refLow,
+          s.labIntervalLow,
+          'lab-ref-low',
+          'refLow',
+          helper: s.labIntervalBoundHelp,
+          number: true,
+        ),
+        _field(
+          _f.refHigh,
+          s.labIntervalHigh,
+          'lab-ref-high',
+          'refHigh',
+          helper: s.labIntervalBoundHelp,
+          number: true,
+        ),
+        _field(_f.refUnit, s.labIntervalUnit, 'lab-ref-unit', 'refUnit'),
+        _field(
+          _f.refPartition,
+          s.labIntervalPartition,
+          'lab-ref-partition',
+          'refPartition',
+          helper: s.labIntervalPartitionHelp,
+        ),
+      ],
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -484,6 +669,7 @@ class _LabSheetState extends State<_LabSheet> {
           'range',
           helper: s.labRangeHelp,
         ),
+        ..._moreSection(s, text),
         if (_errorCode != null)
           Semantics(
             liveRegion: true,
@@ -587,6 +773,14 @@ class _LabTile extends StatelessWidget {
               key: ValueKey('lab-range-${record.id}'),
               style: text.bodySmall,
             ),
+            // What else the report printed (D-045): restated, never
+            // compared with the value.
+            for (final (i, line) in labReportLines(s, lab, fmtWhen).indexed)
+              Text(
+                line,
+                key: ValueKey('lab-report-$i-${record.id}'),
+                style: text.bodySmall,
+              ),
             Align(
               alignment: AlignmentDirectional.centerEnd,
               child: TextButton.icon(

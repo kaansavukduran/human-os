@@ -12,6 +12,14 @@
 /// "≥ 90") keeps its comparator and its number as typed and is never equal
 /// to its limit; a text result ("Pozitif", "1+") is kept verbatim and never
 /// mapped to a meaning. Neither is ever read as a number.
+///
+/// Record schema 15 (F004-S3, D-045) adds what else the report printed: the
+/// time the laboratory reported the result ([LabDetails.reportedAt], apart
+/// from the sample date), the method as printed ([LabDetails.method]) and a
+/// [LabReferenceInterval]: the printed low and/or high with their unit and
+/// the printed partition ("Kadın 20-49 yaş"), as the person typed them. The
+/// interval is a reference interval, not an optimal target and not a
+/// decision limit, and nothing in the app compares a value with it.
 library;
 
 /// How a lab result is printed: a plain number (the record's quantity), a
@@ -165,6 +173,95 @@ class LabPrintedResult {
   int get hashCode => Object.hash(kind, comparator, limitText, text, unit);
 }
 
+/// A reference interval as the report printed it (record schema 15, D-045):
+/// the low and/or the high number exactly as typed, the unit printed with
+/// them and the partition the report names ("Kadın 20-49 yaş", "adult"),
+/// verbatim. It is typed by the person, never derived from the printed range
+/// text, and never compared with the result: it is the laboratory's
+/// reference interval for a reference group, not a target and not a
+/// clinical decision limit.
+class LabReferenceInterval {
+  const LabReferenceInterval({
+    this.lowText,
+    this.highText,
+    required this.unit,
+    this.partition,
+  });
+
+  /// Longest unit or partition kept, in characters (Unicode code points).
+  static const int maxTextLength = 300;
+
+  /// A bound as typed: an optional minus ("-" or U+2212), digits, and "," or
+  /// "." as the decimal mark ("4,0", "-2", "130").
+  static final RegExp boundPattern = RegExp(r'^[\-\u2212]?\d+([.,]\d+)?$');
+
+  /// The printed low, exactly as typed; null = not printed.
+  final String? lowText;
+
+  /// The printed high, exactly as typed; null = not printed.
+  final String? highText;
+
+  /// The unit printed with the interval. Required: a bound without its unit
+  /// is not kept.
+  final String unit;
+
+  /// The printed partition (age, sex, phase, ...), verbatim; null = none
+  /// printed. Never filled from the profile (v0.24 FR-428).
+  final String? partition;
+
+  /// The number of a stored bound, only to check the order of the two.
+  static double boundValue(String text) =>
+      double.parse(text.replaceAll('\u2212', '-').replaceAll(',', '.'));
+
+  /// A stable code when the stored shape is broken, else null.
+  String? problem() {
+    final lo = lowText, hi = highText;
+    if (lo == null && hi == null) return 'LAB_INTERVAL_NEEDS_BOUND';
+    for (final b in [lo, hi]) {
+      if (b != null && !boundPattern.hasMatch(b)) {
+        return 'LAB_INTERVAL_BOUND_NOT_A_NUMBER';
+      }
+    }
+    if (unit.trim().isEmpty) return 'LAB_INTERVAL_UNIT_REQUIRED';
+    final p = partition;
+    if (p != null && p.trim().isEmpty) return 'LAB_INTERVAL_PARTITION_EMPTY';
+    if (unit.runes.length > maxTextLength ||
+        (p != null && p.runes.length > maxTextLength)) {
+      return 'LAB_INTERVAL_TEXT_TOO_LONG';
+    }
+    if (lo != null && hi != null && boundValue(lo) > boundValue(hi)) {
+      return 'LAB_INTERVAL_ORDER';
+    }
+    return null;
+  }
+
+  Map<String, Object?> toJson() => {
+    'low_text': lowText,
+    'high_text': highText,
+    'unit': unit,
+    'partition': partition,
+  };
+
+  static LabReferenceInterval fromJson(Map<String, Object?> j) =>
+      LabReferenceInterval(
+        lowText: j['low_text'] as String?,
+        highText: j['high_text'] as String?,
+        unit: j['unit']! as String,
+        partition: j['partition'] as String?,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      other is LabReferenceInterval &&
+      other.lowText == lowText &&
+      other.highText == highText &&
+      other.unit == unit &&
+      other.partition == partition;
+
+  @override
+  int get hashCode => Object.hash(lowText, highText, unit, partition);
+}
+
 class LabDetails {
   const LabDetails({
     required this.analyteLabel,
@@ -173,7 +270,13 @@ class LabDetails {
     this.sourceFlag,
     this.referenceText,
     this.result,
+    this.reportedAt,
+    this.method,
+    this.referenceInterval,
   });
+
+  /// Longest method kept, in characters (Unicode code points).
+  static const int maxMethodLength = 300;
 
   /// The test name exactly as printed (e.g. "HbA1c", "LDL Kolesterol").
   /// Not mapped to a code: the same display name is not the same measurand.
@@ -202,6 +305,34 @@ class LabDetails {
   /// the record's value status says it is missing.
   LabValueKind get valueKind => result?.kind ?? LabValueKind.number;
 
+  /// When the laboratory reported the result, as printed (UTC); null = not
+  /// given. Separate from the sample date (record schema 15).
+  final DateTime? reportedAt;
+
+  /// The method as printed (e.g. "enzymatic", "HPLC"); null = not given
+  /// (record schema 15). Never mapped to a code.
+  final String? method;
+
+  /// The reference interval as printed, typed by the person (record schema
+  /// 15); null = not given. [referenceText] stays as printed beside it.
+  final LabReferenceInterval? referenceInterval;
+
+  /// Whether this needs record schema 15 (D-045).
+  bool get hasReportDetails =>
+      reportedAt != null || method != null || referenceInterval != null;
+
+  /// A stable code when the schema 15 fields are broken, else null.
+  String? reportDetailsProblem() {
+    final m = method;
+    if (m != null) {
+      if (m.trim().isEmpty) return 'LAB_METHOD_EMPTY';
+      if (m.runes.length > maxMethodLength) return 'LAB_METHOD_TOO_LONG';
+    }
+    final t = reportedAt;
+    if (t != null && !t.isUtc) return 'LAB_REPORTED_AT_NOT_UTC';
+    return referenceInterval?.problem();
+  }
+
   Map<String, Object?> toJson() => {
     'analyte_label': analyteLabel,
     'specimen': specimen,
@@ -209,6 +340,10 @@ class LabDetails {
     'source_flag': sourceFlag,
     'reference_text': referenceText,
     if (result != null) 'result': result!.toJson(),
+    if (reportedAt != null) 'reported_at': reportedAt!.toIso8601String(),
+    if (method != null) 'method': method,
+    if (referenceInterval != null)
+      'reference_interval': referenceInterval!.toJson(),
   };
 
   static LabDetails fromJson(Map<String, Object?> j) => LabDetails(
@@ -222,6 +357,15 @@ class LabDetails {
         : LabPrintedResult.fromJson(
             (j['result']! as Map).cast<String, Object?>(),
           ),
+    reportedAt: j['reported_at'] == null
+        ? null
+        : DateTime.parse(j['reported_at']! as String).toUtc(),
+    method: j['method'] as String?,
+    referenceInterval: j['reference_interval'] == null
+        ? null
+        : LabReferenceInterval.fromJson(
+            (j['reference_interval']! as Map).cast<String, Object?>(),
+          ),
   );
 
   @override
@@ -232,7 +376,10 @@ class LabDetails {
       other.laboratory == laboratory &&
       other.sourceFlag == sourceFlag &&
       other.referenceText == referenceText &&
-      other.result == result;
+      other.result == result &&
+      other.reportedAt == reportedAt &&
+      other.method == method &&
+      other.referenceInterval == referenceInterval;
 
   @override
   int get hashCode => Object.hash(
@@ -242,5 +389,8 @@ class LabDetails {
     sourceFlag,
     referenceText,
     result,
+    reportedAt,
+    method,
+    referenceInterval,
   );
 }

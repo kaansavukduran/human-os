@@ -37,6 +37,12 @@ class LabInput {
     this.sourceFlag = '',
     this.referenceText = '',
     this.kind = LabValueKind.number,
+    this.reportTime = '',
+    this.method = '',
+    this.refLow = '',
+    this.refHigh = '',
+    this.refUnit = '',
+    this.refPartition = '',
   });
 
   final String analyte;
@@ -58,6 +64,22 @@ class LabInput {
   final String laboratory;
   final String sourceFlag;
   final String referenceText;
+
+  /// More from the report (F004-S3, D-045), every field optional and as
+  /// printed. [reportTime] is when the laboratory reported the result, in
+  /// the "When" grammar (`YYYY-MM-DD HH:MM`, `HH:MM`); blank = not given.
+  final String reportTime;
+
+  /// The method as printed ("enzymatic", "HPLC").
+  final String method;
+
+  /// The reference interval as printed: the low and/or high number, the
+  /// unit printed with them and the partition ("Kadın 20-49 yaş"). Typed by
+  /// the person; never read from [referenceText].
+  final String refLow;
+  final String refHigh;
+  final String refUnit;
+  final String refPartition;
 }
 
 /// Parses `YYYY-MM-DD` into that calendar day (UTC midnight, a date without
@@ -252,6 +274,110 @@ String parseLabText(String raw) {
   final unsigned = t.replaceFirst(_leadingSign, '');
   if (_unitAfterNumber.hasMatch(unsigned) && !_titre.hasMatch(unsigned)) {
     throw const InputError('UNIT_IN_VALUE', 'value');
+  }
+  return t;
+}
+
+/// One bound of a reference interval as printed ("4,0", "-2", "130"),
+/// returned exactly as typed apart from surrounding spaces. Refused, each
+/// naming [field]: a sign such as "<" (`INTERVAL_BOUND_HAS_SIGN`), a unit
+/// after the number (`INTERVAL_BOUND_HAS_UNIT`), spaces inside
+/// (`INTERVAL_BOUND_HAS_SPACE`), and what [parseLabDecimal] refuses
+/// (`NOT_A_NUMBER`, `AMBIGUOUS_SEPARATOR`). A negative low is allowed.
+String parseIntervalBound(String raw, String field) {
+  final t = raw.trim();
+  if (_comparatorFirst.hasMatch(t)) {
+    throw InputError('INTERVAL_BOUND_HAS_SIGN', field);
+  }
+  final negative = _labMinus.hasMatch(t);
+  final digits = negative ? t.substring(1) : t;
+  if (_unitAfterNumber.hasMatch(digits.trim())) {
+    throw InputError('INTERVAL_BOUND_HAS_UNIT', field);
+  }
+  try {
+    final v = parseLabDecimal(digits);
+    if (!v.isFinite) throw const InputError('NOT_A_NUMBER');
+  } on InputError catch (e) {
+    throw InputError(e.code == 'EMPTY' ? 'NOT_A_NUMBER' : e.code, field);
+  }
+  if (!LabReferenceInterval.boundPattern.hasMatch(t)) {
+    throw InputError('INTERVAL_BOUND_HAS_SPACE', field);
+  }
+  return t;
+}
+
+/// The reference interval as the person typed it from the report, or null
+/// when every field is blank. Fields: `refLow`, `refHigh`, `refUnit`,
+/// `refPartition`. A unit or partition alone is `INTERVAL_NEEDS_BOUND`
+/// (on `refLow`); a bound without a unit is `INTERVAL_UNIT_REQUIRED`; a low
+/// above the high is `INTERVAL_LOW_ABOVE_HIGH` (on `refLow`). The bounds
+/// are never compared with any result.
+LabReferenceInterval? parseReferenceInterval({
+  required String low,
+  required String high,
+  required String unit,
+  required String partition,
+}) {
+  final u = labTextAsStored(unit);
+  final p = labTextAsStored(partition);
+  if (low.trim().isEmpty && high.trim().isEmpty && u.isEmpty && p.isEmpty) {
+    return null;
+  }
+  if (low.trim().isEmpty && high.trim().isEmpty) {
+    throw const InputError('INTERVAL_NEEDS_BOUND', 'refLow');
+  }
+  final lo = low.trim().isEmpty ? null : parseIntervalBound(low, 'refLow');
+  final hi = high.trim().isEmpty ? null : parseIntervalBound(high, 'refHigh');
+  if (u.isEmpty) throw const InputError('INTERVAL_UNIT_REQUIRED', 'refUnit');
+  if (u.runes.length > LabReferenceInterval.maxTextLength) {
+    throw const InputError('TEXT_TOO_LONG', 'refUnit');
+  }
+  if (p.runes.length > LabReferenceInterval.maxTextLength) {
+    throw const InputError('TEXT_TOO_LONG', 'refPartition');
+  }
+  if (lo != null &&
+      hi != null &&
+      LabReferenceInterval.boundValue(lo) >
+          LabReferenceInterval.boundValue(hi)) {
+    throw const InputError('INTERVAL_LOW_ABOVE_HIGH', 'refLow');
+  }
+  return LabReferenceInterval(
+    lowText: lo,
+    highText: hi,
+    unit: u,
+    partition: p.isEmpty ? null : p,
+  );
+}
+
+/// The method as printed, or null when blank (field `method`).
+String? parseLabMethod(String raw) {
+  final m = labTextAsStored(raw);
+  if (m.isEmpty) return null;
+  if (m.runes.length > LabDetails.maxMethodLength) {
+    throw const InputError('TEXT_TOO_LONG', 'method');
+  }
+  return m;
+}
+
+/// When the laboratory reported the result, or null when blank. The "When"
+/// rules of [parseMeasuredAt], every error on the field `reportTime`; a
+/// report dated before the sample day is `REPORT_BEFORE_SAMPLE`.
+DateTime? parseReportTime(
+  String raw, {
+  required DateTime nowUtc,
+  required DateTime sampleDay,
+  LocalZone zone = const SystemLocalZone(),
+}) {
+  final DateTime? t;
+  try {
+    t = parseMeasuredAt(raw, nowUtc: nowUtc, zone: zone);
+  } on InputError catch (e) {
+    throw InputError(e.code, 'reportTime');
+  }
+  if (t == null) return null;
+  final local = zone.toLocal(t);
+  if (DateTime.utc(local.year, local.month, local.day).isBefore(sampleDay)) {
+    throw const InputError('REPORT_BEFORE_SAMPLE', 'reportTime');
   }
   return t;
 }
@@ -464,6 +590,30 @@ class HeartbeatService {
         ? printed!.text!
         : input.value.trim();
     final present = value != null || printed != null;
+    // More from the report (D-045): each optional, each kept as printed.
+    final reportedAt = parseReportTime(
+      input.reportTime,
+      nowUtc: now,
+      sampleDay: sample,
+    );
+    final method = parseLabMethod(input.method);
+    final interval = parseReferenceInterval(
+      low: input.refLow,
+      high: input.refHigh,
+      unit: input.refUnit,
+      partition: input.refPartition,
+    );
+    final lab = LabDetails(
+      analyteLabel: analyte,
+      specimen: opt(input.specimen),
+      laboratory: opt(input.laboratory),
+      sourceFlag: opt(input.sourceFlag),
+      referenceText: opt(input.referenceText),
+      result: printed,
+      reportedAt: reportedAt,
+      method: method,
+      referenceInterval: interval,
+    );
     return HealthRecord(
       id: _ids.newId(),
       profileId: profileId,
@@ -477,19 +627,11 @@ class HeartbeatService {
       recordedAt: now,
       supersedesId: supersedesId,
       amendReason: supersedesId == null ? null : AmendReason.correction,
-      lab: LabDetails(
-        analyteLabel: analyte,
-        specimen: opt(input.specimen),
-        laboratory: opt(input.laboratory),
-        sourceFlag: opt(input.sourceFlag),
-        referenceText: opt(input.referenceText),
-        result: printed,
-      ),
-      // Only a value that is not a plain number needs schema 14 (D-043);
-      // a plain number stays readable by every app since F004.
-      schemaVersion: printed == null
-          ? HealthRecord.writeSchemaFor(RecordKind.labResult)
-          : HealthRecord.labPrintedResultSchema,
+      lab: lab,
+      // Each record at the oldest schema that holds it: a plain number at 3
+      // (readable by every app since F004), a printed result at 14 (D-043),
+      // report details at 15 (D-045).
+      schemaVersion: HealthRecord.writeSchemaForLab(lab),
     );
   }
 

@@ -100,7 +100,7 @@ class DoctorSummary {
       sections.add(
         SummarySection(
           s.summaryLabs,
-          [for (final r in labs.take(rowsPerSection * 2)) _labRow(s, r)],
+          [for (final r in labs.take(rowsPerSection * 2)) labRow(s, r)],
           labs.length,
           _part(s, labs.length, rowsPerSection * 2),
         ),
@@ -119,7 +119,9 @@ class DoctorSummary {
   static String _part(S s, int total, [int cap = rowsPerSection]) =>
       total > cap ? s.summaryMore(cap, total) : '';
 
-  static SummaryRow _labRow(S s, HealthRecord r) {
+  /// One lab result's line: the value as printed, then the printed range,
+  /// the lab's flag and what else the report printed (D-045).
+  static SummaryRow labRow(S s, HealthRecord r) {
     final lab = r.lab;
     final unit = r.quantity?.unit ?? '';
     final typed = r.originalText ?? '';
@@ -136,6 +138,7 @@ class DoctorSummary {
     final notes = [
       if (range.isNotEmpty) s.labPrintedRange(range),
       if (flag.isNotEmpty) s.labPrintedFlag(flag),
+      if (lab != null) ...labReportLines(s, lab, isoWhen),
     ].join(' · ');
     return SummaryRow(
       r.observedAt.toIso8601String().substring(0, 10),

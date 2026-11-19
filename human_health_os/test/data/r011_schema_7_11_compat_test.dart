@@ -252,7 +252,7 @@ void main() {
         expect(data.containsKey('details'), isFalse);
       }
     }
-    expect(HealthRecord.currentSchemaVersion, 14);
+    expect(HealthRecord.currentSchemaVersion, 15);
     for (final k in newKinds) {
       expect(k.minSchema, expectedWriteSchema[k]);
     }
@@ -347,16 +347,18 @@ void main() {
     // parseVaultLog/HealthRecord.fromJson take no "max schema" parameter,
     // so an app limited to an older schema cannot be simulated here. What is
     // tested instead is the same gate one step up: a store holding a record
-    // one schema newer than this app (15) is refused as a whole, and a
+    // one schema newer than this app (currentSchemaVersion + 1; 16 since
+    // F004-S3) is refused as a whole, and a
     // schema 7 to 13 kind labelled with an older schema is never accepted.
     String bumped(String log, int from, int to) =>
         log.replaceFirst('"schema_version":$from,', '"schema_version":$to,');
 
-    test('a store holding a schema 15 record refuses to open, by parse, by '
+    test('a store holding a record newer than this app refuses to open, by '
+        'parse, by '
         'the repository and by restore', () async {
       await openFilled();
       final log = vaultFile.readAsStringSync();
-      final newer = bumped(log, 13, 15);
+      final newer = bumped(log, 13, HealthRecord.currentSchemaVersion + 1);
       expect(newer, isNot(log));
       expect(
         () => parseVaultLog(newer),
@@ -380,7 +382,7 @@ void main() {
         sourceRevision: 'r011',
         createdAt: t0,
       );
-      // A bundle whose payload holds a schema 15 record (manifest rebuilt
+      // A bundle whose payload holds a newer record (manifest rebuilt
       // around it so only the schema gate can refuse it).
       final d = (jsonDecode(bundle) as Map).cast<String, Object?>();
       final m = (d['manifest']! as Map).cast<String, Object?>();

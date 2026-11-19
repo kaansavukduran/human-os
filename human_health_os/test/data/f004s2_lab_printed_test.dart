@@ -484,12 +484,13 @@ void main() {
       },
     );
 
-    test('a store with a record newer than schema 14 is refused whole (an '
+    test('a store with a record newer than this app reads is refused whole (an '
         'F004-S1 build, at 13, refuses a schema 14 store the same way)', () {
       final log = File(fixture14).readAsStringSync();
+      // Record schema 15 (F004-S3) is read now; 16 stands for a newer app.
       final newer = log.replaceFirst(
         '"schema_version":14,',
-        '"schema_version":15,',
+        '"schema_version":16,',
       );
       expect(newer, isNot(log));
       expect(

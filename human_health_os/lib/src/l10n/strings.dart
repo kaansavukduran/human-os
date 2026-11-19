@@ -247,6 +247,36 @@ class S {
       'This is a sign and a number. Choose "Below or above a limit" above.',
       'Bu bir işaret ve sayı. Yukarıdan "Bir sınırın altı ya da üstü"nü seç.',
     ),
+    // More from the lab report (F004-S3, D-045): about the typing only,
+    // never about the result.
+    'REPORT_BEFORE_SAMPLE' => _t(
+      'The report time is before the sample date. Check both dates.',
+      'Rapor zamanı numune tarihinden önce. İki tarihi de kontrol et.',
+    ),
+    'INTERVAL_NEEDS_BOUND' => _t(
+      'Add the low or the high number as printed, or leave the reference interval fields empty.',
+      'Raporda yazan alt ya da üst sayıyı ekle ya da referans aralığı alanlarını boş bırak.',
+    ),
+    'INTERVAL_UNIT_REQUIRED' => _t(
+      'Add the unit printed with the reference interval, e.g. mg/dL. A number without its unit is not kept.',
+      'Referans aralığıyla yazan birimi ekle, ör. mg/dL. Birimi olmayan sayı saklanmaz.',
+    ),
+    'INTERVAL_LOW_ABOVE_HIGH' => _t(
+      'The low number is larger than the high number. Check that the two were not swapped.',
+      'Alt sayı üst sayıdan büyük. İkisinin yer değiştirmediğini kontrol et.',
+    ),
+    'INTERVAL_BOUND_HAS_SIGN' => _t(
+      'Type only the number. For a range printed as "< 130", put 130 in High and leave Low empty.',
+      'Yalnız sayıyı yaz. "< 130" gibi yazan bir aralık için 130\'u Üst alanına yaz, Alt\'ı boş bırak.',
+    ),
+    'INTERVAL_BOUND_HAS_UNIT' => _t(
+      'Type only the number here and the unit in "Unit of the interval".',
+      'Buraya yalnız sayıyı, birimi "Aralığın birimi" alanına yaz.',
+    ),
+    'INTERVAL_BOUND_HAS_SPACE' => _t(
+      'Type the number without spaces, e.g. 4,0 or -2.',
+      'Sayıyı boşluksuz yaz, ör. 4,0 ya da -2.',
+    ),
     'LAB_ANALYTE_EMPTY' => _t(
       'Enter the test name as printed.',
       'Raporda yazan test adını gir.',
@@ -2109,6 +2139,77 @@ class S {
     '${unit == null ? text : '$text $unit'} (raporda yazan metin)',
   );
   String get unitNotGiven => _t('unit not given', 'birim verilmedi');
+
+  // More from the report (F004-S3, D-045): every field as printed. The
+  // reference interval is said once to be neither a target nor a limit;
+  // nothing compares the result with it.
+  String get labMoreTitle =>
+      _t('More from the report', 'Rapordaki diğer bilgiler');
+  String labMoreFilled(int n) =>
+      _t(n == 1 ? '1 field filled' : '$n fields filled', '$n alan dolu');
+  String get labMoreHint => _t(
+    'Optional: report time, method and reference interval.',
+    'İsteğe bağlı: rapor zamanı, yöntem ve referans aralığı.',
+  );
+  String get labReportTime =>
+      _t('Report time (optional)', 'Rapor zamanı (isteğe bağlı)');
+  String get labReportTimeHelp => _t(
+    'When the lab reported the result, if printed, apart from the sample date: YYYY-MM-DD HH:MM.',
+    'Laboratuvarın sonucu raporladığı zaman, yazıyorsa; numune tarihinden ayrıdır: YYYY-AA-GG SS:DD.',
+  );
+  String get labMethod =>
+      _t('Method as printed (optional)', 'Raporda yazan yöntem (isteğe bağlı)');
+  String get labMethodHelp =>
+      _t('E.g. enzymatic or HPLC.', 'Ör. enzimatik ya da HPLC.');
+  String get labIntervalTitle => _t(
+    'Reference interval as printed (optional)',
+    'Raporda yazan referans aralığı (isteğe bağlı)',
+  );
+  String get labIntervalExplain => _t(
+    'The lab\'s reference interval describes a reference group. It is not a target and not a limit for decisions. Human OS never compares your value with it.',
+    'Laboratuvarın referans aralığı bir referans grubunu anlatır. Hedef değildir, karar sınırı da değildir. Human OS değerini onunla hiç karşılaştırmaz.',
+  );
+  String get labIntervalLow => _t('Low', 'Alt');
+  String get labIntervalHigh => _t('High', 'Üst');
+  String get labIntervalBoundHelp =>
+      _t('Only the number, e.g. 4,0', 'Yalnız sayı, ör. 4,0');
+  String get labIntervalUnit => _t('Unit of the interval', 'Aralığın birimi');
+  String get labIntervalPartition =>
+      _t('Group as printed (optional)', 'Raporda yazan grup (isteğe bağlı)');
+  String get labIntervalPartitionHelp => _t(
+    'E.g. "Kadın 20-49 yaş" or "adult". Copied as printed; never taken from your profile.',
+    'Ör. "Kadın 20-49 yaş" ya da "yetişkin". Yazdığı gibi aktarılır; profilinden alınmaz.',
+  );
+
+  /// "Report time: 2026-11-03 14:20".
+  String labReportTimeLine(String when) =>
+      _t('Report time: $when', 'Rapor zamanı: $when');
+
+  /// "Method as printed: HPLC".
+  String labMethodLine(String m) =>
+      _t('Method as printed: $m', 'Raporda yazan yöntem: $m');
+
+  /// "Reference interval as printed: 4,0–6,0 % (Kadın 20-49 yaş)". The
+  /// bounds are shown as typed; one printed bound is named as the lower or
+  /// upper bound (never "low"/"high", which could read as a judgement).
+  String labIntervalLine(LabReferenceInterval iv) {
+    final lo = iv.lowText, hi = iv.highText;
+    final String numbers;
+    if (lo != null && hi != null) {
+      final signed = RegExp(r'^[\-\u2212]');
+      final dash = signed.hasMatch(lo) || signed.hasMatch(hi) ? ' – ' : '–';
+      numbers = '$lo$dash$hi';
+    } else if (lo != null) {
+      numbers = '${_t('lower bound', 'alt sınır')} $lo';
+    } else {
+      numbers = '${_t('upper bound', 'üst sınır')} $hi';
+    }
+    final group = iv.partition == null ? '' : ' (${iv.partition})';
+    return _t(
+      'Reference interval as printed: $numbers ${iv.unit}$group',
+      'Raporda yazan referans aralığı: $numbers ${iv.unit}$group',
+    );
+  }
 
   String versionsCount(int n) => _t('$n versions', '$n sürüm');
 

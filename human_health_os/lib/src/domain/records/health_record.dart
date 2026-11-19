@@ -365,12 +365,30 @@ class HealthRecord {
   ///   "< 5" or text "Pozitif") kept as printed, with no quantity. Only such
   ///   a lab result is written at 14; a plain number stays at 3. Older
   ///   records read unchanged.
+  /// - 15 (F004-S3, step RS-015, additive, D-045): adds the optional
+  ///   `lab.reported_at`, `lab.method` and `lab.reference_interval` (low
+  ///   and/or high as typed, unit, partition), all as printed. Only a lab
+  ///   result holding one of them is written at 15. Older records read
+  ///   unchanged.
   ///
   /// The newest schema this app reads; a newer one refuses the whole store.
-  static const int currentSchemaVersion = 14;
+  static const int currentSchemaVersion = 15;
 
   /// The schema that introduced [LabPrintedResult] (D-043).
   static const int labPrintedResultSchema = 14;
+
+  /// The schema that introduced the report time, the method and the
+  /// structured reference interval of a lab result (D-045).
+  static const int labReportDetailsSchema = 15;
+
+  /// The schema a lab result with [lab] is written with: the oldest that
+  /// can hold it (3 for a plain number, 14 for a printed result, 15 when it
+  /// keeps report details).
+  static int writeSchemaForLab(LabDetails lab) => lab.hasReportDetails
+      ? labReportDetailsSchema
+      : lab.result != null
+      ? labPrintedResultSchema
+      : writeSchemaFor(RecordKind.labResult);
 
   /// A record that needs nothing from a newer schema is written at this one
   /// (D-018): weight and lab results stay readable by the apps of F004 to
@@ -452,6 +470,13 @@ class HealthRecord {
       throw const RecordValidationError(
         'FIELD_NEEDS_NEWER_SCHEMA',
         'A lab value that is not a plain number needs record schema 14',
+      );
+    }
+    if ((lab?.hasReportDetails ?? false) &&
+        schemaVersion < labReportDetailsSchema) {
+      throw const RecordValidationError(
+        'FIELD_NEEDS_NEWER_SCHEMA',
+        'Report time, method and reference interval need record schema 15',
       );
     }
     final present = valueStatus == ValueStatus.present;
@@ -622,6 +647,10 @@ class HealthRecord {
             'LAB_ANALYTE_REQUIRED',
             'A lab result needs the test name as printed',
           );
+        }
+        final detailsCode = lab!.reportDetailsProblem();
+        if (detailsCode != null) {
+          throw RecordValidationError(detailsCode, 'lab: $detailsCode');
         }
       case RecordKind.waistCircumference ||
           RecordKind.restingHeartRate ||

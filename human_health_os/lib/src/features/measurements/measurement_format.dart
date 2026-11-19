@@ -147,3 +147,17 @@ String labPrintedValue(S s, HealthRecord r, LabPrintedResult p) =>
       ),
       _ => s.labTextValue(p.text ?? r.originalText ?? '', p.unit),
     };
+
+/// What else the report printed (F004-S3, D-045), one line each, only for
+/// what is present: report time, method and the reference interval as
+/// printed. Plain restatement; nothing here relates the value to the
+/// interval. [when] formats the report time for its surface.
+List<String> labReportLines(
+  S s,
+  LabDetails lab,
+  String Function(DateTime utc) when,
+) => [
+  if (lab.reportedAt case final t?) s.labReportTimeLine(when(t)),
+  if (lab.method case final m?) s.labMethodLine(m),
+  if (lab.referenceInterval case final iv?) s.labIntervalLine(iv),
+];

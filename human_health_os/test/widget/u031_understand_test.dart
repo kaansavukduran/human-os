@@ -393,6 +393,79 @@ void main() {
     expect(find.textContaining('118/76'), findsWidgets);
   });
 
+  // R015: the button sits in the snack bar's content (it wraps at 2x text),
+  // so it would close on its own after 6 s; with accessible navigation it
+  // stays until used or closed (WCAG 2.2.1).
+  void accessibleNavigation(WidgetTester tester) {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(accessibleNavigation: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+  }
+
+  testWidgets('with accessible navigation, "Show on Timeline" is still there '
+      'after 10 s, can be closed, and works', (tester) async {
+    accessibleNavigation(tester);
+    await launch(tester);
+    await saveBp(tester, '118', '76');
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('measure-saved')), findsOneWidget);
+    final bar = find.byType(SnackBar);
+    expect(tester.widget<SnackBar>(bar).persist, isTrue);
+    expect(tester.widget<SnackBar>(bar).showCloseIcon, isTrue);
+    await tapKey(tester, 'measure-show-timeline');
+    expect(find.byKey(const ValueKey('screen-timeline')), findsOneWidget);
+    expect(find.byKey(const ValueKey('measure-saved')), findsNothing);
+  });
+
+  testWidgets('without accessible navigation, the saved snack bar closes on '
+      'its own', (tester) async {
+    await launch(tester);
+    await saveBp(tester, '118', '76');
+    expect(find.byKey(const ValueKey('measure-saved')), findsOneWidget);
+    expect(tester.widget<SnackBar>(find.byType(SnackBar)).persist, isFalse);
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('measure-saved')), findsNothing);
+  });
+
+  for (final locale in [const Locale('en'), const Locale('tr')]) {
+    testWidgets('320 dp, text x2, ${locale.languageCode}, accessible '
+        'navigation: the staying snack bar lays out without overflow', (
+      tester,
+    ) async {
+      accessibleNavigation(tester);
+      await launch(
+        tester,
+        size: const Size(320, 2400),
+        textScale: 2.0,
+        locale: locale,
+      );
+      await saveBp(tester, '118', '76');
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(const ValueKey('measure-show-timeline')), findsOne);
+      await tester.pump(const Duration(seconds: 10));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('measure-saved')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  test('no Aion line claims that data is kept or stays (memory-only web '
+      'keeps nothing, G-32)', () {
+    final claim = RegExp(
+      r'stays? on|kept|keeps? (it|your)|saved|stored|persist\p{L}*|'
+      r'remain\p{L}*|bu cihazda|cihazda kal\p{L}*|sakla\p{L}*|kaydedil\p{L}*|durur',
+      caseSensitive: false,
+      unicode: true,
+    );
+    for (final lang in AppLang.values) {
+      for (final w in S(lang).aionLines) {
+        expect(claim.hasMatch(w), isFalse, reason: w);
+      }
+    }
+  });
+
   testWidgets('Aion\'s line is one of six, the same all day, and hidden with '
       'Aion', (tester) async {
     for (final lang in AppLang.values) {

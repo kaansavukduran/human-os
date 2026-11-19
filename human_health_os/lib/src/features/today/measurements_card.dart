@@ -67,6 +67,11 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
     final go = DestinationSwitch.maybeOf(context);
     // The colour a snack bar action has on the snack bar's own surface.
     final actionColor = Theme.of(context).colorScheme.inversePrimary;
+    // A screen reader (or switch access) needs time to reach the button: the
+    // snack bar then stays until it is used or closed (WCAG 2.2.1). The
+    // button stays in the content, not in SnackBar.action, so the words wrap
+    // at 2x text on a 320 dp phone.
+    final accessible = MediaQuery.accessibleNavigationOf(context);
     widget.services.checkpointSaved?.value = null;
     final saved = await showModalBottomSheet<bool>(
       context: context,
@@ -125,7 +130,8 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
               ),
           ],
         ),
-        // Long enough to reach the action; it closes on its own.
+        // Long enough to reach the action; it closes on its own, unless
+        // navigation is accessible and there is a button to reach.
         duration: Duration(
           seconds: checkpoint != null
               ? 12
@@ -133,7 +139,8 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
               ? 6
               : 3,
         ),
-        showCloseIcon: checkpoint != null,
+        persist: accessible && go != null,
+        showCloseIcon: checkpoint != null || (accessible && go != null),
       ),
     );
     await _reload();

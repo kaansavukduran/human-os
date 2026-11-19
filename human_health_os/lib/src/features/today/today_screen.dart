@@ -313,7 +313,9 @@ class _TodayScreenState extends State<TodayScreen> {
 }
 
 /// Today's date, written again just after each local midnight, so a screen
-/// left open overnight never shows yesterday (U031-S4).
+/// left open overnight never shows yesterday (U031-S4). Timers do not run
+/// while the device sleeps and miss a clock or time-zone change, so the line
+/// is also written again whenever the app comes back to the foreground.
 class _DateLine extends StatefulWidget {
   const _DateLine({required this.clock});
 
@@ -323,12 +325,20 @@ class _DateLine extends StatefulWidget {
   State<_DateLine> createState() => _DateLineState();
 }
 
-class _DateLineState extends State<_DateLine> {
+class _DateLineState extends State<_DateLine> with WidgetsBindingObserver {
   Timer? _midnight;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _schedule();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) return;
+    setState(() {});
     _schedule();
   }
 
@@ -340,6 +350,7 @@ class _DateLineState extends State<_DateLine> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _midnight?.cancel();
     super.dispose();
   }

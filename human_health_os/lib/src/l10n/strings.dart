@@ -2418,23 +2418,24 @@ class S {
   String get showOnTimeline =>
       _t('Show on Timeline', 'Zaman çizelgesinde göster');
 
-  /// Neutral lines shown beside Aion: where things are kept, how a
-  /// correction works, what stays private. Never a value, a count or praise.
+  /// Neutral lines shown beside Aion: where things appear, how a correction
+  /// works, what stays private. Never a value, a count or praise, and never a
+  /// claim that data is kept: memory-only web builds keep nothing (G-32).
   List<String> get aionLines => lang == AppLang.tr
       ? const [
-          'Burada olan her şey, yedek almadıkça bu cihazda kalır.',
+          'Buraya yazdığın hiçbir şey bir yere gönderilmez; yedek yalnızca sen istediğinde alınır.',
           'Düzeltme yeni bir sürüm ekler; eskisi geçmişte kalır.',
-          'Bir değeri raporda ya da cihazda yazdığı gibi yazabilirsin; uygulama onu yazdığın gibi saklar.',
+          'Bir değeri raporda ya da cihazda yazdığı gibi yazabilirsin; uygulama yazdığını değiştirmez.',
           'Boş bıraktığın bir alan boş kalır; uygulama onu kendisi doldurmaz.',
-          'Kayıtların Zaman çizelgesinde, en yenisi üstte durur.',
+          'Kayıtların Zaman çizelgesinde, en yenisi üstte görünür.',
           'Ayarlar\'dan Aion\'u gizleyebilirsin; kayıtların olduğu gibi kalır.',
         ]
       : const [
-          'Everything here stays on this device unless you make a backup.',
+          'Nothing you enter here is sent anywhere; a backup is made only when you ask for one.',
           'A correction adds a new version; the old one stays in the history.',
-          'You can type a value exactly as a report or a device shows it; the app keeps it as typed.',
+          'You can type a value exactly as a report or a device shows it; the app never rewrites what you typed.',
           'A field you leave empty stays empty; the app never fills it in for you.',
-          'Your records are kept on the Timeline, newest first.',
+          'Your records appear on the Timeline, newest first.',
           'Settings can hide Aion; your records stay as they are.',
         ];
 

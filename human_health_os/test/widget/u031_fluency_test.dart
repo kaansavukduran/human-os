@@ -288,6 +288,49 @@ void main() {
     expect(line(), en.dateLine(DateTime(2026, 11, 21)));
   });
 
+  testWidgets('back from sleep past midnight, the date line shows the new '
+      'day at once, without its timer (R015)', (tester) async {
+    final clock = _HandClock(DateTime(2026, 11, 19, 22));
+    final s = await start(tester, clock: clock);
+    await tester.pumpWidget(HumanOsApp(services: s));
+    await settle(tester);
+    String line() =>
+        tester.widget<Text>(find.byKey(const ValueKey('today-date'))).data!;
+    const en = S(AppLang.en);
+    expect(line(), en.dateLine(DateTime(2026, 11, 19)));
+
+    // The device slept: the clock moved on, no fake time passed, so the
+    // midnight timer (two hours away) has not fired.
+    void lifecycle(List<AppLifecycleState> states) {
+      for (final st in states) {
+        tester.binding.handleAppLifecycleStateChanged(st);
+      }
+    }
+
+    lifecycle(const [
+      AppLifecycleState.inactive,
+      AppLifecycleState.hidden,
+      AppLifecycleState.paused,
+    ]);
+    clock.now = DateTime(2026, 11, 20, 7, 15);
+    await tester.pump();
+    expect(line(), en.dateLine(DateTime(2026, 11, 19)));
+    lifecycle(const [AppLifecycleState.hidden, AppLifecycleState.inactive]);
+    await tester.pump();
+    expect(line(), en.dateLine(DateTime(2026, 11, 19)));
+    lifecycle(const [AppLifecycleState.resumed]);
+    await tester.pump();
+    expect(line(), en.dateLine(DateTime(2026, 11, 20)));
+
+    // Rescheduled from the new time: the old timer's due time passes with
+    // nothing to change, and the next midnight still moves it on.
+    await tester.pump(const Duration(hours: 2, seconds: 2));
+    expect(line(), en.dateLine(DateTime(2026, 11, 20)));
+    clock.now = DateTime(2026, 11, 21, 0, 0, 2);
+    await tester.pump(const Duration(hours: 17));
+    expect(line(), en.dateLine(DateTime(2026, 11, 21)));
+  });
+
   testWidgets('an area heading is its own heading node, not one banner with '
       'the lines under it (web smoke finding)', (tester) async {
     final handle = tester.ensureSemantics();

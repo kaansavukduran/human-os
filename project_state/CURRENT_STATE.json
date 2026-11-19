@@ -3,9 +3,47 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "R017",
+    "contract": "v0.32",
+    "run_id": "R017@v0.32",
+    "slice": "F004-S2 review fixes: refuse limit text that cannot be kept as printed, negative lab numbers, numbers disguised as text, hidden direction marks",
+    "goal": "F004-S2 review fixes: refuse limit text that cannot be kept as printed, negative lab numbers, numbers disguised as text, hidden direction marks",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "f2868c6",
+    "app_revision": null,
+    "started_at": "2026-11-19T20:43:49Z",
+    "finished_at": null,
+    "scope": [
+      "human_health_os/lib",
+      "human_health_os/test"
+    ],
+    "acceptance_criteria": [
+      "AC-1 each fix has a regression test",
+      "AC-2 full suites, web smoke, Linux build and runtime pass"
+    ],
+    "completed_steps": [
+      "fixes 4dad009"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox, Safari, real screen readers NOT TESTED"
+    ],
+    "depends_on": [
+      "F004-S2"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

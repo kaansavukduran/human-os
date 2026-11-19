@@ -3,9 +3,53 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "Q001",
+    "contract": "v0.32",
+    "run_id": "Q001@v0.32",
+    "slice": "Screen matrix in Chromium: every main screen on phone, tablet and desktop, EN/TR, palettes and 2x text; PASS/FAIL/NOT TESTED report; with F011-S3 (three-language vector parity table)",
+    "goal": "Screen matrix in Chromium: every main screen on phone, tablet and desktop, EN/TR, palettes and 2x text; PASS/FAIL/NOT TESTED report",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "730a69d",
+    "app_revision": null,
+    "started_at": "2026-11-19T18:40:00Z",
+    "finished_at": null,
+    "scope": [
+      "tools/flutter_screen_matrix.mjs",
+      "reports/runtime/screen-matrix",
+      "human_health_os/lib/src/presentation/navigation/app_shell.dart",
+      "tools/verify_contracts.py",
+      "packages/domain"
+    ],
+    "acceptance_criteria": [
+      "AC-1 every main screen opened at 5 viewports in EN/TR with palettes and 2x text",
+      "AC-2 each FAIL fixed with a regression test or explained",
+      "AC-3 73/73 vectors in Dart, TS and Python",
+      "AC-4 gates pass"
+    ],
+    "completed_steps": [
+      "F011-S3 7097bb5",
+      "Q001 0a45dcd (132/132 cells)"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox, Safari, real screen readers NOT TESTED"
+    ],
+    "depends_on": [
+      "R015"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

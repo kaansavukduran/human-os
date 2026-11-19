@@ -44,3 +44,10 @@ flutter:
         - asset: assets/fonts/AtkinsonHyperlegibleNext-Regular.ttf
         - asset: assets/fonts/AtkinsonHyperlegibleNext-Bold.ttf
           weight: 700
+    # Lexend (U031-S2, D-042): SIL OFL 1.1, static Regular and SemiBold
+    # instanced from google/fonts ofl/lexend/Lexend[wght].ttf.
+    - family: Lexend
+      fonts:
+        - asset: assets/fonts/Lexend-Regular.ttf
+        - asset: assets/fonts/Lexend-SemiBold.ttf
+          weight: 600

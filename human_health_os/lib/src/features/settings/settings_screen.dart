@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/human_os_app.dart' show fontFamilyFor;
 import '../../app/appearance_scope.dart';
 import '../../config/app_config.dart';
 import '../../domain/settings/appearance.dart';
@@ -190,10 +191,21 @@ class SettingsScreen extends StatelessWidget {
                     (FontChoice.system, s.settingsSystem),
                     (FontChoice.legible, s.fontLegible),
                     (FontChoice.dyslexic, s.fontDyslexic),
+                    (FontChoice.lexend, s.fontLexend),
                   ],
                   a.font,
                   (v) => set(a.copyWith(font: v)),
                 ),
+                const SizedBox(height: 12),
+                Text(s.fontPreviewNote, style: text.bodySmall),
+                const SizedBox(height: 4),
+                for (final (f, label) in [
+                  (FontChoice.system, s.settingsSystem),
+                  (FontChoice.legible, s.fontLegible),
+                  (FontChoice.dyslexic, s.fontDyslexic),
+                  (FontChoice.lexend, s.fontLexend),
+                ])
+                  _FontPreview(choice: f, label: label),
                 SwitchListTile(
                   key: const ValueKey('set-wide-spacing'),
                   contentPadding: EdgeInsets.zero,
@@ -764,6 +776,40 @@ class _TodayLayout extends StatelessWidget {
           child: Text(s.settingsResetToday),
         ),
       ],
+    );
+  }
+}
+
+/// One line of Turkish letters in one font, so the choice is seen before it
+/// is made. The device font is named from the platform's own type scale, so
+/// its line does not take on the font chosen now.
+class _FontPreview extends StatelessWidget {
+  const _FontPreview({required this.choice, required this.label});
+
+  static const sample = 'Çok güzel şiir: ğ ı İ ö ş ü';
+
+  final FontChoice choice;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final family =
+        fontFamilyFor(choice) ??
+        Typography.material2021(platform: theme.platform)
+            .black
+            .bodyLarge
+            ?.fontFamily;
+    return Padding(
+      key: ValueKey('font-preview-${choice.name}'),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Semantics(
+        label: label,
+        child: Text(
+          sample,
+          style: theme.textTheme.bodyLarge?.copyWith(fontFamily: family),
+        ),
+      ),
     );
   }
 }

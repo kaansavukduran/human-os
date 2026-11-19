@@ -1448,6 +1448,12 @@ class S {
   );
   String get fontDyslexic =>
       _t('For dyslexia (OpenDyslexic)', 'Disleksi için (OpenDyslexic)');
+  String get fontLexend =>
+      _t('Wide letters (Lexend)', 'Geniş harfler (Lexend)');
+  String get fontPreviewNote => _t(
+    'Each font, with Turkish letters:',
+    'Her yazı tipi, Türkçe harflerle:',
+  );
   String get settingsReduceMotion => _t(
     'Less motion: pages open without sliding',
     'Daha az hareket: sayfalar kaymadan açılır',

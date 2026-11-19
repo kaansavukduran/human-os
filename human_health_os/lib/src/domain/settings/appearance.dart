@@ -35,8 +35,10 @@ enum Density { comfortable, compact }
 
 /// The reading font: the device's own, a highly legible face for low
 /// vision (Atkinson Hyperlegible Next) or a face designed for dyslexia
-/// (OpenDyslexic). Both are bundled (D-025).
-enum FontChoice { system, legible, dyslexic }
+/// (OpenDyslexic), both bundled (D-025), or Lexend, the face of the owner's
+/// YKSmania app (U031-S2, D-042), bundled too. New values go at the end; an
+/// older build reads a value it does not know as [FontChoice.system].
+enum FontChoice { system, legible, dyslexic, lexend }
 
 /// Explicitly visited tools, never inferred reading or health outcomes.
 enum DiscoveryStep { settings, glossary, howTo }

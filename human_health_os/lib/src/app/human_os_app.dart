@@ -223,6 +223,7 @@ String? fontFamilyFor(FontChoice f) => switch (f) {
   FontChoice.system => null,
   FontChoice.legible => 'AtkinsonHyperlegibleNext',
   FontChoice.dyslexic => 'OpenDyslexic',
+  FontChoice.lexend => 'Lexend',
 };
 
 class _Scaled extends TextScaler {

@@ -3,55 +3,9 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "IMPLEMENTING",
+  "development_state": "READY",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": {
-    "forge_id": "U031",
-    "contract": "v0.32",
-    "run_id": "U031@v0.32",
-    "slice": "YKSmania interface logic: named palettes (Matrix, Axolotl, Trans) with AA contrast, optional Lexend, area intros and term popovers, guided empty states, rebuild optimisations",
-    "goal": "Human OS follows the YKSmania interface logic where it fits a health app: named palettes with live preview and AA contrast, optional Lexend, every area explains itself to someone with no prior knowledge, term popovers, guided empty states, named loading, lighter rebuilds; no XP, streaks or judging colours.",
-    "status": "IMPLEMENTING",
-    "baseline_commit": "95e6761",
-    "app_revision": "2f28cf9",
-    "started_at": "2026-11-19T16:45:00Z",
-    "finished_at": null,
-    "scope": [
-      "human_health_os/lib",
-      "human_health_os/test",
-      "human_health_os/assets/fonts",
-      "tools/flutter_web_smoke.mjs"
-    ],
-    "acceptance_criteria": [
-      "AC-1 palettes persist additively and pass WCAG AA in normal and high contrast",
-      "AC-2 Lexend bundled offline with OFL (D-042)",
-      "AC-3 every area shows what it is, what you can do and what it never does",
-      "AC-4 full suites, web smoke, Linux build and runtime pass"
-    ],
-    "completed_steps": [
-      "S1 palettes 389c01d",
-      "S2 Lexend 2f41a2e",
-      "S3 understanding 5b1c13c"
-    ],
-    "last_verified_gate": null,
-    "next_action": "S4 performance and slop audit, then gates",
-    "files_touched": [],
-    "migration_ids": [],
-    "evidence_ids": [],
-    "verified_gates": [],
-    "blocker": null,
-    "result": null,
-    "limitations": [
-      "real devices, Firefox and Safari NOT TESTED"
-    ],
-    "depends_on": [
-      "U030"
-    ],
-    "review": null,
-    "out_of_scope": [
-      "XP, streaks, celebration, study timer from YKSmania (would judge or gamify health data)"
-    ]
-  },
+  "active_forge": null,
   "suspended_forges": [
     {
       "forge_id": "F015-L1",
@@ -62,7 +16,7 @@
       "next_action": "add libgles2 / libGLESv2.so.2()(64bit) dependencies, adopt D-012 names, rebuild staging3, rerun the Linux matrix incl. Ubuntu 22.04"
     }
   ],
-  "last_completed_forge": "U030@v0.32 (2026-11-19, source revision 3540a9cdd1d4)",
+  "last_completed_forge": "U031@v0.32 (2026-11-19, source revision faad44aa5afd)",
   "baseline": {
     "git_commit": "254c534f10b0a5d01e96edcc0bcb5630fbba6936",
     "working_tree": "clean at v0.32 Phase 0 start (only docs/handoff/v0.32 untracked)",
@@ -75,93 +29,93 @@
   "verified_gates": [
     {
       "gate": "flutter pub get",
-      "evidence_id": "EV-TEST-F007-1037",
+      "evidence_id": "EV-TEST-F007-1050",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
       "gate": "dart format --set-exit-if-changed . (0 changed)",
-      "evidence_id": "EV-TEST-F007-1038",
+      "evidence_id": "EV-TEST-F007-1051",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
       "gate": "flutter analyze (no issues)",
-      "evidence_id": "EV-TEST-F007-1039",
+      "evidence_id": "EV-TEST-F007-1052",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
-      "gate": "flutter test, TZ=UTC (905 PASS, 1 skipped)",
-      "evidence_id": "EV-TEST-F007-1040",
+      "gate": "flutter test, TZ=UTC (945 PASS, 1 skipped)",
+      "evidence_id": "EV-TEST-F007-1053",
       "criterion": "AC-1..AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
       "gate": "state/evidence tooling unit tests",
-      "evidence_id": "EV-TEST-F007-1041",
+      "evidence_id": "EV-TEST-F007-1054",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
       "gate": "flutter build web --release --no-web-resources-cdn (development profile) COMPILED",
-      "evidence_id": "EV-BUILD-F007-1042",
+      "evidence_id": "EV-BUILD-F007-1055",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
-      "gate": "Playwright smoke in Chromium (135 checks): Today, Timeline, Labs through its new add sheet, measurements, genetics, backup, every area; no console errors, no external requests",
-      "evidence_id": "EV-RUNTIME-F007-1043",
+      "gate": "Playwright smoke in Chromium (135 checks): Today, Timeline, Labs add sheet, measurements, genetics, backup, every area with its new intro; no console errors, no external requests",
+      "evidence_id": "EV-RUNTIME-F007-1056",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
       "gate": "Linux integration on real files (9 PASS)",
-      "evidence_id": "EV-TEST-F007-1044",
+      "evidence_id": "EV-TEST-F007-1057",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
       "gate": "flutter build linux --release (development profile) COMPILED",
-      "evidence_id": "EV-BUILD-F007-1045",
+      "evidence_id": "EV-BUILD-F007-1058",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
       "gate": "Linux release binary on the schema-5 fixture for a returning person (Xvfb): vault and display preferences unchanged, no other files, no error events",
-      "evidence_id": "EV-RUNTIME-F007-1046",
+      "evidence_id": "EV-RUNTIME-F007-1059",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
-      "gate": "flutter test with TZ=America/New_York (906 PASS)",
-      "evidence_id": "EV-TEST-F007-1047",
+      "gate": "flutter test with TZ=America/New_York (946 PASS)",
+      "evidence_id": "EV-TEST-F007-1060",
       "criterion": "AC-1..AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
       "gate": "contracts verification (TS reference)",
-      "evidence_id": "EV-TEST-F007-1048",
+      "evidence_id": "EV-TEST-F007-1061",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     },
     {
       "gate": "pnpm test",
-      "evidence_id": "EV-TEST-F007-1049",
+      "evidence_id": "EV-TEST-F007-1062",
       "criterion": "AC-4",
-      "source_revision": "3540a9cdd1d42257f74e321a5306e53ad4b2855a",
+      "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
       "result": "PASS"
     }
   ],
@@ -194,16 +148,16 @@
     }
   ],
   "next_recommended_forge": {
-    "forge_id": "U031",
+    "forge_id": "R015",
     "contract": "v0.32",
-    "run_id": "U031@v0.32",
-    "slice": "YKSmania interface logic: named palettes (Matrix, Axolotl, Trans) with AA contrast, optional Lexend, area intros and term popovers, guided empty states, rebuild optimisations",
-    "why": "Owner asked for the YKSmania interface logic, themes and zero-prior-knowledge understanding (2026-11-19).",
+    "run_id": "R015@v0.32",
+    "slice": "Review fixes for U031: Show on Timeline persists under accessible navigation, the date line refreshes on resume, a true Aion line on memory-only web",
+    "why": "Independent read-only review of U031 found two should-fix defects and one nit.",
     "depends_on": [
-      "U030"
+      "U031"
     ]
   },
-  "updated_at": "2026-11-19T16:40:00Z",
+  "updated_at": "2026-11-19T18:10:00Z",
   "authoritative_sources": {
     "product_semantics": "docs/handoff/v0.24/LONGEVITY_APP_MASTER_HANDOFF_v0.24.md",
     "process_master": "docs/handoff/v0.32/ (D-013); v0.31 superseded (D-011)",
@@ -12861,6 +12815,209 @@
       "review": "Audit MUST items fixed with 21 regression tests (u030_read_failed_test); dark default and system font (AIONIA v1.4/v1.7 §19); real phones, tablets, Windows, macOS, Firefox and Safari NOT TESTED",
       "out_of_scope": [
         "pixel art, lore, gamepad (games only under AIONIA §11/§14.12)"
+      ]
+    },
+    "U031@v0.32": {
+      "forge_id": "U031",
+      "contract": "v0.32",
+      "run_id": "U031@v0.32",
+      "slice": "YKSmania interface logic: named palettes (Matrix, Axolotl, Trans) with AA contrast, optional Lexend, area intros and term popovers, guided empty states, rebuild optimisations",
+      "goal": "Human OS follows the YKSmania interface logic where it fits a health app: named palettes with live preview and AA contrast, optional Lexend, every area explains itself to someone with no prior knowledge, term popovers, guided empty states, named loading, lighter rebuilds; no XP, streaks or judging colours.",
+      "status": "DONE",
+      "baseline_commit": "95e6761",
+      "app_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+      "started_at": "2026-11-19T16:45:00Z",
+      "finished_at": "2026-11-19T18:10:00Z",
+      "scope": [
+        "human_health_os/lib",
+        "human_health_os/test",
+        "human_health_os/assets/fonts",
+        "tools/flutter_web_smoke.mjs"
+      ],
+      "acceptance_criteria": [
+        "AC-1 palettes persist additively and pass WCAG AA in normal and high contrast",
+        "AC-2 Lexend bundled offline with OFL (D-042)",
+        "AC-3 every area shows what it is, what you can do and what it never does",
+        "AC-4 full suites, web smoke, Linux build and runtime pass"
+      ],
+      "completed_steps": [
+        "S1 palettes 389c01d",
+        "S2 Lexend 2f41a2e",
+        "S3 understanding 5b1c13c",
+        "GATES: 13 receipts on clean tree faad44a, all PASS"
+      ],
+      "last_verified_gate": "EV-TEST-F007-1062",
+      "next_action": null,
+      "files_touched": [
+        "human_health_os/assets/fonts/Lexend-OFL.txt",
+        "human_health_os/assets/fonts/Lexend-Regular.ttf",
+        "human_health_os/assets/fonts/Lexend-SemiBold.ttf",
+        "human_health_os/lib/src/app/appearance_scope.dart",
+        "human_health_os/lib/src/app/bootstrap.dart",
+        "human_health_os/lib/src/app/human_os_app.dart",
+        "human_health_os/lib/src/domain/guide/glossary.dart",
+        "human_health_os/lib/src/domain/settings/appearance.dart",
+        "human_health_os/lib/src/features/activity/activity_screen.dart",
+        "human_health_os/lib/src/features/common/planned_destination_screen.dart",
+        "human_health_os/lib/src/features/conditions/conditions_screen.dart",
+        "human_health_os/lib/src/features/documents/documents_screen.dart",
+        "human_health_os/lib/src/features/guide/glossary_screen.dart",
+        "human_health_os/lib/src/features/labs/labs_screen.dart",
+        "human_health_os/lib/src/features/medications/medications_screen.dart",
+        "human_health_os/lib/src/features/nutrition/nutrition_screen.dart",
+        "human_health_os/lib/src/features/onboarding/first_run_screen.dart",
+        "human_health_os/lib/src/features/preventive/preventive_screen.dart",
+        "human_health_os/lib/src/features/settings/settings_screen.dart",
+        "human_health_os/lib/src/features/timeline/timeline_screen.dart",
+        "human_health_os/lib/src/features/today/discovery_card.dart",
+        "human_health_os/lib/src/features/today/measurements_card.dart",
+        "human_health_os/lib/src/features/today/today_screen.dart",
+        "human_health_os/lib/src/features/today/weight_card.dart",
+        "human_health_os/lib/src/l10n/strings.dart",
+        "human_health_os/lib/src/navigation/app_shell.dart",
+        "human_health_os/lib/src/navigation/destination_switch.dart",
+        "human_health_os/lib/src/navigation/destinations.dart",
+        "human_health_os/lib/src/presentation/theme/human_os_theme.dart",
+        "human_health_os/lib/src/presentation/theme/palettes.dart",
+        "human_health_os/lib/src/presentation/widgets/aion.dart",
+        "human_health_os/lib/src/presentation/widgets/area_intro.dart",
+        "human_health_os/lib/src/presentation/widgets/entry_list.dart",
+        "human_health_os/lib/src/presentation/widgets/first_step.dart",
+        "human_health_os/lib/src/presentation/widgets/loading_line.dart",
+        "human_health_os/lib/src/presentation/widgets/term_link.dart",
+        "human_health_os/pubspec.yaml",
+        "human_health_os/test/widget/a001_aion_test.dart",
+        "human_health_os/test/widget/f010_documents_screen_test.dart",
+        "human_health_os/test/widget/u014_first_run_test.dart",
+        "human_health_os/test/widget/u030_aionia_defaults_test.dart",
+        "human_health_os/test/widget/u031_fluency_test.dart",
+        "human_health_os/test/widget/u031_lexend_test.dart",
+        "human_health_os/test/widget/u031_palette_test.dart",
+        "human_health_os/test/widget/u031_understand_test.dart",
+        "project_state/CURRENT_STATE.json",
+        "project_state/DECISIONS.md",
+        "project_state/RISKS.md"
+      ],
+      "migration_ids": [],
+      "evidence_ids": [
+        "EV-TEST-F007-1050",
+        "EV-TEST-F007-1051",
+        "EV-TEST-F007-1052",
+        "EV-TEST-F007-1053",
+        "EV-TEST-F007-1054",
+        "EV-BUILD-F007-1055",
+        "EV-RUNTIME-F007-1056",
+        "EV-TEST-F007-1057",
+        "EV-BUILD-F007-1058",
+        "EV-RUNTIME-F007-1059",
+        "EV-TEST-F007-1060",
+        "EV-TEST-F007-1061",
+        "EV-TEST-F007-1062"
+      ],
+      "verified_gates": [
+        {
+          "gate": "flutter pub get",
+          "evidence_id": "EV-TEST-F007-1050",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "dart format --set-exit-if-changed . (0 changed)",
+          "evidence_id": "EV-TEST-F007-1051",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter analyze (no issues)",
+          "evidence_id": "EV-TEST-F007-1052",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test, TZ=UTC (945 PASS, 1 skipped)",
+          "evidence_id": "EV-TEST-F007-1053",
+          "criterion": "AC-1..AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "state/evidence tooling unit tests",
+          "evidence_id": "EV-TEST-F007-1054",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter build web --release --no-web-resources-cdn (development profile) COMPILED",
+          "evidence_id": "EV-BUILD-F007-1055",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "Playwright smoke in Chromium (135 checks): Today, Timeline, Labs add sheet, measurements, genetics, backup, every area with its new intro; no console errors, no external requests",
+          "evidence_id": "EV-RUNTIME-F007-1056",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "Linux integration on real files (9 PASS)",
+          "evidence_id": "EV-TEST-F007-1057",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter build linux --release (development profile) COMPILED",
+          "evidence_id": "EV-BUILD-F007-1058",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "Linux release binary on the schema-5 fixture for a returning person (Xvfb): vault and display preferences unchanged, no other files, no error events",
+          "evidence_id": "EV-RUNTIME-F007-1059",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test with TZ=America/New_York (946 PASS)",
+          "evidence_id": "EV-TEST-F007-1060",
+          "criterion": "AC-1..AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "contracts verification (TS reference)",
+          "evidence_id": "EV-TEST-F007-1061",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        },
+        {
+          "gate": "pnpm test",
+          "evidence_id": "EV-TEST-F007-1062",
+          "criterion": "AC-4",
+          "source_revision": "faad44aa5afd710244be6f1a4638d874809a51b8",
+          "result": "PASS"
+        }
+      ],
+      "blocker": null,
+      "result": "U031_COMPLETE",
+      "limitations": [
+        "real devices, Firefox and Safari NOT TESTED"
+      ],
+      "depends_on": [
+        "U030"
+      ],
+      "review": "Independent read-only Opus review: no blocking findings; 2 should + 1 nit carried to R015",
+      "out_of_scope": [
+        "XP, streaks, celebration, study timer from YKSmania (would judge or gamify health data)"
       ]
     }
   },

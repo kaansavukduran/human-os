@@ -43,7 +43,7 @@ enum TodaySection { sleep, feeling, tools, yourData, buildFacts }
 class AppearanceSettings {
   const AppearanceSettings({
     this.language = LanguageChoice.system,
-    this.theme = ThemeChoice.system,
+    this.theme = ThemeChoice.dark,
     this.accent = AccentChoice.teal,
     this.textSize = TextSizeChoice.system,
     this.tileOrder = const [],
@@ -303,7 +303,7 @@ class AppearanceSettings {
         json['language'],
         LanguageChoice.system,
       ),
-      theme: pick(ThemeChoice.values, json['theme'], ThemeChoice.system),
+      theme: pick(ThemeChoice.values, json['theme'], ThemeChoice.dark),
       accent: pick(AccentChoice.values, json['accent'], AccentChoice.teal),
       textSize: pick(
         TextSizeChoice.values,

@@ -47,7 +47,12 @@ void main() {
     await tapKey(tester, 'set-high-contrast');
     final ctx = tester.element(find.byKey(const ValueKey('screen-settings')));
     expect(Theme.of(ctx).visualDensity, VisualDensity.compact);
-    expect(Theme.of(ctx).colorScheme.onSurface, Colors.black);
+    // High contrast: pure text colour for the theme in use (dark is the
+    // first-run default, AIONIA v1.4).
+    expect(
+      Theme.of(ctx).colorScheme.onSurface,
+      Theme.of(ctx).brightness == Brightness.dark ? Colors.white : Colors.black,
+    );
     expect(c.value.highContrast, isTrue);
     await tapKey(tester, 'set-start-timeline');
     expect(c.value.startScreen, StartScreen.timeline);

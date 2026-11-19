@@ -120,7 +120,7 @@ void main() {
     await settle(tester);
     final before = disk.writes;
     await tester.runAsync(
-      () => c.update(c.value.copyWith(theme: ThemeChoice.dark)),
+      () => c.update(c.value.copyWith(theme: ThemeChoice.light)),
     );
     expect(disk.writes, before + 1);
     expect(c.saveFailed, isFalse);

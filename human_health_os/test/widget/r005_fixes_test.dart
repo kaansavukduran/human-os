@@ -59,9 +59,9 @@ void main() {
 
   test('a failed save then a good one clears the flag', () async {
     final c = AppearanceController(FailOnce());
-    await c.update(const AppearanceSettings(theme: ThemeChoice.dark));
-    expect(c.saveFailed, isTrue);
     await c.update(const AppearanceSettings(theme: ThemeChoice.light));
+    expect(c.saveFailed, isTrue);
+    await c.update(const AppearanceSettings(theme: ThemeChoice.system));
     expect(c.saveFailed, isFalse);
   });
 

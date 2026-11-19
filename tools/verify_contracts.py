@@ -22,7 +22,15 @@ Checks:
   7. SQLite kernel migrations             — run in order with foreign keys ON, invariant probes
   8. golden-vector ID uniqueness          — v0.24 identifier-integrity rule
   9. build prompts + handoff present      — four release outputs referenced by the repo
+ 10. three-language parity table          — per engine: vectors, Dart, TS, Python PASS counts
 Every key of every `expected` object is asserted; an unknown key is a FAIL, never skipped.
+
+The parity table (F011-S3) runs the TS reference itself (vitest on packages/domain/test/golden.test.ts,
+JSON reporter) and counts the Python port's passing vectors. Dart is not run here: its column cites the
+newest recorded PASS receipt of `flutter test` (evidence/tests) when nothing it depends on (the Dart
+engines, the Dart golden test, the vector files) changed since the receipt's revision; otherwise it reads
+"see flutter test". A TS or Python count below the vector count is a FAIL; TS that cannot be started
+(no pnpm or no node_modules) is NOT_RUN, never a PASS.
 Outputs PASS / FAIL / NOT_RUN per check; exit code 1 on any FAIL.
 """
 from __future__ import annotations
@@ -31,8 +39,12 @@ import datetime
 import json
 import math
 import re
+import os
+import shutil
 import sqlite3
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -40,10 +52,25 @@ GV = ROOT / "contracts" / "golden_vectors"
 results: list[tuple[str, str, str]] = []
 NON_FINITE = "NON_FINITE_RESULT"
 ran_vectors: dict[str, int] = {}
+py_failed: dict[str, set[str]] = {}
+# catalog file -> engine ID (the Dart group names in test/domain/f011_golden_vectors_test.dart)
+ENGINES = {
+    "core_derived_vectors.json": "MP-CORE-DERIVED-1",
+    "lab_interpretation_vectors.json": "LAB-INTERPRETATION-ENGINE-1",
+    "nutrition_vectors.json": "NUTRITION-MATH-1",
+    "medication_safety_vectors.json": "MED-SAFETY-ENGINE-1",
+    "preventive_vectors.json": "PREVENTIVE-ENGINE-1",
+}
+DART_INPUTS = ["human_health_os/lib/src/domain", "human_health_os/test/domain/f011_golden_vectors_test.dart", "contracts/golden_vectors"]
 
 
 def record(name: str, status: str, detail: str = "") -> None:
     results.append((name, status, detail))
+
+
+def failed_ids(bad: list[str]) -> set[str]:
+    """Vector IDs named by failure strings ("<vector_id>.<key>..." or "<vector_id>=...")."""
+    return {re.split(r"[.=]", b, maxsplit=1)[0] for b in bad}
 
 
 def present(v) -> bool:
@@ -209,6 +236,7 @@ def check_core() -> None:
         if not ok:
             bad.append(f"{v['vector_id']}=({status},{value},{err})")
     ran_vectors["core_derived_vectors.json"] = len(cat["vectors"])
+    py_failed["core_derived_vectors.json"] = failed_ids(bad)
     record("core_derived_vectors", "FAIL" if bad else "PASS", f"{len(cat['vectors'])} vectors" + (f"; failing {bad}" if bad else ""))
 
 
@@ -422,6 +450,7 @@ def check_lab() -> None:
         if not all(finite(got[k]) for k in ("rcv_percent", "observed_percent_change", "robust_z")):
             bad.append(f"{v['vector_id']}.non_finite")
     ran_vectors["lab_interpretation_vectors.json"] = len(cat["vectors"])
+    py_failed["lab_interpretation_vectors.json"] = failed_ids(bad)
     record("lab_interpretation_vectors", "FAIL" if bad else "PASS", f"{len(cat['vectors'])} vectors" + (f"; failing {bad}" if bad else ""))
 
 
@@ -554,6 +583,7 @@ def check_nutrition() -> None:
         else:
             bad.append(f"{vid}.kind={v['kind']}")
     ran_vectors["nutrition_vectors.json"] = sum(kinds.values())
+    py_failed["nutrition_vectors.json"] = failed_ids(bad)
     detail = f"{len(cat['vectors'])} vectors ({kinds['scale']} scale, {kinds['recipe']} recipe)"
     record("nutrition_vectors", "FAIL" if bad else "PASS", detail + (f"; failing {bad}" if bad else ""))
 
@@ -721,6 +751,7 @@ def check_medication() -> None:
             else:
                 bad.append(f"{vid}.{k}=unhandled")
     ran_vectors["medication_safety_vectors.json"] = len(cat["vectors"])
+    py_failed["medication_safety_vectors.json"] = failed_ids(bad)
     record("medication_safety_vectors", "FAIL" if bad else "PASS", f"{len(cat['vectors'])} vectors" + (f"; failing {bad}" if bad else ""))
 
 
@@ -836,6 +867,7 @@ def check_preventive() -> None:
             elif a[k] != want:
                 bad.append(f"{v['vector_id']}.{k}={a[k]}")
     ran_vectors["preventive_vectors.json"] = len(cat["vectors"])
+    py_failed["preventive_vectors.json"] = failed_ids(bad)
     record("preventive_vectors", "FAIL" if bad else "PASS", f"{len(cat['vectors'])} vectors" + (f"; failing {bad}" if bad else ""))
 
 
@@ -849,6 +881,101 @@ def check_vector_total() -> None:
             missing.append(f"{f.name} ran {ran_vectors.get(f.name, 0)}/{n}")
     ran = sum(ran_vectors.values())
     record("golden_vectors(total)", "FAIL" if missing else "PASS", f"{ran}/{total} vectors ran" + (f"; not run {missing}" if missing else ""))
+
+
+# ---------------------------------------------------------------- 6b. three-language parity
+def ts_golden_results() -> tuple[dict[str, set[str]] | None, str]:
+    """({catalog: passed vector IDs}, note) from vitest on the TS reference; None when it cannot run."""
+    pnpm = shutil.which("pnpm")
+    if not pnpm or not (ROOT / "node_modules").is_dir():
+        return None, "TS NOT_RUN: pnpm or node_modules missing (run pnpm install --frozen-lockfile)"
+    with tempfile.TemporaryDirectory() as tmp:
+        out = Path(tmp) / "golden.json"
+        cmd = [pnpm, "--filter", "@hhos/domain", "exec", "vitest", "run", "test/golden.test.ts", "--reporter=json", f"--outputFile={out}"]
+        try:
+            subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=600, env={**os.environ, "CI": "1"})
+        except (OSError, subprocess.TimeoutExpired) as e:
+            return None, f"TS NOT_RUN: {type(e).__name__}: {e}"
+        if not out.exists():
+            return None, "TS NOT_RUN: vitest wrote no JSON report"
+        report = json.loads(out.read_text())
+    passed: dict[str, set[str]] = {c: set() for c in ENGINES}
+    for suite in report.get("testResults", []):
+        for t in suite.get("assertionResults", []):
+            cat = (t.get("ancestorTitles") or [""])[0].split(" ")[0] + ".json"
+            if cat in passed and t.get("status") == "passed":
+                passed[cat].add(t["title"].split(" ")[0])
+    return passed, "TS: vitest packages/domain/test/golden.test.ts"
+
+
+def git(*args: str):
+    try:
+        return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
+
+def dart_receipt() -> tuple[str | None, str]:
+    """(receipt ID, note) of the newest PASS `flutter test` receipt still current for the Dart engines."""
+    receipts = []
+    for f in (ROOT / "evidence" / "tests").glob("EV-TEST-*.json"):
+        try:
+            d = json.loads(f.read_text())
+        except (OSError, ValueError):
+            continue
+        argv = d.get("argv") or []
+        if d.get("result") != "PASS" or d.get("working_tree_dirty") or "flutter" not in argv or "test" not in argv or "integration_test" in argv:
+            continue
+        receipts.append((d.get("finished_at", ""), d["evidence_id"], d.get("source_revision", "")))
+    if not receipts:
+        return None, "Dart: no flutter test receipt recorded"
+    _, eid, rev = max(receipts)
+    diff = git("diff", "--quiet", rev, "--", *DART_INPUTS)  # receipt revision vs the working tree
+    if diff is None or diff.returncode != 0:
+        return None, f"Dart: newest flutter test receipt {eid} @{rev[:7]} is stale for the Dart engines"
+    return eid, f"Dart: receipt {eid} (flutter test PASS @{rev[:7]}, engines and vectors unchanged since)"
+
+
+def check_parity() -> None:
+    ts, ts_note = ts_golden_results()
+    dart_eid, dart_note = dart_receipt()
+    rows, bad, total = [], [], [0, 0, 0]
+    for cat, engine in ENGINES.items():
+        ids = {v["vector_id"] for v in load(cat)["vectors"]}
+        n = len(ids)
+        py = n - len(py_failed[cat] & ids) if cat in py_failed and ran_vectors.get(cat) == n else 0
+        dart = f"PASS {n}/{n} ({dart_eid})" if dart_eid else "see flutter test"
+        if ts is None:
+            ts_cell = "NOT_RUN"
+        else:
+            tp = len(ts[cat] & ids)
+            ts_cell = f"{'PASS' if tp == n else 'FAIL'} {tp}/{n}"
+            total[1] += tp
+            if tp != n:
+                bad.append(f"{engine} TS {tp}/{n} missing {sorted(ids - ts[cat])}")
+        if py != n:
+            bad.append(f"{engine} Python {py}/{n}")
+        total[0] += n
+        total[2] += py
+        rows.append((engine, str(n), dart, ts_cell, f"{'PASS' if py == n else 'FAIL'} {py}/{n}"))
+    ts_total = "NOT_RUN" if ts is None else f"{total[1]}/{total[0]}"
+    rows.append(("total", str(total[0]), f"{total[0]}/{total[0]}" if dart_eid else "see flutter test", ts_total, f"{total[2]}/{total[0]}"))
+    head = ("engine", "vectors", "Dart", "TS", "Python")
+    w = [max(len(r[i]) for r in [head, *rows]) for i in range(5)]
+
+    def line(r):
+        return "  " + " | ".join(c.ljust(w[i]) for i, c in enumerate(r)).rstrip()
+
+    print(line(head))
+    print("  " + "-+-".join("-" * x for x in w))
+    for r in rows:
+        print(line(r))
+    print(f"  {dart_note}")
+    print(f"  {ts_note}")
+    print()
+    status = "FAIL" if bad else ("NOT_RUN" if ts is None else "PASS")
+    dart_txt = f"receipt {dart_eid}" if dart_eid else "see flutter test"
+    record("three_language_parity", status, f"TS {ts_total}, Python {total[2]}/{total[0]}, Dart {dart_txt}" + (f"; mismatch {bad}" if bad else ""))
 
 
 # ---------------------------------------------------------------- 7. SQLite kernel
@@ -919,7 +1046,7 @@ def check_outputs() -> None:
 
 
 def main() -> int:
-    for fn in (check_core, check_lab, check_nutrition, check_medication, check_preventive, check_vector_total, check_sqlite, check_ids, check_new_canonical_ids, check_outputs):
+    for fn in (check_core, check_lab, check_nutrition, check_medication, check_preventive, check_vector_total, check_parity, check_sqlite, check_ids, check_new_canonical_ids, check_outputs):
         try:
             fn()
         except Exception as e:  # noqa: BLE001 — a crashing check is a FAIL, never silently skipped

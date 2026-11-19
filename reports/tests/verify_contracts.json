@@ -30,6 +30,11 @@
     "detail": "73/73 vectors ran"
   },
   {
+    "check": "three_language_parity",
+    "status": "PASS",
+    "detail": "TS 73/73, Python 73/73, Dart receipt EV-TEST-F007-1073"
+  },
+  {
     "check": "sqlite_kernel_migrations",
     "status": "PASS",
     "detail": "1 migration(s), FK on"

@@ -6,9 +6,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   NON_FINITE_RESULT,
+  addDays,
+  assessSafety,
+  assessService,
   bmi,
   combineAmounts,
   computeRecipe,
+  daysBetween,
   interpretLabResult,
   median,
   ok,
@@ -19,8 +23,11 @@ import {
   scaleFood,
   trainingVolumeLoad,
   type FoodSnapshot,
+  type InteractionRule,
   type LabInterpretationInput,
   type ModelRef,
+  type PreventiveInput,
+  type ProductConcept,
 } from '../src/index.ts';
 
 const fns = { mean: rollingMean, median: rollingMedian } as const;
@@ -243,5 +250,103 @@ describe('inputs are a frozen copy', () => {
     sets[0]!.reps = 1;
     expect((r.inputs.sets as Array<{ reps: number }>)[0]!.reps).toBe(10);
     expect(r.value).toBe(500);
+  });
+});
+
+// F011-S3: the two remaining groups of the Dart hardening test, for the behaviour TS shares. The Dart
+// assessments also carry missingInputs (and preventive limitations); those are Dart-only additions to the
+// TS shape (see the headers of medication_safety.dart and preventive.dart), so they are not asserted here.
+describe('medication safety wording', () => {
+  const pack = { pack_id: 'P', version: '1', status: 'SYNTHETIC' };
+  it('no rule found is never a guarantee of safety', () => {
+    const a = assessSafety([], [{ entry_id: 'E', product_id: 'NOT-IN-CATALOGUE', kind: 'TAKEN', servings_per_day: 1, time: null }], [], [], pack);
+    expect(a.findings).toHaveLength(1);
+    expect(a.findings[0]!.type).toBe('CLEAR_NO_MATCH_FOUND');
+    expect(a.findings[0]!.guaranteed_safe).toBe(false);
+    expect(a.findings[0]!.note).toContain('NOT a guarantee of safety');
+    expect(a.limitations.join(' ')).toContain('No rule found ≠ guaranteed safe');
+    expect(a.limitations.join(' ')).toContain('never prescribes');
+  });
+
+  it('a timing rule without an intake time asks for context', () => {
+    const product = (id: string, ing: string): ProductConcept => ({
+      product_id: id,
+      name: id.toLowerCase(),
+      route: 'ORAL',
+      label_version: 'L1',
+      composition_known: true,
+      ingredients: [{ ingredient_id: ing, label: ing.toLowerCase(), amount: 1, unit: 'mg', basis: 'AS_LABELED', mapping: 'REVIEWED' }],
+    });
+    const rule: InteractionRule = {
+      rule_id: 'T',
+      version: '1',
+      source: 'SYN',
+      kind: 'TIMING_SEPARATION',
+      participants: ['I1', 'I2'],
+      route: null,
+      min_separation_minutes: 120,
+      action: 'SEPARATE_TIMING',
+      test_only: true,
+    };
+    const a = assessSafety(
+      [product('A', 'I1'), product('B', 'I2')],
+      [
+        { entry_id: 'E1', product_id: 'A', kind: 'PLAN', servings_per_day: 1, time: '08:00' },
+        { entry_id: 'E2', product_id: 'B', kind: 'PLAN', servings_per_day: 1, time: null },
+      ],
+      [rule],
+      [],
+      pack,
+    );
+    expect(a.findings).toHaveLength(1);
+    expect(a.findings[0]!.type).toBe('INSUFFICIENT_CONTEXT');
+    expect(a.findings[0]!.combined_reason).toBe('MISSING_TIME');
+    expect(a.findings[0]!.action).toBeNull();
+  });
+
+  it('mass units combine into the largest unit; IU never converts', () => {
+    const okSum = combineAmounts([
+      { amount: 500, unit: 'mcg', basis: 'AS_LABELED' },
+      { amount: 1, unit: 'mg', basis: 'AS_LABELED' },
+    ]);
+    expect(okSum.value).toBe(1.5);
+    expect(okSum.unit).toBe('mg');
+    const iu = combineAmounts([
+      { amount: 400, unit: 'IU', basis: 'AS_LABELED' },
+      { amount: 1, unit: 'mg', basis: 'AS_LABELED' },
+    ]);
+    expect(iu.value).toBeNull();
+    expect(iu.reason).toBe('UNIT_CONVERSION_RULE_NOT_INSTALLED');
+    const undisclosed = combineAmounts([
+      { amount: null, unit: 'mg', basis: 'AS_LABELED' },
+      { amount: 1, unit: 'mg', basis: 'AS_LABELED' },
+    ]);
+    expect(undisclosed.reason).toBe('UNDISCLOSED_AMOUNT');
+  });
+});
+
+describe('preventive engine', () => {
+  const input: PreventiveInput = {
+    as_of: '2026-10-06',
+    jurisdiction: null,
+    age_years: null,
+    risks: [],
+    anatomy: [],
+    history: 'UNKNOWN',
+    completions: [],
+    contraindicated: false,
+    due_soon_window_days: 30,
+  };
+  it('no active pack is reported, never assumed', () => {
+    const a = assessService('SVC', [], input);
+    expect(a.assessment_status).toBe('NO_ACTIVE_PACK');
+    expect(a.next_due_date).toBeNull();
+    expect(a.recommendation_mode).toBeNull();
+  });
+
+  it('calendar arithmetic is timezone-free and leap-aware', () => {
+    expect(addDays('2026-03-01', 730)).toBe('2028-02-29');
+    expect(daysBetween('2026-10-06', '2026-10-20')).toBe(14);
+    expect(addDays('2026-12-31T23:59:59Z', 1)).toBe('2027-01-01');
   });
 });

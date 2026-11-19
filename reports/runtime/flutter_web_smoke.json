@@ -1,9 +1,9 @@
 {
-  "ran_at": "2026-11-19T20:53:06.475Z",
-  "git_head": "17190242bd2b71267f048ab283fdb69f67fef5dc",
+  "ran_at": "2026-11-19T21:17:05.124Z",
+  "git_head": "bb08b9e6bd2515a064738d3ea9aa1ce19e4535bc",
   "working_tree_dirty": false,
   "build": "/home/user/claudereponewscience/human_health_os/build/web",
-  "main_dart_js_sha256": "1a1df03429d08cc25debdb4b8b553a0d4bbb032b6eace2583d37fb7b0caa0d43",
+  "main_dart_js_sha256": "d804703f9a08681d42683a0d16ce0a675b5ecda6f3cecfa1ac256105c59c6f76",
   "browser": "chromium 153.0.8010.12",
   "runs": [
     {
@@ -185,7 +185,7 @@
     {
       "name": "desktop-en: backup downloads with a matching checksum",
       "status": "PASS",
-      "detail": "human-os-backup-44c9358c-20261119T205031Z.hhosbackup.json"
+      "detail": "human-os-backup-0b59b0e0-20261119T211416Z.hhosbackup.json"
     },
     {
       "name": "desktop-en: backup holds the saved weight and lab result",
@@ -206,6 +206,26 @@
       "name": "desktop-en: backup holds the height as typed, with its measured time, at schema 5",
       "status": "PASS",
       "detail": "schemas=3,4,5"
+    },
+    {
+      "name": "desktop-en: chosen backup previewed before anything changes (4 records)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "desktop-en: chosen backup restored through the staged gate",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "desktop-en: restored records come back after a reload (blood pressure, height on the Timeline)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "desktop-en: restore page without page or console errors",
+      "status": "PASS",
+      "detail": ""
     },
     {
       "name": "desktop-en: navigates to Medications",
@@ -460,7 +480,7 @@
     {
       "name": "phone-en: backup downloads with a matching checksum",
       "status": "PASS",
-      "detail": "human-os-backup-4021b723-20261119T205243Z.hhosbackup.json"
+      "detail": "human-os-backup-90b56456-20261119T211635Z.hhosbackup.json"
     },
     {
       "name": "phone-en: backup holds the saved weight and lab result",
@@ -481,6 +501,26 @@
       "name": "phone-en: backup holds the height as typed, with its measured time, at schema 5",
       "status": "PASS",
       "detail": "schemas=3,4,5"
+    },
+    {
+      "name": "phone-en: chosen backup previewed before anything changes (4 records)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "phone-en: chosen backup restored through the staged gate",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "phone-en: restored records come back after a reload (blood pressure, height on the Timeline)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "phone-en: restore page without page or console errors",
+      "status": "PASS",
+      "detail": ""
     },
     {
       "name": "phone-en: navigates to Medications",

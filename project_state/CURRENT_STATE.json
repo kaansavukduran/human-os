@@ -3,9 +3,48 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "R015",
+    "contract": "v0.32",
+    "run_id": "R015@v0.32",
+    "slice": "Review fixes for U031: Show on Timeline persists under accessible navigation, the date line refreshes on resume, a true Aion line on memory-only web",
+    "goal": "Review fixes for U031: Show on Timeline persists under accessible navigation, the date line refreshes on resume, a true Aion line on memory-only web",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "12af323",
+    "app_revision": null,
+    "started_at": "2026-11-19T18:15:00Z",
+    "finished_at": null,
+    "scope": [
+      "human_health_os/lib/src/features/today",
+      "human_health_os/lib/src/l10n",
+      "human_health_os/test"
+    ],
+    "acceptance_criteria": [
+      "AC-1 each review finding has a regression test",
+      "AC-2 full suites and gates pass"
+    ],
+    "completed_steps": [
+      "fixes f769f1b"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real screen readers NOT TESTED"
+    ],
+    "depends_on": [
+      "U031"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

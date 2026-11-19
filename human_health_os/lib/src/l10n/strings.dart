@@ -2662,8 +2662,8 @@ class S {
     'Başka bir uygulamaya geçince, pencereyi küçültünce ya da ekran kapanınca.',
   );
   String get lockExplain => _t(
-    'When it locks, the key is dropped from memory and the vault opens again only with your passphrase or recovery key. Every saved record is kept; text you have not saved is cleared. A notice appears 30 seconds before, and any tap, click or key press keeps the app open. Typing on a phone’s on-screen keyboard alone does not count: tap the screen.',
-    'Kilitlenince anahtar bellekten silinir; kasa yalnız parolan ya da kurtarma anahtarınla yeniden açılır. Kaydedilen her kayıt korunur; kaydetmediğin yazılar silinir. 30 saniye önce bir uyarı çıkar; herhangi bir dokunuş, tıklama ya da tuş uygulamayı açık tutar. Telefonun ekran klavyesinde yazmak tek başına sayılmaz: ekrana dokun.',
+    'When it locks, the key is dropped from memory and the vault opens again only with your passphrase or recovery key. Every saved record is kept; text you have not saved is cleared. A notice appears 30 seconds before. Any tap, click, scroll or key press keeps the app open, and so do typing in a field (an on-screen keyboard too), moving between fields and a screen reader’s gestures. Lock-when-hidden waits 2 seconds and does not lock while a system file chooser or save dialog is open.',
+    'Kilitlenince anahtar bellekten silinir; kasa yalnız parolan ya da kurtarma anahtarınla yeniden açılır. Kaydedilen her kayıt korunur; kaydetmediğin yazılar silinir. 30 saniye önce bir uyarı çıkar. Herhangi bir dokunuş, tıklama, kaydırma ya da tuş uygulamayı açık tutar; bir alana yazmak (ekran klavyesiyle de), alanlar arasında geçmek ve ekran okuyucu hareketleri de öyle. Gizlenince kilitleme 2 saniye bekler; sistemin dosya seçme ya da kaydetme penceresi açıkken kilitlemez.',
   );
   String get lockUnencrypted => _t(
     'Not available in this build: it saves without encryption (a development build), so there is no key to drop. The lock works in builds with an encrypted vault.',
@@ -2674,8 +2674,8 @@ class S {
     'Bu oturumda yok: şifreli kasada hiçbir şey tutulmuyor, kilitlenecek bir şey yok. Uygulamayı kapatmak bu oturumu siler.',
   );
   String lockWarning(int seconds) => _t(
-    'Locking in $seconds s. Keep working to stay open. Text you have not saved will be cleared.',
-    '$seconds sn içinde kilitleniyor. Açık kalması için kullanmaya devam et. Kaydetmediğin yazılar silinecek.',
+    'Locking in $seconds s. Tap the screen or press a key to stay open. Text you have not saved will be cleared.',
+    '$seconds sn içinde kilitleniyor. Açık kalması için ekrana dokun ya da bir tuşa bas. Kaydetmediğin yazılar silinecek.',
   );
   String get lockWarningSpoken => _t(
     'Human OS locks in 30 seconds. Tap, click or press a key to stay open. Text you have not saved will be cleared.',

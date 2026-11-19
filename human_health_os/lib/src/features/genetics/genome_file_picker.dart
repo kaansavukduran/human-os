@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 
+import '../../app/app_lock.dart' show withAppLockHeld;
+
 /// A file the person chose, read only when asked.
 class PickedGenomeFile {
   const PickedGenomeFile({
@@ -36,7 +38,10 @@ class SystemGenomeFilePicker implements GenomeFilePicker {
 
   @override
   Future<PickedGenomeFile?> pick({required String title}) async {
-    final f = await FilePicker.pickFile(dialogTitle: title);
+    // The chooser hides the app on phones: no lock while it is open.
+    final f = await withAppLockHeld(
+      () => FilePicker.pickFile(dialogTitle: title),
+    );
     if (f == null) return null;
     return PickedGenomeFile(
       name: f.name,

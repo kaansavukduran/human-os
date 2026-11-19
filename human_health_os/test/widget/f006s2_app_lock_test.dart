@@ -3,11 +3,13 @@
 // inactivity, or when the app is hidden) closes the vault, drops the key
 // and the decrypted state, keeps every saved record and writes nothing.
 import 'dart:math';
+import 'dart:ui' show SemanticsAction, SemanticsActionEvent;
 
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:human_health_os/src/app/app_lock.dart';
 import 'package:human_health_os/src/app/appearance_scope.dart';
 import 'package:human_health_os/src/app/bootstrap.dart';
 import 'package:human_health_os/src/app/human_os_app.dart';
@@ -19,6 +21,8 @@ import 'package:human_health_os/src/data/local/vault_envelope.dart';
 import 'package:human_health_os/src/domain/ports/health_repository.dart';
 import 'package:human_health_os/src/domain/ports/storage_status.dart';
 import 'package:human_health_os/src/domain/settings/appearance.dart';
+import 'package:human_health_os/src/features/today/backup_file_picker.dart'
+    show SystemBackupFilePicker;
 import 'package:human_health_os/src/features/vault/vault_gate_screen.dart';
 import 'package:human_health_os/src/navigation/app_shell.dart'
     show openSettingsOn;
@@ -566,8 +570,8 @@ void main() {
       await closeApp(tester);
     });
 
-    testWidgets('lock when hidden: only when turned on; locks at once on the '
-        'system "hidden" event', (tester) async {
+    testWidgets('lock when hidden: only when turned on; locks once the app '
+        'stayed hidden for the 2 s grace period', (tester) async {
       addTearDown(
         () => tester.binding.handleAppLifecycleStateChanged(
           AppLifecycleState.resumed,
@@ -577,12 +581,15 @@ void main() {
       final c = await launchLock(tester, disk);
       await createVault(tester);
 
-      Future<void> hideAndShow() async {
+      Future<void> hideAndShow([
+        Duration away = const Duration(seconds: 3),
+      ]) async {
         tester.binding.handleAppLifecycleStateChanged(
           AppLifecycleState.inactive,
         );
         tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
         await tester.pump();
+        await tester.pump(away);
         tester.binding.handleAppLifecycleStateChanged(
           AppLifecycleState.inactive,
         );
@@ -603,6 +610,10 @@ void main() {
       await c.update(c.value.copyWith(lockWhenHidden: true));
       await tester.pump();
       final before = disk.raw.text;
+      // A brief system overlay (hidden for under 2 s) does not lock.
+      await hideAndShow(const Duration(milliseconds: 1500));
+      expect(find.byKey(const ValueKey('screen-today')), findsOneWidget);
+      expect(disk.opened.single.repository.isClosed, isFalse);
       await hideAndShow();
       expect(find.byKey(const ValueKey('vault-gate-unlock')), findsOneWidget);
       expect(disk.opened.single.repository.isClosed, isTrue);
@@ -611,6 +622,239 @@ void main() {
       await unlockAgain(tester);
       expect(find.byKey(const ValueKey('screen-today')), findsOneWidget);
       await closeApp(tester);
+    });
+  });
+
+  group('R020 app lock: what counts, system dialogs, snack bars', () {
+    Future<void> hide(WidgetTester tester) async {
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      await tester.pump();
+    }
+
+    Future<void> show(WidgetTester tester) async {
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+    }
+
+    Finder banner() => find.byKey(const ValueKey('app-lock-banner'));
+
+    testWidgets('a screen reader action, a focus change and typing in the '
+        'focused field (no touch) each count as use; the banner says what '
+        'keeps it open', (tester) async {
+      final disk = LockDisk();
+      final c = await launchLock(tester, disk);
+      await createVault(tester);
+      await c.update(c.value.copyWith(lockAfterMinutes: 1));
+      await tester.pump();
+
+      // The banner comes 30 s after the last use: each step below is used
+      // 29 s after the one before and is followed by 29 s more, so without
+      // it the banner would show.
+      await tester.pump(const Duration(seconds: 29));
+      expect(banner(), findsNothing);
+      Future<void> keepsOpen(Future<void> Function() use) async {
+        await use();
+        await tester.pump(const Duration(seconds: 29));
+        expect(banner(), findsNothing);
+      }
+
+      // TalkBack/VoiceOver: the platform sends a semantics action (here
+      // the accessibility focus moving), never a pointer event.
+      await keepsOpen(() async {
+        tester.binding.platformDispatcher.onSemanticsActionEvent!(
+          const SemanticsActionEvent(
+            type: SemanticsAction.didGainAccessibilityFocus,
+            viewId: 0,
+            nodeId: 0,
+          ),
+        );
+        await tester.pump();
+      });
+      // A focus change (moved by code, as Tab or a screen reader would).
+      final field = find.descendant(
+        of: find.byKey(const ValueKey('weight-input')),
+        matching: find.byType(EditableText),
+      );
+      await keepsOpen(() async {
+        tester.state<EditableTextState>(field).widget.focusNode.requestFocus();
+        await tester.pump();
+      });
+      // Typing on an on-screen keyboard: only the text changes.
+      await keepsOpen(() async {
+        tester.testTextInput.enterText('7');
+        await tester.pump();
+      });
+      await keepsOpen(() async {
+        tester.testTextInput.enterText('72');
+        await tester.pump();
+      });
+
+      await tester.pump(const Duration(seconds: 1));
+      expect(banner(), findsOneWidget);
+      expect(
+        textOf(tester, 'app-lock-banner-text'),
+        contains('Tap the screen or press a key to stay open'),
+      );
+      // Typing while the banner shows hides it.
+      tester.testTextInput.enterText('72,');
+      await tester.pump();
+      await tester.pump();
+      expect(banner(), findsNothing);
+      await closeApp(tester);
+    });
+
+    testWidgets('a system file chooser holds lock-when-hidden: hidden while '
+        'held does not lock; after release, hidden locks again after the '
+        'grace period', (tester) async {
+      addTearDown(
+        () => tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        ),
+      );
+      final disk = LockDisk();
+      final c = await launchLock(tester, disk);
+      await createVault(tester);
+      await c.update(c.value.copyWith(lockWhenHidden: true));
+      await tester.pump();
+
+      // The chooser is open: the app is hidden for long, nothing locks.
+      final repo = disk.opened.single.repository;
+      final release = holdAppLock();
+      expect(AppLockHolds.instance.held, isTrue);
+      await hide(tester);
+      await tester.pump(const Duration(seconds: 20));
+      expect(repo.isClosed, isFalse);
+      await show(tester);
+      expect(find.byKey(const ValueKey('screen-today')), findsOneWidget);
+      release();
+      release(); // a second call does nothing
+      expect(AppLockHolds.instance.held, isFalse);
+
+      // Hidden while held, the chooser returns while still hidden: the
+      // grace period starts at the release; shown again within it, the app
+      // stays open.
+      final again = holdAppLock();
+      await hide(tester);
+      await tester.pump(const Duration(seconds: 5));
+      again();
+      await tester.pump(const Duration(seconds: 1));
+      expect(repo.isClosed, isFalse);
+      await show(tester);
+      await tester.pump(const Duration(seconds: 5));
+      expect(repo.isClosed, isFalse);
+      expect(find.byKey(const ValueKey('screen-today')), findsOneWidget);
+
+      // After the release, hidden locks once the grace period has passed.
+      await hide(tester);
+      await tester.pump(const Duration(seconds: 1));
+      expect(repo.isClosed, isFalse);
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      expect(repo.isClosed, isTrue);
+      // Frames resume once the app is shown: the gate is there.
+      await show(tester);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byKey(const ValueKey('vault-gate-unlock')), findsOneWidget);
+      await closeApp(tester);
+    });
+
+    test('the system choosers hold the lock only while open, also when '
+        'the chooser fails', () async {
+      final seen = <bool>[];
+      final picker = SystemBackupFilePicker(
+        choose: (title) async {
+          seen.add(AppLockHolds.instance.held);
+          return null;
+        },
+      );
+      expect(await picker.pick(title: 't'), isNull);
+      expect(seen, [true]);
+      expect(AppLockHolds.instance.held, isFalse);
+      await expectLater(
+        withAppLockHeld<void>(() async {
+          seen.add(AppLockHolds.instance.held);
+          throw StateError('chooser failed');
+        }),
+        throwsStateError,
+      );
+      expect(seen, [true, true]);
+      expect(AppLockHolds.instance.held, isFalse);
+    });
+
+    testWidgets('the lock clears snack bars: an action on one cannot act on '
+        'the closed shell', (tester) async {
+      addTearDown(
+        () => tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        ),
+      );
+      final disk = LockDisk();
+      final c = await launchLock(tester, disk);
+      await createVault(tester);
+      await c.update(c.value.copyWith(lockWhenHidden: true));
+      await tester.pump();
+      ScaffoldMessenger.of(
+        tester.element(find.byKey(const ValueKey('screen-today'))),
+      ).showSnackBar(
+        SnackBar(
+          content: const Text('Saved'),
+          duration: const Duration(hours: 1),
+          action: SnackBarAction(label: 'Show on Timeline', onPressed: () {}),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('Show on Timeline'), findsOneWidget);
+      await hide(tester);
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump();
+      await show(tester);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byKey(const ValueKey('vault-gate-unlock')), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(find.text('Show on Timeline'), findsNothing);
+      await closeApp(tester);
+    });
+
+    test('a profile write in flight finishes before the vault closes; a '
+        'profile write after the close began is refused with VAULT_LOCKED, '
+        'never a StateError', () async {
+      final raw = MemoryLogSink();
+      final vault = EncryptedVault(raw: raw, location: 'v', newKdf: cheap);
+      final opened = await vault.create(
+        passphrase: pass,
+        recoveryKey: 'ABCD-EFGH-IJKL-MNOP-QRST-UVWX-YZ23-4567',
+      );
+      final services = await servicesFor(
+        prod,
+        HostPlatform.linux,
+        opened.repository,
+      );
+      final repo = opened.repository;
+      final profile = services.self;
+      final writing = repo.putProfile(profile);
+      final closing = services.closeVault!();
+      await writing; // finished, not cut short by the close
+      await closing;
+      expect(repo.isClosed, isTrue);
+      await expectLater(
+        repo.putProfile(profile),
+        throwsA(
+          isA<StorageWriteRefused>().having(
+            (e) => e.code,
+            'code',
+            'VAULT_LOCKED',
+          ),
+        ),
+      );
+      // The profile written before the close opens with the passphrase.
+      final again = await vault.unlock(pass);
+      expect(
+        (await again.repository.profiles()).map((p) => p.id),
+        contains(profile.id),
+      );
     });
   });
 

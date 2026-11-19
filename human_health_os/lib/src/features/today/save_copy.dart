@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 
+import '../../app/app_lock.dart' show withAppLockHeld;
 import '../../app/app_services.dart';
 import '../../core/capabilities.dart';
 
@@ -30,11 +31,14 @@ class SystemSaveCopy implements SaveCopy {
     required String mimeType,
     required String title,
   }) async {
-    final where = await FilePicker.saveFile(
-      fileName: fileName,
-      bytes: Uint8List.fromList(utf8.encode(text)),
-      mimeType: mimeType,
-      dialogTitle: title,
+    // The dialog hides the app on phones: no lock while it is open.
+    final where = await withAppLockHeld(
+      () => FilePicker.saveFile(
+        fileName: fileName,
+        bytes: Uint8List.fromList(utf8.encode(text)),
+        mimeType: mimeType,
+        dialogTitle: title,
+      ),
     );
     return where != null;
   }

@@ -181,30 +181,41 @@ class LogRepository implements HealthRepository {
       _closed ? const [] : _s.profiles.values.toList();
 
   @override
-  Future<void> putProfile(Profile profile) async {
+  Future<void> putProfile(Profile profile) => _serial(() async {
     _checkWritable();
     final line = encodeOp('profile.put', profile.toJson());
     await _append(line);
     _s.apply('profile.put', profile.toJson());
-  }
+  });
 
   /// The end of the writes in flight: check, checkpoint and append of one
-  /// record finish before the next record starts, so two first measurements
+  /// record (or profile) finish before the next starts, so two first measurements
   /// cannot both run the checkpoint.
-  /// Null while nothing is in flight: no future is created ahead of use, so
+  /// Null while nothing is in flight (set back to null when the last write
+  /// ends): no future is created ahead of use, so
   /// a repository built in one zone (a test's fake clock) never makes a write
   /// in another wait on it.
   Future<void>? _recordWrites;
 
   @override
-  Future<void> appendRecord(HealthRecord record) {
+  Future<void> appendRecord(HealthRecord record) =>
+      _serial(() => _appendRecord(record));
+
+  /// Runs [write] after the writes already in flight (records and profiles
+  /// alike), so [close] waits for it and a write that starts after a close
+  /// began is refused with the close's code, never cut short.
+  Future<void> _serial(Future<void> Function() write) {
     final previous = _recordWrites;
     final done = Completer<void>();
-    _recordWrites = done.future;
-    final run = previous == null
-        ? _appendRecord(record)
-        : previous.then((_) => _appendRecord(record));
-    return run.whenComplete(done.complete);
+    final mine = done.future;
+    _recordWrites = mine;
+    // With nothing in flight the write starts now, so its checks see the
+    // repository as it is at the call.
+    final run = previous == null ? write() : previous.then((_) => write());
+    return run.whenComplete(() {
+      if (identical(_recordWrites, mine)) _recordWrites = null;
+      done.complete();
+    });
   }
 
   Future<void> _appendRecord(HealthRecord record) async {

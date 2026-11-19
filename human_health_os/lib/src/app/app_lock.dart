@@ -3,14 +3,23 @@
 /// asked for that, the vault is closed and the gate asks for the
 /// passphrase or the recovery key again. Off by default.
 ///
-/// Thirty seconds before an inactivity lock a banner says so; any tap,
-/// click, scroll or key press keeps the app open. The lock itself writes
-/// nothing: saved records are already on disk, unsaved typing is dropped.
+/// Thirty seconds before an inactivity lock a banner says so. Use is any
+/// tap, click, scroll or key press, a screen reader's action or move
+/// (TalkBack, VoiceOver, Narrator: these arrive as semantics actions, not
+/// as touches), a change of keyboard focus, and typing in the focused text
+/// field (an on-screen keyboard included). The lock itself writes nothing:
+/// saved records are already on disk, unsaved typing is dropped.
+///
+/// While a system file chooser or save dialog is open ([holdAppLock]) the
+/// app being hidden does not lock it: on Android such a chooser covers the
+/// app and hides it, and a lock then would make the import fail.
 library;
 
 import 'dart:async';
+import 'dart:ui' show SemanticsActionEvent, SemanticsActionEventCallback;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/strings.dart';
@@ -32,6 +41,57 @@ enum AppLockCause { idle, hidden }
 
 /// How long the banner shows before an inactivity lock.
 const Duration appLockWarning = Duration(seconds: 30);
+
+/// How long the app may stay hidden before lock-when-hidden locks it: a
+/// brief system overlay (a permission prompt, a share sheet that hides the
+/// app for a moment) does not lock.
+const Duration appLockHiddenGrace = Duration(seconds: 2);
+
+/// System dialogs open right now (file choosers, save dialogs); see
+/// [holdAppLock].
+class AppLockHolds extends ChangeNotifier {
+  AppLockHolds._();
+
+  /// The one register; the system dialogs it counts are app-wide too.
+  static final AppLockHolds instance = AppLockHolds._();
+
+  int _count = 0;
+
+  /// True while at least one hold is not released.
+  bool get held => _count > 0;
+
+  void _release() {
+    _count--;
+    notifyListeners();
+  }
+}
+
+/// Keeps lock-when-hidden from firing while a system file chooser or save
+/// dialog is open; call the returned function when it closes (in a
+/// `finally`). Calling it again does nothing. Inactivity still counts
+/// before the hold and after its release, and a lock already due is not
+/// held back.
+VoidCallback holdAppLock() {
+  final holds = AppLockHolds.instance;
+  holds._count++;
+  var released = false;
+  return () {
+    if (released) return;
+    released = true;
+    holds._release();
+  };
+}
+
+/// Runs [dialog] (a system chooser) with the app lock held; see
+/// [holdAppLock].
+Future<T> withAppLockHeld<T>(Future<T> Function() dialog) async {
+  final release = holdAppLock();
+  try {
+    return await dialog();
+  } finally {
+    release();
+  }
+}
 
 /// Tells Settings whether the lock can be used in this session.
 class AppLockScope extends InheritedWidget {
@@ -81,6 +141,19 @@ class _AppLockGuardState extends State<AppLockGuard> {
   Timer? _idleTimer;
   Timer? _tick;
 
+  /// Runs while the app is hidden, until [appLockHiddenGrace] has passed.
+  Timer? _hiddenTimer;
+
+  /// The app is hidden (or paused) right now.
+  bool _hidden = false;
+
+  /// The text being typed in the focused field, watched for typing.
+  TextEditingController? _typing;
+
+  /// The semantics handler this guard wrapped, and its wrapper.
+  SemanticsActionEventCallback? _semanticsBefore;
+  SemanticsActionEventCallback? _semanticsHook;
+
   /// Seconds left while the banner shows; null otherwise.
   int? _secondsLeft;
   late final AppLifecycleListener _life;
@@ -90,6 +163,18 @@ class _AppLockGuardState extends State<AppLockGuard> {
     super.initState();
     _life = AppLifecycleListener(onStateChange: _lifecycle);
     HardwareKeyboard.instance.addHandler(_onKey);
+    FocusManager.instance.addListener(_onFocus);
+    AppLockHolds.instance.addListener(_onHoldsChanged);
+    // A screen reader's taps, swipes and moves reach the app as semantics
+    // actions from the platform, never as pointer events: the handler the
+    // framework installed is wrapped, and still receives every action.
+    final dispatcher = WidgetsBinding.instance.platformDispatcher;
+    _semanticsBefore = dispatcher.onSemanticsActionEvent;
+    _semanticsHook = (SemanticsActionEvent e) {
+      if (mounted) _activity();
+      _semanticsBefore?.call(e);
+    };
+    dispatcher.onSemanticsActionEvent = _semanticsHook;
     _restart();
   }
 
@@ -102,8 +187,16 @@ class _AppLockGuardState extends State<AppLockGuard> {
   @override
   void dispose() {
     _cancel();
+    _hiddenTimer?.cancel();
     _life.dispose();
     HardwareKeyboard.instance.removeHandler(_onKey);
+    FocusManager.instance.removeListener(_onFocus);
+    AppLockHolds.instance.removeListener(_onHoldsChanged);
+    _watchTyping(null);
+    final dispatcher = WidgetsBinding.instance.platformDispatcher;
+    if (identical(dispatcher.onSemanticsActionEvent, _semanticsHook)) {
+      dispatcher.onSemanticsActionEvent = _semanticsBefore;
+    }
     super.dispose();
   }
 
@@ -119,7 +212,18 @@ class _AppLockGuardState extends State<AppLockGuard> {
     _cancel();
     if (_secondsLeft != null) {
       _secondsLeft = null;
-      if (mounted) setState(() {});
+      if (mounted) {
+        // A text change made while building is still use; the banner then
+        // goes away after this frame.
+        if (SchedulerBinding.instance.schedulerPhase ==
+            SchedulerPhase.persistentCallbacks) {
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() {});
+          });
+        } else {
+          setState(() {});
+        }
+      }
     }
     final idle = widget.idle;
     if (idle == null) return;
@@ -151,14 +255,65 @@ class _AppLockGuardState extends State<AppLockGuard> {
     return false; // never consumes the key
   }
 
-  void _lifecycle(AppLifecycleState state) {
-    if (!widget.lockWhenHidden) return;
-    if (state == AppLifecycleState.hidden ||
-        state == AppLifecycleState.paused) {
-      _cancel();
-      if (_secondsLeft != null) setState(() => _secondsLeft = null);
-      widget.onLock(AppLockCause.hidden);
+  /// Focus moved (Tab, a screen reader's focus, a field tapped): use. The
+  /// newly focused text field is watched so that typing in it, from any
+  /// keyboard, counts as well.
+  void _onFocus() {
+    _activity();
+    final ctx = FocusManager.instance.primaryFocus?.context;
+    _watchTyping(
+      ctx?.findAncestorStateOfType<EditableTextState>()?.widget.controller,
+    );
+  }
+
+  void _watchTyping(TextEditingController? next) {
+    if (identical(next, _typing)) return;
+    final previous = _typing;
+    _typing = null;
+    if (previous != null) {
+      try {
+        previous.removeListener(_activity);
+      } catch (_) {
+        // Already disposed with its page: nothing to remove.
+      }
     }
+    next?.addListener(_activity);
+    _typing = next;
+  }
+
+  void _lifecycle(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.hidden || AppLifecycleState.paused:
+        _hidden = true;
+        _armHidden();
+      case AppLifecycleState.inactive || AppLifecycleState.resumed:
+        _hidden = false;
+        _hiddenTimer?.cancel();
+        _hiddenTimer = null;
+      case AppLifecycleState.detached:
+        break;
+    }
+  }
+
+  /// Starts the grace period of a hidden app, unless a system dialog holds
+  /// the lock or it already runs.
+  void _armHidden() {
+    if (!widget.lockWhenHidden || AppLockHolds.instance.held) return;
+    _hiddenTimer ??= Timer(appLockHiddenGrace, _hiddenLock);
+  }
+
+  void _hiddenLock() {
+    _hiddenTimer = null;
+    if (!mounted || !_hidden || !widget.lockWhenHidden) return;
+    if (AppLockHolds.instance.held) return;
+    _cancel();
+    if (_secondsLeft != null) setState(() => _secondsLeft = null);
+    widget.onLock(AppLockCause.hidden);
+  }
+
+  /// A dialog closed: if the app is still hidden, the grace period starts.
+  void _onHoldsChanged() {
+    if (_hidden && mounted) _armHidden();
   }
 
   @override

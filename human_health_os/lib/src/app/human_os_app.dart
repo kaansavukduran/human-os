@@ -107,6 +107,10 @@ class _HumanOsAppState extends State<HumanOsApp> {
   bool _locking = false;
   final _navigator = GlobalKey<NavigatorState>();
 
+  /// Snack bars are cleared on lock: an action on one ("Show on Timeline")
+  /// must not act on a closed shell.
+  final _messenger = GlobalKey<ScaffoldMessengerState>();
+
   /// The app lock (G-36, D-046): open sheets and pages close (unsaved
   /// typing is discarded), the gate comes back at once, then the vault is
   /// closed: a record write in flight finishes, the decrypted state and
@@ -119,6 +123,7 @@ class _HumanOsAppState extends State<HumanOsApp> {
     _locking = true;
     try {
       _navigator.currentState?.popUntil((r) => r.isFirst);
+      _messenger.currentState?.clearSnackBars();
       // Preferences were sealed with this vault's key: later changes stay
       // for this session until the next unlock adopts the vault's store.
       _appearance.detachStore();
@@ -230,6 +235,7 @@ class _HumanOsAppState extends State<HumanOsApp> {
       controller: _appearance,
       child: MaterialApp(
         navigatorKey: _navigator,
+        scaffoldMessengerKey: _messenger,
         title: 'Human OS',
         debugShowCheckedModeBanner: false,
         theme: themes.$1,

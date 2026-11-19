@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../app/app_lock.dart' show withAppLockHeld;
 import '../../data/backup/backup_bundle.dart' show BackupError;
 import 'backup_file_chooser.dart';
 
@@ -109,7 +110,8 @@ class SystemBackupFilePicker implements BackupFilePicker {
     required String title,
     BackupSizeLimit limit = BackupSizeLimit.anyBackup,
   }) async {
-    final f = await choose(title);
+    // The chooser hides the app on phones: no lock while it is open.
+    final f = await withAppLockHeld(() => choose(title));
     if (f == null) return null;
     return readChosenBackup(f, limit);
   }

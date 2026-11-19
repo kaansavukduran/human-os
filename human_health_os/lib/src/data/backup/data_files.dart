@@ -1,8 +1,10 @@
-/// Where backups and exports go (ladder F005). One interface, three
-/// adapters: files beside the development vault (desktop), a browser
-/// download (web), and memory (tests). Pure Dart.
+/// Where backups and exports go (ladder F005). One interface, four
+/// adapters: files beside the vault (desktop, phones), a browser download
+/// and browser storage (web development builds), this tab's memory (web
+/// builds that save nothing, G-32), and memory (tests). Pure Dart.
 library;
 
+import '../local/log_repository.dart' show MemoryLogSink;
 import '../local/vault_envelope.dart' show OpenedEnvelope;
 import '../local/vault_log.dart' show VaultFormatError;
 import 'backup_bundle.dart';
@@ -103,6 +105,21 @@ abstract interface class DataFiles {
   /// True when saved backups can be listed and restored here.
   bool get canRestore;
 
+  /// True when a backup file the person chooses (a file chooser) is
+  /// restored here: the browser, which cannot list files (G-29). Desktop
+  /// and phones list the backups beside the vault instead.
+  bool get restoresChosenFile;
+
+  /// True when nothing is saved in this build: a restored backup lives only
+  /// in this tab's memory until it is closed or reloaded (web builds other
+  /// than development, G-32). Such a build writes no backups or exports.
+  bool get sessionOnly;
+
+  /// False where an encrypted backup cannot be opened: the browser, where
+  /// the vault cryptography does not run (D-016, G-32). Such a backup is
+  /// refused before any key is asked for.
+  bool get opensEncryptedBackups;
+
   /// True when the vault a restore would replace is encrypted. A backup of
   /// the other kind is refused before any key is asked for.
   bool get holdsEncryptedVault;
@@ -169,9 +186,21 @@ class MemoryDataFiles implements DataFiles {
   MemoryDataFiles({
     this.vaultText,
     this.target = const RestoreTarget.plaintext(),
+    this.restoresChosenFile = false,
+    this.opensEncryptedBackups = true,
   });
 
   final RestoreTarget target;
+
+  /// Tests of the browser's flow set this (a file chooser, no list).
+  @override
+  final bool restoresChosenFile;
+
+  @override
+  final bool opensEncryptedBackups;
+
+  @override
+  bool get sessionOnly => false;
 
   final Map<String, String> files = {};
   final Map<String, DateTime> times = {};
@@ -226,6 +255,148 @@ class MemoryDataFiles implements DataFiles {
       location: 'memory',
       keptPrevious: kept == null ? null : 'memory:before-restore',
     );
+  }
+}
+
+/// Web builds that save nothing (G-32): a chosen backup is restored into
+/// this tab's memory, through the same gate, and the session reopens on it.
+/// Nothing is written anywhere; the data is gone when the tab closes.
+class SessionDataFiles implements DataFiles {
+  SessionDataFiles(this.sink, {this.opensEncryptedBackups = false});
+
+  /// The memory store of this session; a restore replaces its text.
+  final MemoryLogSink sink;
+
+  /// What this tab held before the last restore (never records: a restore
+  /// is refused while it holds any). Reloading the tab goes back to empty.
+  String? previous;
+
+  @override
+  final bool opensEncryptedBackups;
+
+  @override
+  bool get canRestore => false;
+
+  @override
+  bool get restoresChosenFile => true;
+
+  @override
+  bool get sessionOnly => true;
+
+  @override
+  bool get holdsEncryptedVault => false;
+
+  @override
+  Future<String> save(DataFileKind kind, String fileName, String text) =>
+      throw StateError('This build saves no files (G-32)');
+
+  @override
+  Future<List<SavedFile>> backups() async => const [];
+
+  @override
+  Future<String> read(SavedFile file) =>
+      throw StateError('This build lists no backups');
+
+  @override
+  Future<RestoreOutcome> restore(
+    StagedRestore staged, {
+    required DateTime now,
+    void Function()? beforeSwitch,
+  }) async {
+    const RestoreTarget.plaintext().checkKind(staged);
+    refuseIfHasRecords(sink.text);
+    staged.verifyWritten(staged.payload);
+    beforeSwitch?.call();
+    previous = sink.text;
+    sink.text = staged.payload;
+    return RestoreOutcome(
+      records: staged.state!.records.length,
+      location: 'memory',
+    );
+  }
+}
+
+/// Named text slots (the browser's localStorage); pure Dart so the browser
+/// restore steps are tested on the VM.
+abstract interface class TextSlots {
+  String? get(String key);
+
+  /// May throw (a full browser storage); nothing is changed then.
+  void set(String key, String value);
+  void remove(String key);
+}
+
+/// The last steps of the restore gate for a development vault kept in
+/// browser storage under [vaultKey] (G-29): the payload is written to a
+/// staging slot and read back, the previous content is kept under
+/// `<vaultKey>.before-restore-<time>` (never deleted), then the vault slot
+/// is replaced and read back. Same refusals as the desktop adapter.
+RestoreOutcome restoreIntoSlots(
+  TextSlots slots,
+  String vaultKey,
+  StagedRestore staged, {
+  required DateTime now,
+  void Function()? beforeSwitch,
+}) {
+  const RestoreTarget.plaintext().checkKind(staged);
+  final live = slots.get(vaultKey);
+  refuseIfHasRecords(live);
+  final restoring = '$vaultKey.restoring';
+  try {
+    slots.set(restoring, staged.payload);
+    staged.verifyWritten(slots.get(restoring) ?? '');
+  } catch (_) {
+    _quietRemove(slots, restoring);
+    rethrow;
+  }
+  // From here the vault slot changes: this session stops writing first.
+  beforeSwitch?.call();
+  String? kept;
+  if (live != null) {
+    final aside = '$vaultKey.before-restore-${fileStamp(now)}';
+    try {
+      slots.set(aside, live);
+    } catch (_) {
+      _quietRemove(slots, restoring);
+      throw const BackupError('RESTORE_NOT_SWITCHED', '');
+    }
+    kept = aside;
+  }
+  // The staged copy is dropped first: browser storage is small.
+  _quietRemove(slots, restoring);
+  try {
+    slots.set(vaultKey, staged.payload);
+    staged.verifyWritten(slots.get(vaultKey) ?? '');
+  } catch (_) {
+    // Never leave the vault slot with something else: put the previous
+    // content back (it is also kept under [kept]).
+    try {
+      if (live == null) {
+        slots.remove(vaultKey);
+      } else {
+        slots.set(vaultKey, live);
+      }
+    } catch (_) {
+      // It stays under [kept]; the message says so.
+    }
+    if (kept == null) throw const BackupError('RESTORE_NOT_SWITCHED', '');
+    throw BackupError(
+      'RESTORE_SWITCH_FAILED',
+      slots.get(vaultKey) == live ? '' : kept,
+    );
+  }
+  return RestoreOutcome(
+    records: staged.state!.records.length,
+    location: vaultKey,
+    keptPrevious: kept,
+  );
+}
+
+void _quietRemove(TextSlots slots, String key) {
+  try {
+    slots.remove(key);
+  } catch (_) {
+    // A leftover staged copy is harmless.
   }
 }
 

@@ -2194,9 +2194,35 @@ class S {
     'Backups are encrypted like the vault: each opens only with the passphrase or recovery key the vault had when it was made.',
     'Yedekler kasa gibi şifrelidir: her biri yalnız, yapıldığı anda kasanın sahip olduğu parola ya da kurtarma anahtarıyla açılır.',
   );
-  String get exportNotForEncrypted => _t(
-    'Export writes an unencrypted file, so it is not offered for the encrypted vault yet.',
-    'Dışa aktarma şifresiz bir dosya yazar; bu yüzden şifreli kasa için henüz sunulmuyor.',
+  // Export from an encrypted vault (G-34, D-044): only after this warning,
+  // a required confirmation and a place the person chooses.
+  String get exportUnencrypted => _t(
+    'Export records (JSON, not encrypted)',
+    'Kayıtları dışa aktar (JSON, şifresiz)',
+  );
+  String get exportWarningTitle =>
+      _t('Export without encryption?', 'Şifrelemeden dışa aktarılsın mı?');
+  String get exportWarning => _t(
+    'This file is not encrypted. Anyone who opens it can read your health records.',
+    'Bu dosya şifreli değil. Onu açan herkes sağlık kayıtlarını okuyabilir.',
+  );
+  String get exportWhere => _t(
+    'Next you choose where to save it; Human OS never saves it anywhere by itself. Keep it private and delete it when you no longer need it.',
+    'Sonra nereye kaydedileceğini sen seçersin; Human OS onu hiçbir yere kendiliğinden kaydetmez. Gizli tut ve artık gerekmediğinde sil.',
+  );
+  String get exportUnderstand => _t(
+    'I understand that this file is not encrypted',
+    'Bu dosyanın şifreli olmadığını anlıyorum',
+  );
+  String get exportChooseWhere =>
+      _t('Choose where to save', 'Nereye kaydedileceğini seç');
+  String get exportCancelled => _t(
+    'Export cancelled. Nothing was written.',
+    'Dışa aktarma iptal edildi. Hiçbir şey yazılmadı.',
+  );
+  String exportedUnencrypted(int n, String name) => _t(
+    'Exported $n records to the place you chose ($name). This file is not encrypted: keep it private.',
+    '$n kayıt seçtiğin yere aktarıldı ($name). Bu dosya şifreli değil: gizli tut.',
   );
   String get dataUnencrypted => _t(
     'Backups and exports are not encrypted yet (development build). Keep the files private.',
@@ -2225,9 +2251,68 @@ class S {
   String get noBackups => _t('No backups yet.', 'Henüz yedek yok.');
   String get checkBackup => _t('Check', 'Kontrol et');
   String get restoreBackup => _t('Restore', 'Geri yükle');
-  String get browserRestoreNotBuilt => _t(
-    'In the browser a backup downloads as a file. Restoring it here is not built yet.',
-    'Tarayıcıda yedek bir dosya olarak iner. Burada geri yükleme henüz yok.',
+  // Restoring a chosen backup file in the browser (G-29).
+  String get restoreFromFile =>
+      _t('Restore from a backup file', 'Bir yedek dosyasından geri yükle');
+  String get chooseBackupTitle =>
+      _t('Choose a Human OS backup file', 'Bir Human OS yedek dosyası seç');
+  String get browserRestoreExplain => _t(
+    'In the browser a backup downloads as a file. To restore one, choose it here: it is checked first (checksum, version, contents) and you see what it holds before anything changes.',
+    'Tarayıcıda yedek bir dosya olarak iner. Geri yüklemek için burada seç: önce kontrol edilir (sağlama toplamı, sürüm, içerik) ve bir şey değişmeden önce içinde ne olduğunu görürsün.',
+  );
+  String get sessionRestoreNotice => _t(
+    'This browser build saves nothing. A restored backup stays only in this tab: when you close or reload it, the records are gone again. Your backup file is not changed.',
+    'Bu tarayıcı sürümü hiçbir şey kaydetmez. Geri yüklenen yedek yalnız bu sekmede kalır: sekmeyi kapatınca ya da yenileyince kayıtlar yine gider. Yedek dosyan değişmez.',
+  );
+  String get noFileChosen => _t(
+    'No file chosen. Nothing was changed.',
+    'Dosya seçilmedi. Hiçbir şey değişmedi.',
+  );
+  String get restoreCancelled => _t(
+    'Restore cancelled. Nothing was changed.',
+    'Geri yükleme iptal edildi. Hiçbir şey değişmedi.',
+  );
+  String get busyReading => _t('Reading the file…', 'Dosya okunuyor…');
+  String get busyChecking =>
+      _t('Checking the backup…', 'Yedek kontrol ediliyor…');
+  String get busyRestoring => _t('Restoring…', 'Geri yükleniyor…');
+  String get busyWorking => _t('Working…', 'Çalışıyor…');
+  String restorePreview(
+    String name,
+    int records,
+    int profiles,
+    String made,
+    String version,
+  ) => _t(
+    'File: $name\nMade $made by Human OS $version.\nIt holds $records records and $profiles profiles. Checksum, version and contents were checked.',
+    'Dosya: $name\nOluşturma: $made, Human OS $version.\n$records kayıt ve $profiles profil içeriyor. Sağlama toplamı, sürüm ve içerik kontrol edildi.',
+  );
+  String get restoreKeepsCurrent => _t(
+    'Nothing changes until you choose Restore. The data here now is kept, not deleted, and a restore is refused while it holds any records.',
+    'Geri yükle\'yi seçene kadar hiçbir şey değişmez. Şu anki veriler saklanır, silinmez; içlerinde kayıt varken geri yükleme reddedilir.',
+  );
+  String restoredInBrowser(int n, String? keptAt) =>
+      _t(
+        'Restored $n records into this browser. Reload the page to use them.',
+        '$n kayıt bu tarayıcıya geri yüklendi. Kullanmak için sayfayı yenile.',
+      ) +
+      (keptAt == null
+          ? ''
+          : _t(
+              ' The data that was here before held no records; it is kept in this browser\'s storage as "$keptAt", not deleted.',
+              ' Daha önce burada olan veriler kayıt içermiyordu; bu tarayıcının deposunda "$keptAt" olarak saklandı, silinmedi.',
+            ));
+  String restoredInSession(int n) => _t(
+    'Restored $n records into this tab. Nothing is saved in this browser build: they are gone when you close or reload the tab, which is also the way back to an empty session.',
+    '$n kayıt bu sekmeye geri yüklendi. Bu tarayıcı sürümünde hiçbir şey kaydedilmez: sekmeyi kapatınca ya da yenileyince giderler; boş bir oturuma dönmenin yolu da budur.',
+  );
+  String get restartToUseBrowser => _t(
+    'A restore ran in this tab: reload the page before going on. Saving, backups and exports are paused until then.',
+    'Bu sekmede bir geri yükleme çalıştı: devam etmeden önce sayfayı yenile. O zamana kadar kayıt, yedek ve dışa aktarma durduruldu.',
+  );
+  String get tryAnotherFile => _t(
+    'You can choose another file to try again.',
+    'Yeniden denemek için başka bir dosya seçebilirsin.',
   );
   String backupChecked(int records, int profiles, String made) => _t(
     'Checked: $records records and $profiles profiles, checksum matches. Made $made.',
@@ -2315,6 +2400,20 @@ class S {
       'This device already holds records. Restoring would replace them, so it was not done.',
       'Bu cihazda zaten kayıt var. Geri yükleme onların yerine geçeceği için yapılmadı.',
     ),
+    'BACKUP_ENCRYPTED_BROWSER' => _t(
+      'This backup is encrypted. The browser cannot open encrypted backups yet; restore it in the Human OS desktop or phone app. Nothing was changed.',
+      'Bu yedek şifreli. Tarayıcı şifreli yedekleri henüz açamıyor; onu Human OS masaüstü ya da telefon uygulamasında geri yükle. Hiçbir şey değişmedi.',
+    ),
+    'BACKUP_TOO_LARGE' => _t(
+      'This file is larger than any Human OS backup, so it was not read. Nothing was changed.',
+      'Bu dosya herhangi bir Human OS yedeğinden büyük; bu yüzden okunmadı. Hiçbir şey değişmedi.',
+    ),
+    'VAULT_INCOMPATIBLE'
+        when detail == 'RECORD_SCHEMA_NEWER' || detail == 'VAULT_NEWER' =>
+      _t(
+        'This backup holds data from a newer Human OS. Update the app to restore it. Nothing was changed.',
+        'Bu yedek daha yeni bir Human OS\'un verilerini içeriyor. Geri yüklemek için uygulamayı güncelle. Hiçbir şey değişmedi.',
+      ),
     'VAULT_INCOMPATIBLE' => _t(
       'The data in this backup cannot be read by this version (${detail ?? '?'}). Nothing was changed.',
       'Bu yedekteki veriler bu sürümle okunamıyor (${detail ?? '?'}). Hiçbir şey değişmedi.',

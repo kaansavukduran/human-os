@@ -381,6 +381,67 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
       check(`${label}: backup says it is not encrypted`, bundle.manifest.encryption === 'none-dev-only');
       check(`${label}: backup holds the blood pressure reading as typed`, bundle.payload.includes('"kind":"vital.blood_pressure"') && bundle.payload.includes('"systolic_text":"118"') && bundle.payload.includes('"diastolic_text":"76"') && bundle.manifest.record_schema_versions.includes(4), `schemas=${bundle.manifest.record_schema_versions}`);
       check(`${label}: backup holds the height as typed, with its measured time, at schema 5`, bundle.payload.includes('"kind":"body.height"') && bundle.payload.includes('"original_text":"172,5"') && bundle.payload.includes('"observed_at":"2026-10-01T08:00:00.000Z"') && bundle.manifest.record_schema_versions.includes(5), `schemas=${bundle.manifest.record_schema_versions}`);
+      // F005-S2 (G-29): the downloaded backup is restored in a fresh browser
+      // profile (empty storage) through the page's own file chooser (an
+      // <input type=file>, set with Playwright's file chooser), previewed,
+      // confirmed, and after a reload its records are on the Timeline.
+      const fresh = await browser.newPage({ viewport, locale });
+      const freshErrors = [];
+      fresh.on('pageerror', (e) => freshErrors.push(e.message));
+      fresh.on('console', (m) => { if (m.type() === 'error') freshErrors.push(m.text()); });
+      fresh.on('request', (r) => { const u = new URL(r.url()); if (!['127.0.0.1', 'localhost'].includes(u.hostname) && u.protocol !== 'data:' && u.protocol !== 'blob:') external.push(r.url()); });
+      const wake = async () => {
+        await fresh.waitForSelector('flutter-view', { state: 'attached', timeout: 60_000 });
+        for (let i = 0; i < 40 && (await fresh.locator('flt-semantics').count()) === 0; i++) {
+          await fresh.locator('flt-semantics-placeholder').dispatchEvent('click').catch(() => {});
+          await fresh.waitForTimeout(500);
+        }
+      };
+      try {
+        await fresh.goto(base, { waitUntil: 'load' });
+        await wake();
+        const fh = fresh.getByRole('heading', { name: todayLabel, exact: true }).first();
+        await fh.waitFor({ timeout: 30_000 });
+        const fb = await fh.boundingBox().catch(() => null);
+        const fx = fb ? Math.max(2, fb.x - 8) : viewport.width - 6;
+        const restoreButton = fresh.getByRole('button', { name: 'Restore from a backup file' }).first();
+        for (let i = 0; i < 40 && (await restoreButton.count()) === 0; i++) {
+          await fresh.mouse.move(fx, viewport.height / 2);
+          await fresh.mouse.wheel(0, 300);
+          await fresh.waitForTimeout(200);
+        }
+        for (let i = 0; i < 20; i++) {
+          const b = await restoreButton.boundingBox().catch(() => null);
+          if (b && b.y >= 110 && b.y + b.height <= viewport.height - 90) break;
+          await fresh.mouse.move(fx, viewport.height / 2);
+          await fresh.mouse.wheel(0, b ? Math.max(-400, Math.min(400, b.y - viewport.height / 2)) : 300);
+          await fresh.waitForTimeout(250);
+        }
+        const [chooser] = await Promise.all([
+          fresh.waitForEvent('filechooser', { timeout: 15_000 }),
+          restoreButton.click({ timeout: 10_000 }),
+        ]);
+        await chooser.setFiles(saved);
+        const preview = fresh.getByText(new RegExp(`It holds ${bundle.manifest.record_count} records`)).first();
+        await preview.waitFor({ timeout: 15_000 });
+        check(`${label}: chosen backup previewed before anything changes (${bundle.manifest.record_count} records)`, await preview.isVisible().catch(() => false));
+        await fresh.getByRole('button', { name: 'Restore', exact: true }).last().click({ timeout: 10_000 });
+        const done = fresh.getByText(new RegExp(`Restored ${bundle.manifest.record_count} records into this browser`)).first();
+        await done.waitFor({ timeout: 15_000 });
+        check(`${label}: chosen backup restored through the staged gate`, await done.isVisible().catch(() => false));
+        await fresh.reload({ waitUntil: 'load' });
+        await wake();
+        await fresh.getByRole('tab', { name: timelineLabel, exact: true }).or(fresh.getByRole('button', { name: new RegExp(`^${timelineLabel} `) })).first().click({ timeout: 15_000 });
+        await fresh.getByRole('heading', { name: timelineLabel, exact: true }).first().waitFor({ timeout: 15_000 });
+        const bpBack = fresh.getByText('118/76 mmHg').first();
+        await bpBack.waitFor({ timeout: 15_000 }).catch(() => {});
+        check(`${label}: restored records come back after a reload (blood pressure, height on the Timeline)`, (await bpBack.isVisible().catch(() => false)) && (await fresh.getByText('172.5 cm').first().isVisible().catch(() => false)));
+        await fresh.screenshot({ path: join(out, `flutter-web-${label}-restored.png`) });
+      } catch (e) {
+        check(`${label}: chosen backup restored through the staged gate`, false, e.message.split('\n')[0]);
+      }
+      check(`${label}: restore page without page or console errors`, freshErrors.length === 0, freshErrors.slice(0, 3).join(' | '));
+      await fresh.close();
     } catch (e) {
       check(`${label}: backup downloads with a matching checksum`, false, e.message.split('\n')[0]);
     }

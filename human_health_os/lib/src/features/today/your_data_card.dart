@@ -10,13 +10,17 @@ import '../../data/local/vault_envelope.dart' show KeyKind;
 import '../../l10n/strings.dart';
 import '../../presentation/widgets/status_chip.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
+import 'backup_file_picker.dart';
 import 'save_copy.dart';
 
 /// Your data (ladder F005, F006): create a backup, export the records, check
 /// a saved backup and restore one through the staged restore gate. An
 /// encrypted vault's backups stay encrypted; restoring one needs the
-/// backup's own passphrase or recovery key, and export (plaintext) is not
-/// offered for it.
+/// backup's own passphrase or recovery key. Export from an encrypted vault
+/// writes plaintext, so it runs only after a warning, a required
+/// confirmation and a place the person chooses (G-34, D-044). In the
+/// browser a backup file the person chooses goes through the same gate,
+/// with a preview before anything changes (G-29).
 class YourDataCard extends StatefulWidget {
   const YourDataCard({super.key, required this.services});
 
@@ -34,6 +38,9 @@ class _YourDataCardState extends State<YourDataCard> {
   /// The file just saved, when it can be copied out (phones, M002).
   Copyable? _copyable;
   bool _busy = false;
+
+  /// What is running while [_busy] (said in words, announced).
+  String? _busyLabel;
 
   /// Kept in AppServices, not here: leaving and returning to Today must not
   /// re-enable writes after a restore (review finding).
@@ -63,9 +70,15 @@ class _YourDataCardState extends State<YourDataCard> {
     if (mounted) setState(() => _backups = list);
   }
 
-  Future<void> _run(Future<String> Function(S s) action, S s) async {
+  Future<void> _run(
+    Future<String> Function(S s) action,
+    S s, {
+    String? busy,
+    bool chosenFile = false,
+  }) async {
     setState(() {
       _busy = true;
+      _busyLabel = busy ?? s.busyWorking;
       _message = null;
       _copyable = null;
     });
@@ -74,20 +87,50 @@ class _YourDataCardState extends State<YourDataCard> {
       _message = msg;
       _messageIsError = false;
       await _reload();
-    } on BackupError catch (e) {
-      _message = s.backupError(e.code, e.message);
-      _messageIsError = true;
-    } on RecoveryKeyFormatError {
-      _message = s.recoveryKeyFormat;
-      _messageIsError = true;
     } catch (e) {
-      // A read, write or rename failed outside the restore gate's checks;
-      // nothing was switched (review finding: it used to say "storage").
-      _message = s.dataFileFailed(errorCode(e) ?? e.runtimeType.toString());
+      _message = _describe(e, s, chosenFile: chosenFile);
       _messageIsError = true;
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _busyLabel = null;
+        });
+      }
     }
+  }
+
+  /// The reason in words; for a chosen file also the way out.
+  String _describe(Object e, S s, {bool chosenFile = false}) {
+    final again = chosenFile ? '\n${s.tryAnotherFile}' : '';
+    return switch (e) {
+      BackupError() => s.backupError(e.code, e.message) + again,
+      RecoveryKeyFormatError() => s.recoveryKeyFormat,
+      // A read, write or rename failed outside the restore gate's checks;
+      // nothing was switched (review finding: it used to say "storage").
+      _ => s.dataFileFailed(errorCode(e) ?? e.runtimeType.toString()) + again,
+    };
+  }
+
+  void _say(String? message, {bool error = false}) {
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _busyLabel = null;
+      _message = message;
+      _messageIsError = error;
+      _copyable = null;
+    });
+  }
+
+  void _working(String label) {
+    if (!mounted) return;
+    setState(() {
+      _busy = true;
+      _busyLabel = label;
+      _message = null;
+      _copyable = null;
+    });
   }
 
   void _lockAfterRestore() {
@@ -297,6 +340,289 @@ class _YourDataCardState extends State<YourDataCard> {
     }, s);
   }
 
+  /// Export from an encrypted vault (G-34, D-044): the plaintext file is
+  /// written only after the warning is confirmed, and only where the person
+  /// chooses in the system's save dialog; never into a folder of the app's
+  /// choosing, never silently.
+  Future<void> _exportEncrypted(S s) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) {
+        var understood = false;
+        return StatefulBuilder(
+          builder: (c, setDialog) => AlertDialog(
+            key: const ValueKey('export-warning'),
+            title: Text(s.exportWarningTitle),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s.exportWarning,
+                    key: const ValueKey('export-warning-text'),
+                    style: Theme.of(c).textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(s.exportWhere),
+                  CheckboxListTile(
+                    key: const ValueKey('export-understand'),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: understood,
+                    onChanged: (v) => setDialog(() => understood = v ?? false),
+                    title: Text(s.exportUnderstand),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                key: const ValueKey('cancel-export'),
+                onPressed: () => Navigator.of(c).pop(false),
+                child: Text(s.cancel),
+              ),
+              FilledButton(
+                key: const ValueKey('confirm-export'),
+                onPressed: understood ? () => Navigator.of(c).pop(true) : null,
+                child: Text(s.exportChooseWhere),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (ok != true) {
+      _say(s.exportCancelled);
+      return;
+    }
+    final copy = _s.saveCopy ?? const SystemSaveCopy();
+    await _run((s) async {
+      final now = DateTime.now().toUtc();
+      final records = await _s.heartbeat.repository.records(_s.self.id);
+      final json = exportRecordsJson(
+        profile: _s.self,
+        records: records,
+        exportedAt: now,
+        appVersion: _s.config.version,
+      );
+      final name = exportFileName(now);
+      final saved = await copy.save(
+        fileName: name,
+        text: json,
+        mimeType: 'application/json',
+        title: s.exportChooseWhere,
+      );
+      if (!saved) return s.exportCancelled;
+      final n = records.where((r) => r.profileId == _s.self.id).length;
+      return s.exportedUnencrypted(n, name);
+    }, s);
+  }
+
+  /// The browser (G-29): a backup file the person chooses goes through the
+  /// same gate as a saved one: manifest and checksum, schema compatibility,
+  /// the backup's own key when encrypted, a preview, an explicit
+  /// confirmation, then the adapter's staged write. Nothing changes before
+  /// the confirmation or on any failure.
+  Future<void> _restoreChosen(S s) async {
+    final files = _files!;
+    final picker = _s.backupPicker ?? const SystemBackupFilePicker();
+    _working(s.busyReading);
+    final PickedBackup? picked;
+    StagedRestore staged;
+    try {
+      picked = await picker.pick(title: s.chooseBackupTitle);
+      if (picked == null) {
+        _say(s.noFileChosen);
+        return;
+      }
+      _working(s.busyChecking);
+      staged = stageRestore(picked.text);
+      if (staged.encrypted && !files.opensEncryptedBackups) {
+        throw const BackupError('BACKUP_ENCRYPTED_BROWSER', '');
+      }
+      if (staged.encrypted != files.holdsEncryptedVault) {
+        // Refused before any key is asked for or derived.
+        throw const BackupError('BACKUP_KIND_MISMATCH', '');
+      }
+    } catch (e) {
+      _say(_describe(e, s, chosenFile: true), error: true);
+      return;
+    }
+    if (!mounted) return;
+    if (staged.needsKey) {
+      _say(null);
+      final key = await _askBackupKey(s);
+      if (!mounted) return;
+      if (key == null) {
+        _say(s.restoreCancelled);
+        return;
+      }
+      _working(s.busyChecking);
+      try {
+        staged = await unlockStagedRestore(
+          staged,
+          key.$1,
+          kind: key.$2,
+          derive: _s.deriveKey,
+        );
+      } catch (e) {
+        _say(_describe(e, s, chosenFile: true), error: true);
+        return;
+      }
+    }
+    if (!mounted) return;
+    _say(null);
+    final st = staged;
+    final m = st.manifest;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        key: const ValueKey('restore-preview'),
+        title: Text(s.restoreTitle),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                s.restorePreview(
+                  picked!.name,
+                  st.state!.records.length,
+                  st.state!.profiles.length,
+                  fmtWhen(m.createdAt),
+                  m.sourceAppVersion,
+                ),
+                key: const ValueKey('restore-preview-text'),
+              ),
+              const SizedBox(height: 8),
+              Text(s.restoreKeepsCurrent),
+              if (files.sessionOnly) ...[
+                const SizedBox(height: 8),
+                Text(
+                  s.sessionRestoreNotice,
+                  key: const ValueKey('restore-preview-session'),
+                  style: Theme.of(c).textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('cancel-restore-file'),
+            onPressed: () => Navigator.of(c).pop(false),
+            child: Text(s.cancel),
+          ),
+          FilledButton(
+            key: const ValueKey('confirm-restore-file'),
+            onPressed: () => Navigator.of(c).pop(true),
+            child: Text(s.restoreBackup),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (ok != true) {
+      _say(s.restoreCancelled);
+      return;
+    }
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    await _run(
+      (s) async {
+        final out = await files.restore(
+          st,
+          now: DateTime.now().toUtc(),
+          beforeSwitch: _lockAfterRestore,
+        );
+        _lockAfterRestore();
+        if (files.sessionOnly) {
+          // This tab's memory now holds the backup: the session reopens on
+          // it at once (a reload would lose it).
+          final msg = s.restoredInSession(out.records);
+          await _s.reopenAfterRestore?.call();
+          messenger?.showSnackBar(
+            SnackBar(
+              key: const ValueKey('restored-in-session'),
+              content: Text(msg),
+              duration: const Duration(seconds: 30),
+              showCloseIcon: true,
+            ),
+          );
+          return msg;
+        }
+        if (st.encrypted) {
+          return s.restoredEncrypted(out.records, out.keptPrevious);
+        }
+        return s.restoredInBrowser(out.records, out.keptPrevious);
+      },
+      s,
+      busy: s.busyRestoring,
+      chosenFile: true,
+    );
+  }
+
+  Widget _chosenFileButton(S s) => OutlinedButton.icon(
+    key: const ValueKey('restore-from-file'),
+    onPressed: _busy || _restored ? null : () => _restoreChosen(s),
+    icon: const Icon(Icons.upload_file_outlined),
+    label: Text(s.restoreFromFile),
+  );
+
+  List<Widget> _status(S s, TextTheme text) => [
+    if (_busy && _busyLabel != null) ...[
+      const SizedBox(height: 8),
+      Semantics(
+        liveRegion: true,
+        child: Row(
+          key: const ValueKey('data-busy'),
+          children: [
+            const SizedBox.square(
+              dimension: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 8),
+            Flexible(child: Text(_busyLabel!, style: text.bodyMedium)),
+          ],
+        ),
+      ),
+    ],
+    if (_restored && _message == null) ...[
+      const SizedBox(height: 8),
+      Text(
+        _files?.restoresChosenFile ?? false
+            ? s.restartToUseBrowser
+            : s.restartToUse,
+        key: const ValueKey('restart-to-use'),
+        style: text.bodyMedium,
+      ),
+    ],
+    if (_message != null) ...[
+      const SizedBox(height: 8),
+      Semantics(
+        liveRegion: true,
+        child: Text(
+          _message!,
+          key: const ValueKey('data-message'),
+          style: text.bodyMedium?.copyWith(
+            color: _messageIsError ? Theme.of(context).colorScheme.error : null,
+          ),
+        ),
+      ),
+      if (_copyable != null) ...[
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          key: const ValueKey('data-save-copy'),
+          onPressed: _busy ? null : () => _saveCopy(s),
+          icon: const Icon(Icons.save_alt),
+          label: Text(s.saveCopy),
+        ),
+      ],
+    ],
+  ];
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -323,7 +649,24 @@ class _YourDataCardState extends State<YourDataCard> {
                 key: const ValueKey('data-not-available'),
                 style: text.bodyMedium,
               )
-            else ...[
+            else if (files.sessionOnly) ...[
+              // Web builds that save nothing (G-32): no backups or exports,
+              // but a chosen backup can be restored into this tab (G-29).
+              Text(
+                s.dataNotAvailable,
+                key: const ValueKey('data-not-available'),
+                style: text.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                s.sessionRestoreNotice,
+                key: const ValueKey('session-restore-notice'),
+                style: text.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              _chosenFileButton(s),
+              ..._status(s, text),
+            ] else ...[
               encrypted
                   ? StatusChip(label: s.dataEncrypted, tone: StatusTone.ok)
                   : StatusChip(label: s.dataUnencrypted, tone: StatusTone.info),
@@ -348,53 +691,25 @@ class _YourDataCardState extends State<YourDataCard> {
                           : () => _run(_export, s),
                       icon: const Icon(Icons.file_download_outlined),
                       label: Text(s.exportJson),
+                    )
+                  else
+                    OutlinedButton.icon(
+                      key: const ValueKey('export-unencrypted'),
+                      onPressed: _busy || !canWrite
+                          ? null
+                          : () => _exportEncrypted(s),
+                      icon: const Icon(Icons.warning_amber_outlined),
+                      label: Text(s.exportUnencrypted),
                     ),
                 ],
               ),
-              if (encrypted) ...[
-                const SizedBox(height: 8),
-                Text(
-                  s.exportNotForEncrypted,
-                  key: const ValueKey('export-not-for-encrypted'),
-                  style: text.bodyMedium,
-                ),
-              ],
-              if (_restored && _message == null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  s.restartToUse,
-                  key: const ValueKey('restart-to-use'),
-                  style: text.bodyMedium,
-                ),
-              ],
-              if (_message != null) ...[
-                const SizedBox(height: 8),
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    _message!,
-                    key: const ValueKey('data-message'),
-                    style: text.bodyMedium?.copyWith(
-                      color: _messageIsError
-                          ? Theme.of(context).colorScheme.error
-                          : null,
-                    ),
-                  ),
-                ),
-                if (_copyable != null) ...[
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    key: const ValueKey('data-save-copy'),
-                    onPressed: _busy ? null : () => _saveCopy(s),
-                    icon: const Icon(Icons.save_alt),
-                    label: Text(s.saveCopy),
-                  ),
-                ],
-              ],
+              ..._status(s, text),
               const SizedBox(height: 12),
-              if (!files.canRestore)
-                Text(s.browserRestoreNotBuilt, style: text.bodyMedium)
-              else ...[
+              if (files.restoresChosenFile) ...[
+                Text(s.browserRestoreExplain, style: text.bodyMedium),
+                const SizedBox(height: 8),
+                _chosenFileButton(s),
+              ] else if (files.canRestore) ...[
                 Semantics(
                   header: true,
                   child: Text(s.backupsTitle, style: text.titleMedium),

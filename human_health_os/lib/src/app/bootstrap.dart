@@ -20,6 +20,7 @@ import '../data/local/storage.dart';
 import '../data/local/vault_envelope.dart';
 import '../domain/ports/health_repository.dart';
 import '../features/genetics/genome_file_picker.dart';
+import '../features/today/backup_file_picker.dart' show BackupFilePicker;
 import '../features/today/save_copy.dart' show SaveCopy;
 import 'app_services.dart';
 
@@ -178,6 +179,7 @@ Future<AppServices> servicesFor(
   DataFiles? files,
   GenomeFilePicker? genomePicker,
   SaveCopy? saveCopy,
+  BackupFilePicker? backupPicker,
   KeyDeriver derive = deriveInline,
   SealedAppearanceStore? preferences,
   Clock clock = const SystemClock(),
@@ -215,6 +217,38 @@ Future<AppServices> servicesFor(
       checkpointSaved.value = where;
     };
   }
+  // Session-only builds (G-32): a restored backup replaces this tab's
+  // memory store; the session reopens on it at once (a restart would lose
+  // it). The old repository is locked by the restore itself.
+  final replacedBy = ValueNotifier<AppServices?>(null);
+  Future<void> Function()? reopen;
+  if (files is SessionDataFiles) {
+    reopen = () async {
+      final next = LogRepository(
+        sink: files.sink,
+        durability: StorageDurability.memoryOnly,
+        location: repo.description.location,
+        clock: clock,
+      );
+      final nextReport = await next.open();
+      replacedBy.value = await servicesFor(
+        config,
+        platform,
+        next,
+        reason: reason,
+        detail: detail,
+        notes: notes,
+        report: nextReport,
+        files: files,
+        genomePicker: genomePicker,
+        saveCopy: saveCopy,
+        backupPicker: backupPicker,
+        derive: derive,
+        preferences: preferences,
+        clock: clock,
+      );
+    };
+  }
   // Tests that hand in a repository without a reason get "not reported"
   // (null) for a memory store, never an invented cause.
   final status =
@@ -248,6 +282,9 @@ Future<AppServices> servicesFor(
     saveCopy: saveCopy,
     vaultPreferences: preferences,
     deriveKey: derive,
+    backupPicker: backupPicker,
+    reopenAfterRestore: reopen,
+    replacedBy: replacedBy,
   );
 }
 

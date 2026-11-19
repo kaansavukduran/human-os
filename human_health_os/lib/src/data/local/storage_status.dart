@@ -47,7 +47,19 @@ class StorageChoice {
 
 /// The browser's profile gate: only development builds save there, because
 /// encrypted browser storage is not built (gap G-32). Returns null when
-/// this build may save.
-StorageChoice? profileGate(AppConfig config) => config.mayPersistUnencrypted
-    ? null
-    : StorageChoice(inMemoryRepository(), reason: StorageReason.profilePolicy);
+/// this build may save. Other builds keep this tab's memory only; a backup
+/// the person chooses can still be restored into it (G-29), and it is gone
+/// when the tab closes.
+StorageChoice? profileGate(AppConfig config) {
+  if (config.mayPersistUnencrypted) return null;
+  final sink = MemoryLogSink();
+  return StorageChoice(
+    LogRepository(
+      sink: sink,
+      durability: StorageDurability.memoryOnly,
+      location: 'memory (not saved)',
+    ),
+    reason: StorageReason.profilePolicy,
+    files: SessionDataFiles(sink),
+  );
+}

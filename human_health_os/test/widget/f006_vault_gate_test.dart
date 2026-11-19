@@ -514,10 +514,8 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('export-json')), findsNothing);
-    expect(
-      find.byKey(const ValueKey('export-not-for-encrypted')),
-      findsOneWidget,
-    );
+    // Export is offered only behind the unencrypted-file warning (G-34).
+    expect(find.byKey(const ValueKey('export-unencrypted')), findsOneWidget);
 
     await tapKey(tester, 'create-backup');
     expect(find.byKey(const ValueKey('no-backups')), findsNothing);

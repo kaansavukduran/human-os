@@ -88,8 +88,11 @@ class _SummaryScreenState extends State<SummaryScreen> {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
     final summary = _summary;
+    final files = widget.services.dataFiles;
     final canSave =
-        widget.services.dataFiles != null && !widget.services.storage.encrypted;
+        files != null &&
+        !files.sessionOnly &&
+        !widget.services.storage.encrypted;
     return Scaffold(
       appBar: AppBar(title: Text(s.summaryTitle)),
       body: summary == null

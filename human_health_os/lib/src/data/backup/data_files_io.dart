@@ -38,6 +38,15 @@ class FileDataFiles implements DataFiles {
   bool get canRestore => true;
 
   @override
+  bool get restoresChosenFile => false;
+
+  @override
+  bool get sessionOnly => false;
+
+  @override
+  bool get opensEncryptedBackups => true;
+
+  @override
   bool get holdsEncryptedVault => target.encrypted;
 
   @override

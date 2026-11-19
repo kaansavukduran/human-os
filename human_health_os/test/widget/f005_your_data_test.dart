@@ -28,6 +28,8 @@ const staging = AppConfig(
 );
 
 class NoRestoreFiles extends MemoryDataFiles {
+  NoRestoreFiles({super.restoresChosenFile});
+
   @override
   bool get canRestore => false;
 }
@@ -344,13 +346,14 @@ void main() {
     expect(dir.listSync(), isEmpty, reason: 'nothing written anywhere');
   });
 
-  testWidgets('browser-like adapter: download only, restore said to be '
-      'not built', (tester) async {
-    await start(tester, sink: MemoryLogSink(), files: NoRestoreFiles());
-    expect(
-      find.textContaining('Restoring it here is not built yet'),
-      findsOneWidget,
+  testWidgets('browser-like adapter: no list of backups; a backup file is '
+      'chosen instead (G-29)', (tester) async {
+    await start(
+      tester,
+      sink: MemoryLogSink(),
+      files: NoRestoreFiles(restoresChosenFile: true),
     );
+    expect(find.byKey(const ValueKey('restore-from-file')), findsOneWidget);
     expect(find.byKey(const ValueKey('no-backups')), findsNothing);
   });
 

@@ -61,7 +61,7 @@ class HumanOsApp extends StatefulWidget {
 
 class _HumanOsAppState extends State<HumanOsApp> {
   void _vaultOpened(AppServices s) {
-    setState(() => _services = s);
+    setState(() => _use(s));
     final prefs = s.vaultPreferences;
     // Only a session store is replaced: a store that already keeps choices
     // (development desktop) stays as it is.
@@ -76,6 +76,20 @@ class _HumanOsAppState extends State<HumanOsApp> {
   }
 
   AppServices? _services;
+
+  /// Shows [s] and follows it when a session-only restore replaces it
+  /// (G-29, G-32).
+  void _use(AppServices? s) {
+    _services?.replacedBy?.removeListener(_replaced);
+    _services = s;
+    s?.replacedBy?.addListener(_replaced);
+  }
+
+  void _replaced() {
+    final next = _services?.replacedBy?.value;
+    if (next != null && mounted) setState(() => _use(next));
+  }
+
   bool _introDone = false;
   late AppearanceController _appearance =
       widget.appearance ?? AppearanceController(MemoryAppearanceStore());
@@ -83,7 +97,7 @@ class _HumanOsAppState extends State<HumanOsApp> {
   @override
   void initState() {
     super.initState();
-    _services = widget.services;
+    _use(widget.services);
     _appearance.addListener(_changed);
   }
 
@@ -92,6 +106,7 @@ class _HumanOsAppState extends State<HumanOsApp> {
   @override
   void dispose() {
     _appearance.removeListener(_changed);
+    _use(null);
     super.dispose();
   }
 
@@ -100,7 +115,7 @@ class _HumanOsAppState extends State<HumanOsApp> {
     super.didUpdateWidget(old);
     // A new app instance (a test's "relaunch") starts from its own inputs.
     if (widget.services != old.services || widget.gate != old.gate) {
-      _services = widget.services;
+      _use(widget.services);
     }
     if (widget.appearance != null && widget.appearance != _appearance) {
       _appearance.removeListener(_changed);

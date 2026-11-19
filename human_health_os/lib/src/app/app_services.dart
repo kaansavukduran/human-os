@@ -14,6 +14,7 @@ import '../domain/ports/storage_status.dart';
 import '../domain/profile/profile.dart';
 import '../features/genetics/genome_file_picker.dart';
 import '../data/local/sealed_preferences.dart';
+import '../features/today/backup_file_picker.dart' show BackupFilePicker;
 import '../features/today/save_copy.dart' show SaveCopy;
 
 class AppServices {
@@ -36,6 +37,9 @@ class AppServices {
     this.saveCopy,
     this.vaultPreferences,
     this.deriveKey = deriveInline,
+    this.backupPicker,
+    this.reopenAfterRestore,
+    this.replacedBy,
   });
 
   final AppConfig config;
@@ -90,4 +94,17 @@ class AppServices {
   /// Display preferences sealed beside an opened encrypted vault (U018);
   /// the app adopts them once the vault is open.
   final SealedAppearanceStore? vaultPreferences;
+
+  /// Chooses a backup file to restore where saved backups cannot be listed
+  /// (the browser, G-29); null means the system chooser. Tests put a fake.
+  final BackupFilePicker? backupPicker;
+
+  /// Session-only builds (G-32): reopens the session on the restored memory
+  /// store and hands the new services to [replacedBy]. Null elsewhere: a
+  /// restore there needs a restart.
+  final Future<void> Function()? reopenAfterRestore;
+
+  /// Set once this session was reopened on restored data; the app shows the
+  /// new services from then on.
+  final ValueNotifier<AppServices?>? replacedBy;
 }

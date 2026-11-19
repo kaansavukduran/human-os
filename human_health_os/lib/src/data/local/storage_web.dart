@@ -13,12 +13,9 @@ import 'storage_status.dart';
 export 'storage_status.dart';
 
 @JS('localStorage')
-external _Storage? get _localStorage;
+external BrowserStorage? get _localStorage;
 
-extension type _Storage(JSObject _) implements JSObject {
-  external JSString? getItem(JSString key);
-  external void setItem(JSString key, JSString value);
-}
+typedef _Storage = BrowserStorage;
 
 const String browserVaultKey = 'hhos.vault.v1';
 
@@ -70,7 +67,7 @@ Future<StorageChoice> createPlatformRepository(
       durability: StorageDurability.browserStorage,
       location: 'browser storage ($browserVaultKey)',
     ),
-    files: BrowserDataFiles(),
+    files: BrowserDataFiles(storage, browserVaultKey),
   );
 }
 

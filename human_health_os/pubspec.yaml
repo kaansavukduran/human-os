@@ -11,6 +11,9 @@ environment:
 dependencies:
   crypto: ^3.0.7
   file_picker: ^13.3.2
+  # Part of file_picker's federation (D-021), already locked; named directly
+  # only for FilePickerWebOptions (R018: no read before the size check).
+  file_picker_web: ^4.2.0
   flutter:
     sdk: flutter
   flutter_localizations:

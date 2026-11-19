@@ -50,10 +50,15 @@ class FakePicker implements BackupFilePicker {
   String? text;
   String name;
   int picks = 0;
+  BackupSizeLimit? limit;
 
   @override
-  Future<PickedBackup?> pick({required String title}) async {
+  Future<PickedBackup?> pick({
+    required String title,
+    BackupSizeLimit limit = BackupSizeLimit.anyBackup,
+  }) async {
     picks++;
+    this.limit = limit;
     final t = text;
     return t == null ? null : PickedBackup(name: name, text: t);
   }
@@ -80,8 +85,58 @@ class FakeSaveCopy implements SaveCopy {
 
 /// The browser's development adapter: no list, a chosen file, and no
 /// encrypted backups (the vault cryptography does not run under dart2js).
-MemoryDataFiles browserLike() =>
-    MemoryDataFiles(restoresChosenFile: true, opensEncryptedBackups: false);
+MemoryDataFiles browserLike() => MemoryDataFiles(
+  restoresChosenFile: true,
+  opensEncryptedBackups: false,
+  keepsInBrowserStorage: true,
+);
+
+/// A chosen file with a size from its metadata; counts reads (R018).
+class FakeChosenFile implements ChosenFile {
+  FakeChosenFile(this.text, {this.declaredSize});
+
+  final String text;
+  final int? declaredSize;
+  int reads = 0;
+
+  @override
+  String get name => 'human-os-backup-chosen.hhosbackup.json';
+
+  @override
+  Future<int?> size() async => declaredSize;
+
+  @override
+  Future<List<int>> read() async {
+    reads++;
+    return utf8.encode(text);
+  }
+}
+
+/// The development browser adapter's restore steps on [slots] (the real
+/// `restoreIntoSlots`), so a full browser storage can be simulated.
+class SlotFiles extends MemoryDataFiles {
+  SlotFiles(this.slots)
+    : super(
+        restoresChosenFile: true,
+        opensEncryptedBackups: false,
+        keepsInBrowserStorage: true,
+      );
+
+  final MapSlots slots;
+
+  @override
+  Future<RestoreOutcome> restore(
+    StagedRestore staged, {
+    required DateTime now,
+    void Function()? beforeSwitch,
+  }) async => restoreIntoSlots(
+    slots,
+    'v',
+    staged,
+    now: now,
+    beforeSwitch: beforeSwitch,
+  );
+}
 
 /// A copy of [bundle] whose payload was changed after the checksum.
 String tampered(String bundle) {
@@ -118,6 +173,7 @@ Future<AppServices> startDev(
   required MemoryLogSink sink,
   required DataFiles files,
   BackupFilePicker? picker,
+  void Function()? reloadPage,
 }) async {
   useView(tester);
   final s = await tester.runAsync(() async {
@@ -134,6 +190,7 @@ Future<AppServices> startDev(
       report: report,
       files: files,
       backupPicker: picker,
+      reloadPage: reloadPage,
     );
   });
   await tester.pumpWidget(HumanOsApp(services: s!));
@@ -245,12 +302,18 @@ class MapSlots implements TextSlots {
   final map = <String, String>{};
   String? failOn;
 
+  /// Fails every key that starts with this (keys that carry a time).
+  String? failOnPrefix;
+
   @override
   String? get(String key) => map[key];
 
   @override
   void set(String key, String value) {
     if (failOn != null && key == failOn) throw StateError('quota exceeded');
+    if (failOnPrefix != null && key.startsWith(failOnPrefix!)) {
+      throw StateError('quota exceeded');
+    }
     map[key] = value;
   }
 
@@ -711,6 +774,238 @@ void main() {
       );
       expect(slots.map['v'], 'previous');
       expect(slots.map['v.before-restore-20260101T000000Z'], 'previous');
+    });
+
+    testWidgets('R018: a second restore in the same second never overwrites '
+        'the copy kept by the first; its name steps forward', (tester) async {
+      final st = await staged(tester);
+      final slots = MapSlots()
+        ..map['v'] = 'second'
+        ..map['v.before-restore-20261119T100000Z'] = 'first'
+        ..map['v.before-restore-20261119T100001Z'] = 'also earlier';
+      final out = restoreIntoSlots(
+        slots,
+        'v',
+        st,
+        now: DateTime.utc(2026, 11, 19, 10),
+      );
+      expect(out.keptPrevious, 'v.before-restore-20261119T100002Z');
+      expect(slots.map['v.before-restore-20261119T100000Z'], 'first');
+      expect(slots.map['v.before-restore-20261119T100001Z'], 'also earlier');
+      expect(slots.map['v.before-restore-20261119T100002Z'], 'second');
+      expect(slots.map['v'], st.payload);
+    });
+  });
+
+  group('R018: a chosen file is checked by its size before it is read', () {
+    BackupError? refusal(Object? e) => e is BackupError ? e : null;
+
+    test('the browser storage limit: a 5 MB file is refused from its size '
+        'alone; nothing is read', () async {
+      final f = FakeChosenFile('{}', declaredSize: 5 * 1024 * 1024);
+      Object? error;
+      try {
+        await SystemBackupFilePicker(choose: (_) async => f)
+            .pick(title: 't', limit: BackupSizeLimit.browserStorage);
+      } catch (e) {
+        error = e;
+      }
+      expect(refusal(error)?.code, 'BACKUP_TOO_LARGE_BROWSER');
+      expect(refusal(error)?.message, '${5 * 1024 * 1024}');
+      expect(f.reads, 0);
+    });
+
+    test('the general limit: a file over 64 MiB is refused unread', () async {
+      final f = FakeChosenFile('{}', declaredSize: maxBackupFileBytes + 1);
+      Object? error;
+      try {
+        await SystemBackupFilePicker(choose: (_) async => f).pick(title: 't');
+      } catch (e) {
+        error = e;
+      }
+      expect(refusal(error)?.code, 'BACKUP_TOO_LARGE');
+      expect(f.reads, 0);
+    });
+
+    test('a normal file is read once, whole', () async {
+      final f = FakeChosenFile('{"x":"ağaç"}', declaredSize: 15);
+      final picked = await SystemBackupFilePicker(choose: (_) async => f)
+          .pick(title: 't', limit: BackupSizeLimit.browserStorage);
+      expect(picked!.text, '{"x":"ağaç"}');
+      expect(picked.name, 'human-os-backup-chosen.hhosbackup.json');
+      expect(f.reads, 1);
+    });
+
+    test('a size the system does not report is checked after the read', () {
+      final big = 'x' * (maxBrowserBackupBytes + 1);
+      expect(
+        readChosenBackup(FakeChosenFile(big), BackupSizeLimit.browserStorage),
+        throwsA(
+          isA<BackupError>().having(
+            (e) => e.code,
+            'code',
+            'BACKUP_TOO_LARGE_BROWSER',
+          ),
+        ),
+      );
+    });
+
+    test('cancelled: nothing chosen, nothing read', () async {
+      expect(
+        await SystemBackupFilePicker(choose: (_) async => null)
+            .pick(title: 't'),
+        isNull,
+      );
+    });
+
+    testWidgets('a development browser build says why a large file was not '
+        'read; another file can be tried', (tester) async {
+      final f = FakeChosenFile('{}', declaredSize: 5 * 1024 * 1024 + 300000);
+      final files = browserLike()..vaultText = 'live';
+      await startDev(
+        tester,
+        sink: MemoryLogSink(),
+        files: files,
+        picker: SystemBackupFilePicker(choose: (_) async => f),
+      );
+      await tapKey(tester, 'restore-from-file');
+      expect(
+        message(tester),
+        'This backup is larger than this browser can keep (5.3 MB; the limit '
+        'here is 4 MB), so it was not read. Restore it in the desktop app. '
+        'Nothing was changed.\nYou can choose another file to try again.',
+      );
+      expect(f.reads, 0);
+      expect(files.vaultText, 'live');
+      expect(enabled(tester, 'restore-from-file'), isTrue);
+      expect(find.byKey(const ValueKey('reload-page')), findsNothing);
+    });
+
+    testWidgets('the same refusal in Turkish', (tester) async {
+      tester.platformDispatcher.localesTestValue = [const Locale('tr')];
+      addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+      final f = FakeChosenFile('{}', declaredSize: 5 * 1024 * 1024 + 300000);
+      await startDev(
+        tester,
+        sink: MemoryLogSink(),
+        files: browserLike(),
+        picker: SystemBackupFilePicker(choose: (_) async => f),
+      );
+      await tapKey(tester, 'restore-from-file');
+      expect(
+        message(tester),
+        'Bu yedek, bu tarayıcının saklayabileceğinden büyük (5,3 MB; buradaki '
+        'sınır 4 MB); bu yüzden okunmadı. Onu masaüstü uygulamasında geri '
+        'yükle. Hiçbir şey değişmedi.\nYeniden denemek için başka bir dosya '
+        'seçebilirsin.',
+      );
+      expect(f.reads, 0);
+    });
+
+    testWidgets('which limit applies: browser storage for a development '
+        'browser build, the general one for a memory-only build', (
+      tester,
+    ) async {
+      final devPicker = FakePicker();
+      await startDev(
+        tester,
+        sink: MemoryLogSink(),
+        files: browserLike(),
+        picker: devPicker,
+      );
+      await tapKey(tester, 'restore-from-file');
+      expect(devPicker.limit, BackupSizeLimit.browserStorage);
+
+      final session = FakePicker();
+      await startSession(tester, picker: session);
+      await tapKey(tester, 'restore-from-file');
+      expect(session.limit, BackupSizeLimit.anyBackup);
+    });
+  });
+
+  group('R018: a restore that fails in the browser after writes stopped', () {
+    Future<(MapSlots, List<int>)> failAfterLock(
+      WidgetTester tester, {
+      String? failOn,
+    }) async {
+      final bundle = await backupMadeElsewhere(tester);
+      final slots = MapSlots()..map['v'] = '';
+      if (failOn == null) {
+        slots.failOnPrefix = 'v.before-restore-';
+      } else {
+        slots.failOn = failOn;
+      }
+      final reloads = <int>[];
+      await startDev(
+        tester,
+        sink: MemoryLogSink(),
+        files: SlotFiles(slots),
+        picker: FakePicker(bundle),
+        reloadPage: () => reloads.add(1),
+      );
+      await tapKey(tester, 'restore-from-file');
+      await tapKey(tester, 'confirm-restore-file');
+      return (slots, reloads);
+    }
+
+    testWidgets('a full storage on the kept copy: browser wording, no other '
+        'file offered, a reload button that works', (tester) async {
+      final (slots, reloads) = await failAfterLock(tester);
+      expect(
+        message(tester),
+        "The restore could not be finished: this browser's storage refused "
+        'the write (it may be full). Nothing was changed in it. Reload the '
+        'page to go on; saving is paused until then.',
+      );
+      expect(message(tester), isNot(contains('another file')));
+      expect(message(tester), isNot(contains('Human OS restarts')));
+      expect(slots.map, {'v': ''});
+      expect(enabled(tester, 'restore-from-file'), isFalse);
+      expect(enabled(tester, 'create-backup'), isFalse);
+      expect(enabled(tester, 'reload-page'), isTrue);
+      expect(find.text('Reload the page'), findsOneWidget);
+      await tapKey(tester, 'reload-page');
+      expect(reloads, [1]);
+    });
+
+    testWidgets('the same in Turkish', (tester) async {
+      tester.platformDispatcher.localesTestValue = [const Locale('tr')];
+      addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+      await failAfterLock(tester);
+      expect(
+        message(tester),
+        'Geri yükleme tamamlanamadı: bu tarayıcının deposu yazmayı reddetti '
+        '(dolu olabilir). Depoda hiçbir şey değişmedi. Devam etmek için '
+        'sayfayı yenile; o zamana kadar kayıt durduruldu.',
+      );
+      expect(message(tester), isNot(contains('başka bir dosya')));
+      expect(find.text('Sayfayı yenile'), findsOneWidget);
+      expect(enabled(tester, 'reload-page'), isTrue);
+    });
+
+    testWidgets('the vault slot refuses the restored copy: the previous '
+        'data is back in place, a reload is the way on', (tester) async {
+      final (slots, _) = await failAfterLock(tester, failOn: 'v');
+      final kept = slots.map.keys.singleWhere(
+        (k) => k.startsWith('v.before-restore-'),
+      );
+      expect(slots.map['v'], '');
+      expect(slots.map[kept], '');
+      expect(
+        message(tester),
+        "The restore could not be finished: this browser's storage refused "
+        'the restored copy (it may be full). The data that was here before '
+        'is back in place. Reload the page before saving anything.',
+      );
+      expect(enabled(tester, 'reload-page'), isTrue);
+    });
+
+    testWidgets('a failure before writes stopped still offers another file '
+        'and no reload', (tester) async {
+      await failAfterLock(tester, failOn: 'v.restoring');
+      expect(message(tester), contains('You can choose another file'));
+      expect(find.byKey(const ValueKey('reload-page')), findsNothing);
+      expect(enabled(tester, 'restore-from-file'), isTrue);
     });
   });
 }

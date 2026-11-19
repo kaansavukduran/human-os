@@ -110,6 +110,11 @@ abstract interface class DataFiles {
   /// and phones list the backups beside the vault instead.
   bool get restoresChosenFile;
 
+  /// True when a restored vault is kept in the browser's localStorage
+  /// (development web builds), which holds about 5 MB: a chosen backup
+  /// larger than that is refused before it is read (R018).
+  bool get keepsInBrowserStorage;
+
   /// True when nothing is saved in this build: a restored backup lives only
   /// in this tab's memory until it is closed or reloaded (web builds other
   /// than development, G-32). Such a build writes no backups or exports.
@@ -188,7 +193,12 @@ class MemoryDataFiles implements DataFiles {
     this.target = const RestoreTarget.plaintext(),
     this.restoresChosenFile = false,
     this.opensEncryptedBackups = true,
+    this.keepsInBrowserStorage = false,
   });
+
+  /// Tests of the development browser build set this.
+  @override
+  final bool keepsInBrowserStorage;
 
   final RestoreTarget target;
 
@@ -280,6 +290,10 @@ class SessionDataFiles implements DataFiles {
   @override
   bool get restoresChosenFile => true;
 
+  /// Kept in this tab's memory only.
+  @override
+  bool get keepsInBrowserStorage => false;
+
   @override
   bool get sessionOnly => true;
 
@@ -329,7 +343,8 @@ abstract interface class TextSlots {
 /// The last steps of the restore gate for a development vault kept in
 /// browser storage under [vaultKey] (G-29): the payload is written to a
 /// staging slot and read back, the previous content is kept under
-/// `<vaultKey>.before-restore-<time>` (never deleted), then the vault slot
+/// `<vaultKey>.before-restore-<time>` (never deleted, never over an earlier
+/// kept copy), then the vault slot
 /// is replaced and read back. Same refusals as the desktop adapter.
 RestoreOutcome restoreIntoSlots(
   TextSlots slots,
@@ -353,7 +368,14 @@ RestoreOutcome restoreIntoSlots(
   beforeSwitch?.call();
   String? kept;
   if (live != null) {
-    final aside = '$vaultKey.before-restore-${fileStamp(now)}';
+    // Never over an earlier kept copy: a second restore in the same second
+    // moves on until its name is free (like the desktop checkpoints).
+    var stamp = now;
+    String asideAt(DateTime t) => '$vaultKey.before-restore-${fileStamp(t)}';
+    while (slots.get(asideAt(stamp)) != null) {
+      stamp = stamp.add(const Duration(seconds: 1));
+    }
+    final aside = asideAt(stamp);
     try {
       slots.set(aside, live);
     } catch (_) {

@@ -40,6 +40,7 @@ class AppServices {
     this.backupPicker,
     this.reopenAfterRestore,
     this.replacedBy,
+    this.reloadPage,
   });
 
   final AppConfig config;
@@ -107,4 +108,8 @@ class AppServices {
   /// Set once this session was reopened on restored data; the app shows the
   /// new services from then on.
   final ValueNotifier<AppServices?>? replacedBy;
+
+  /// Reloads the page: in the browser the way out once a restore has run,
+  /// whether it finished or not (G-29). Null outside the browser.
+  final void Function()? reloadPage;
 }

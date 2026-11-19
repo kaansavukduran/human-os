@@ -100,9 +100,23 @@ class _YourDataCardState extends State<YourDataCard> {
     }
   }
 
-  /// The reason in words; for a chosen file also the way out.
+  /// The reason in words; for a chosen file also the way out. Once a
+  /// restore has stopped this session's writes (even one that then failed)
+  /// another file cannot be tried: the way out is a reload in the browser
+  /// (R018), a restart elsewhere (said by the message itself).
   String _describe(Object e, S s, {bool chosenFile = false}) {
-    final again = chosenFile ? '\n${s.tryAnotherFile}' : '';
+    final inBrowser = _files?.restoresChosenFile ?? false;
+    if (e is BackupError && inBrowser) {
+      final browser = s.browserRestoreFailed(e.code, e.message);
+      if (browser != null) return browser;
+    }
+    final again = !chosenFile
+        ? ''
+        : !_restored
+        ? '\n${s.tryAnotherFile}'
+        : inBrowser
+        ? '\n${s.reloadToGoOn}'
+        : '';
     return switch (e) {
       BackupError() => s.backupError(e.code, e.message) + again,
       RecoveryKeyFormatError() => s.recoveryKeyFormat,
@@ -432,7 +446,13 @@ class _YourDataCardState extends State<YourDataCard> {
     final PickedBackup? picked;
     StagedRestore staged;
     try {
-      picked = await picker.pick(title: s.chooseBackupTitle);
+      picked = await picker.pick(
+        title: s.chooseBackupTitle,
+        // Checked from the file's size before it is read (R018).
+        limit: files.keepsInBrowserStorage
+            ? BackupSizeLimit.browserStorage
+            : BackupSizeLimit.anyBackup,
+      );
       if (picked == null) {
         _say(s.noFileChosen);
         return;
@@ -611,15 +631,28 @@ class _YourDataCardState extends State<YourDataCard> {
           ),
         ),
       ),
-      if (_copyable != null) ...[
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          key: const ValueKey('data-save-copy'),
-          onPressed: _busy ? null : () => _saveCopy(s),
-          icon: const Icon(Icons.save_alt),
-          label: Text(s.saveCopy),
-        ),
-      ],
+    ],
+    // In the browser, once a restore ran (finished or not), a reload is the
+    // only way on: offered as an action, whatever the message says (R018).
+    if (_restored &&
+        (_files?.restoresChosenFile ?? false) &&
+        _s.reloadPage != null) ...[
+      const SizedBox(height: 8),
+      FilledButton.tonalIcon(
+        key: const ValueKey('reload-page'),
+        onPressed: _s.reloadPage,
+        icon: const Icon(Icons.refresh),
+        label: Text(s.reloadPage),
+      ),
+    ],
+    if (_message != null && _copyable != null) ...[
+      const SizedBox(height: 8),
+      OutlinedButton.icon(
+        key: const ValueKey('data-save-copy'),
+        onPressed: _busy ? null : () => _saveCopy(s),
+        icon: const Icon(Icons.save_alt),
+        label: Text(s.saveCopy),
+      ),
     ],
   ];
 

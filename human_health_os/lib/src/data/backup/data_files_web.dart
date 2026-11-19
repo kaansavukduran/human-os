@@ -71,6 +71,9 @@ class BrowserDataFiles implements DataFiles {
   bool get restoresChosenFile => true;
 
   @override
+  bool get keepsInBrowserStorage => true;
+
+  @override
   bool get sessionOnly => false;
 
   /// The vault cryptography does not run under dart2js (D-016, G-32).

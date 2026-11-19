@@ -13,6 +13,7 @@ import '../app/appearance_scope.dart';
 import '../domain/settings/appearance.dart';
 import '../domain/settings/date_style.dart';
 import '../domain/units/display_units.dart';
+import '../features/today/backup_file_picker.dart' show maxBrowserBackupBytes;
 
 enum AppLang { en, tr }
 
@@ -2310,6 +2311,40 @@ class S {
     'A restore ran in this tab: reload the page before going on. Saving, backups and exports are paused until then.',
     'Bu sekmede bir geri yükleme çalıştı: devam etmeden önce sayfayı yenile. O zamana kadar kayıt, yedek ve dışa aktarma durduruldu.',
   );
+
+  /// After a restore ran in the browser, finished or not: the only way on.
+  String get reloadToGoOn => _t(
+    'Reload the page to go on. Saving, backups and exports are paused until then.',
+    'Devam etmek için sayfayı yenile. O zamana kadar kayıt, yedek ve dışa aktarma durduruldu.',
+  );
+  String get reloadPage => _t('Reload the page', 'Sayfayı yenile');
+
+  /// A restore in the browser that failed after this session stopped
+  /// writing (R018): browser storage, not files, and a reload, not a
+  /// restart. Null for any other code.
+  String? browserRestoreFailed(String code, String? detail) => switch (code) {
+    'RESTORE_NOT_SWITCHED' => _t(
+      'The restore could not be finished: this browser\'s storage refused the write (it may be full). Nothing was changed in it. Reload the page to go on; saving is paused until then.',
+      'Geri yükleme tamamlanamadı: bu tarayıcının deposu yazmayı reddetti (dolu olabilir). Depoda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kayıt durduruldu.',
+    ),
+    'RESTORE_SWITCH_FAILED' when detail == null || detail.isEmpty => _t(
+      'The restore could not be finished: this browser\'s storage refused the restored copy (it may be full). The data that was here before is back in place. Reload the page before saving anything.',
+      'Geri yükleme tamamlanamadı: bu tarayıcının deposu geri yüklenen kopyayı kabul etmedi (dolu olabilir). Daha önce burada olan veriler yerinde. Bir şey kaydetmeden önce sayfayı yenile.',
+    ),
+    'RESTORE_SWITCH_FAILED' => _t(
+      'The restore could not be finished: this browser\'s storage refused the restored copy (it may be full). The data that was here before is kept in this browser\'s storage as "$detail". Nothing was deleted. Reload the page before saving anything.',
+      'Geri yükleme tamamlanamadı: bu tarayıcının deposu geri yüklenen kopyayı kabul etmedi (dolu olabilir). Daha önce burada olan veriler bu tarayıcının deposunda "$detail" olarak saklanıyor. Hiçbir şey silinmedi. Bir şey kaydetmeden önce sayfayı yenile.',
+    ),
+    _ => null,
+  };
+
+  /// [bytes] in MB with one decimal, in the language's decimal mark.
+  String megabytes(int bytes) {
+    final mb = (bytes / (1024 * 1024)).toStringAsFixed(1);
+    final shown = mb.endsWith('.0') ? mb.substring(0, mb.length - 2) : mb;
+    return '${_t(shown, shown.replaceAll('.', ','))} MB';
+  }
+
   String get tryAnotherFile => _t(
     'You can choose another file to try again.',
     'Yeniden denemek için başka bir dosya seçebilirsin.',
@@ -2407,6 +2442,10 @@ class S {
     'BACKUP_TOO_LARGE' => _t(
       'This file is larger than any Human OS backup, so it was not read. Nothing was changed.',
       'Bu dosya herhangi bir Human OS yedeğinden büyük; bu yüzden okunmadı. Hiçbir şey değişmedi.',
+    ),
+    'BACKUP_TOO_LARGE_BROWSER' => _t(
+      'This backup is larger than this browser can keep (${megabytes(int.tryParse(detail ?? '') ?? 0)}; the limit here is ${megabytes(maxBrowserBackupBytes)}), so it was not read. Restore it in the desktop app. Nothing was changed.',
+      'Bu yedek, bu tarayıcının saklayabileceğinden büyük (${megabytes(int.tryParse(detail ?? '') ?? 0)}; buradaki sınır ${megabytes(maxBrowserBackupBytes)}); bu yüzden okunmadı. Onu masaüstü uygulamasında geri yükle. Hiçbir şey değişmedi.',
     ),
     'VAULT_INCOMPATIBLE'
         when detail == 'RECORD_SCHEMA_NEWER' || detail == 'VAULT_NEWER' =>

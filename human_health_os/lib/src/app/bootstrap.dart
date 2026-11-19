@@ -23,6 +23,7 @@ import '../features/genetics/genome_file_picker.dart';
 import '../features/today/backup_file_picker.dart' show BackupFilePicker;
 import '../features/today/save_copy.dart' show SaveCopy;
 import 'app_services.dart';
+import 'page_reload.dart';
 
 /// What `main()` shows first: the app, or the vault gate.
 class AppStartup {
@@ -180,6 +181,7 @@ Future<AppServices> servicesFor(
   GenomeFilePicker? genomePicker,
   SaveCopy? saveCopy,
   BackupFilePicker? backupPicker,
+  void Function()? reloadPage = pageReload,
   KeyDeriver derive = deriveInline,
   SealedAppearanceStore? preferences,
   Clock clock = const SystemClock(),
@@ -243,6 +245,7 @@ Future<AppServices> servicesFor(
         genomePicker: genomePicker,
         saveCopy: saveCopy,
         backupPicker: backupPicker,
+        reloadPage: reloadPage,
         derive: derive,
         preferences: preferences,
         clock: clock,
@@ -285,6 +288,7 @@ Future<AppServices> servicesFor(
     backupPicker: backupPicker,
     reopenAfterRestore: reopen,
     replacedBy: replacedBy,
+    reloadPage: reloadPage,
   );
 }
 

@@ -41,6 +41,9 @@ class FileDataFiles implements DataFiles {
   bool get restoresChosenFile => false;
 
   @override
+  bool get keepsInBrowserStorage => false;
+
+  @override
   bool get sessionOnly => false;
 
   @override

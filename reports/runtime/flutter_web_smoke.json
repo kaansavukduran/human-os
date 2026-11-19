@@ -1,9 +1,9 @@
 {
-  "ran_at": "2026-11-19T19:55:37.859Z",
-  "git_head": "31bc1a784538fad4a0666f78be12c2ecf8807b0e",
+  "ran_at": "2026-11-19T20:28:57.562Z",
+  "git_head": "7ce799b6924eb88576a71c3321465e131eaf76c7",
   "working_tree_dirty": false,
   "build": "/home/user/claudereponewscience/human_health_os/build/web",
-  "main_dart_js_sha256": "bb5220a520b343abb4200f12150fb27514560f202df760101ffafb85eb8db207",
+  "main_dart_js_sha256": "5202128bde337c75a7ee0752acef6e43d00bf4f07629260a8b80862dd1887c91",
   "browser": "chromium 153.0.8010.12",
   "runs": [
     {
@@ -185,7 +185,7 @@
     {
       "name": "desktop-en: backup downloads with a matching checksum",
       "status": "PASS",
-      "detail": "human-os-backup-2ef9b730-20261119T195302Z.hhosbackup.json"
+      "detail": "human-os-backup-b4aa40f0-20261119T202621Z.hhosbackup.json"
     },
     {
       "name": "desktop-en: backup holds the saved weight and lab result",
@@ -460,7 +460,7 @@
     {
       "name": "phone-en: backup downloads with a matching checksum",
       "status": "PASS",
-      "detail": "human-os-backup-d4d9db42-20261119T195514Z.hhosbackup.json"
+      "detail": "human-os-backup-27d238e0-20261119T202834Z.hhosbackup.json"
     },
     {
       "name": "phone-en: backup holds the saved weight and lab result",

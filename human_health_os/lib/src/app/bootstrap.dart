@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import '../application/heartbeat_service.dart';
 import '../config/app_config.dart';
 import '../core/capabilities.dart';
+import '../core/ids.dart' show Clock, SystemClock;
 import '../core/redact.dart' show errorCode;
 import '../data/backup/backup_bundle.dart';
 import '../data/backup/data_files.dart';
@@ -179,8 +180,9 @@ Future<AppServices> servicesFor(
   SaveCopy? saveCopy,
   KeyDeriver derive = deriveInline,
   SealedAppearanceStore? preferences,
+  Clock clock = const SystemClock(),
 }) async {
-  final heartbeat = HeartbeatService(repo);
+  final heartbeat = HeartbeatService(repo, clock: clock);
   final self = await heartbeat.ensureSelfProfile();
   final makeBackup =
       repo is LogRepository &&

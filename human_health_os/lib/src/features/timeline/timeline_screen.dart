@@ -11,6 +11,7 @@ import '../../navigation/destination_switch.dart';
 import '../../navigation/destinations.dart';
 import '../measurements/measurement_format.dart';
 import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/entry_list.dart';
 import '../../presentation/widgets/first_step.dart';
 import '../../presentation/widgets/loading_line.dart';
 import '../../presentation/widgets/read_failed_note.dart';
@@ -68,10 +69,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final go = DestinationSwitch.maybeOf(context);
-    return ListView(
+    final entries = _readFailed ? const <TimelineEntry>[] : _entries;
+    return EntryList(
       key: const ValueKey('screen-timeline'),
-      padding: const EdgeInsets.all(16),
-      children: [
+      itemCount: entries.length,
+      itemBuilder: (_, i) => _EntryTile(
+        key: ValueKey('timeline-entry-${entries[i].rootId}'),
+        entry: entries[i],
+        onTap: () => _openDetail(entries[i]),
+      ),
+      header: [
         const AreaIntro(area: DestinationId.timeline, terms: ['correction']),
         SwitchListTile(
           key: const ValueKey('timeline-show-hidden'),
@@ -103,13 +110,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     ),
             ),
           ),
-        if (!_readFailed)
-          for (final e in _entries)
-            _EntryTile(
-              key: ValueKey('timeline-entry-${e.rootId}'),
-              entry: e,
-              onTap: () => _openDetail(e),
-            ),
       ],
     );
   }

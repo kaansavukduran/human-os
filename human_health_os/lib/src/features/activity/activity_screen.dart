@@ -9,6 +9,7 @@ import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/aion.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/entry_list.dart';
 import '../../presentation/widgets/loading_line.dart';
 import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
@@ -75,10 +76,37 @@ class _ActivityScreenState extends State<ActivityScreen> {
     final s = S.of(context);
     final scheme = Theme.of(context).colorScheme;
     final entries = _entries;
-    return ListView(
+    final shown = _readFailed ? null : entries;
+    return EntryList(
       key: const ValueKey('screen-activity'),
-      padding: const EdgeInsets.all(16),
-      children: [
+      itemCount: shown?.length ?? 0,
+      itemBuilder: (_, i) {
+        final r = shown![i];
+        return Card(
+          key: ValueKey('act-entry-${r.id}'),
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            title: Text(s.actLine(r.details! as ActivityEntryDetails)),
+            // The button sits under the text, so a narrow window or large
+            // text never squeezes the entry into a thin column.
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  fmtWhen(r.observedAt),
+                  style: TextStyle(color: scheme.onSurfaceVariant),
+                ),
+                TextButton(
+                  key: ValueKey('act-correct-${r.id}'),
+                  onPressed: () => _open(correcting: r),
+                  child: Text(s.amendAction(AmendReason.correction)),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      header: [
         AreaIntro(
           area: DestinationId.activity,
           title: s.actTitle,
@@ -106,32 +134,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
               const SizedBox(width: 12),
               Expanded(child: Text(s.actNone, key: const ValueKey('act-none'))),
             ],
-          )
-        else
-          for (final r in entries)
-            Card(
-              key: ValueKey('act-entry-${r.id}'),
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                title: Text(s.actLine(r.details! as ActivityEntryDetails)),
-                // The button sits under the text, so a narrow window or large
-                // text never squeezes the entry into a thin column.
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      fmtWhen(r.observedAt),
-                      style: TextStyle(color: scheme.onSurfaceVariant),
-                    ),
-                    TextButton(
-                      key: ValueKey('act-correct-${r.id}'),
-                      onPressed: () => _open(correcting: r),
-                      child: Text(s.amendAction(AmendReason.correction)),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          ),
       ],
     );
   }

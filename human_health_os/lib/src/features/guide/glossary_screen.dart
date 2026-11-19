@@ -89,7 +89,7 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
-                AppearanceScope.maybeOf(context)?.visit(DiscoveryStep.glossary);
+                AppearanceScope.read(context)?.visit(DiscoveryStep.glossary);
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => GlossaryEntryScreen(entry: e),

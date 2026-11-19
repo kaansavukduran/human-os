@@ -144,7 +144,8 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
     final s = S.of(context);
     final text = Theme.of(context).textTheme;
     final prefs =
-        AppearanceScope.maybeOf(context)?.value ?? const AppearanceSettings();
+        AppearanceScope.watch(context, AppearanceAspect.tiles) ??
+        const AppearanceSettings();
     final codes = prefs.visible([
       for (final k in MeasurementsCard.kinds) k.code,
     ]);
@@ -340,7 +341,8 @@ class _EntrySheetState extends State<_EntrySheet> {
   bool? _padChoice;
 
   bool get _pad =>
-      _padChoice ?? (AppearanceScope.maybeOf(context)?.value.padOpen ?? false);
+      _padChoice ??
+      (AppearanceScope.watch(context, AppearanceAspect.pad)?.padOpen ?? false);
   String? _errorCode;
   String? _errorField;
   bool _busy = false;
@@ -513,7 +515,7 @@ class _EntrySheetState extends State<_EntrySheet> {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 key: const ValueKey('measure-trend'),
-                icon: const Icon(Icons.show_chart),
+                icon: const Icon(Icons.show_chart_outlined),
                 label: Text(s.seeOverTime),
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(

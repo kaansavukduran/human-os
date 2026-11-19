@@ -51,22 +51,12 @@ class PlannedDestinationScreen extends StatelessWidget {
                   style: text.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.rule,
-                      size: 18,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        destination.principle(lang),
-                        style: text.bodyMedium,
-                      ),
-                    ),
-                  ],
+                // The principle on its own: a ruler icon beside it said
+                // nothing (U031-S4 slop audit).
+                Text(
+                  destination.principle(lang),
+                  key: const ValueKey('planned-principle'),
+                  style: text.bodyMedium,
                 ),
               ],
             ),

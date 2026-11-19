@@ -45,7 +45,7 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  late DestinationId _current = switch ((AppearanceScope.maybeOf(context)
+  late DestinationId _current = switch ((AppearanceScope.read(context)
           ?.value
           .startScreen) ??
       StartScreen.today) {
@@ -255,7 +255,7 @@ class _PlannedRailGroup extends StatelessWidget {
 /// "More" sheet: the same place on every screen).
 void openSettings(BuildContext context, AppConfig? config) => openSettingsOn(
   Navigator.of(context),
-  AppearanceScope.maybeOf(context),
+  AppearanceScope.read(context),
   config,
 );
 
@@ -471,11 +471,7 @@ class _CompactBar extends StatelessWidget {
                   onTap: () {
                     final nav = Navigator.of(context);
                     nav.pop();
-                    openSettingsOn(
-                      nav,
-                      AppearanceScope.maybeOf(context),
-                      config,
-                    );
+                    openSettingsOn(nav, AppearanceScope.read(context), config);
                   },
                 ),
               ],

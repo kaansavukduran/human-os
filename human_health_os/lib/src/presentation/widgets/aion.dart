@@ -18,7 +18,8 @@ class AionFigure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final show =
-        (AppearanceScope.maybeOf(context)?.value ?? const AppearanceSettings())
+        (AppearanceScope.watch(context, AppearanceAspect.aion) ??
+                const AppearanceSettings())
             .showAion;
     if (!show) return const SizedBox.shrink();
     return Image.asset(
@@ -49,7 +50,8 @@ class AionLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final show =
-        (AppearanceScope.maybeOf(context)?.value ?? const AppearanceSettings())
+        (AppearanceScope.watch(context, AppearanceAspect.aion) ??
+                const AppearanceSettings())
             .showAion;
     if (!show) return const SizedBox.shrink();
     final theme = Theme.of(context);

@@ -8,6 +8,7 @@ import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/aion.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/entry_list.dart';
 import '../../presentation/widgets/loading_line.dart';
 import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
@@ -124,10 +125,24 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final items = _items;
-    return ListView(
+    final shown = _readFailed ? null : items;
+    return EntryList(
       key: const ValueKey('screen-medications'),
-      padding: const EdgeInsets.all(16),
-      children: [
+      itemCount: shown?.length ?? 0,
+      itemBuilder: (_, i) {
+        final m = shown![i];
+        return _ItemCard(
+          view: m,
+          onPlan: () => _sheet(
+            (_) => _PlanSheet(svc: _svc, me: _me, itemRootId: m.rootId),
+          ),
+          onDose: () => _sheet(
+            (_) => _DoseSheet(svc: _svc, me: _me, itemRootId: m.rootId),
+          ),
+          onState: (state) => _setState(m.rootId, state),
+        );
+      },
+      header: [
         AreaIntro(
           area: DestinationId.medications,
           title: s.medsTitle,
@@ -157,19 +172,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                 child: Text(s.medsNone, key: const ValueKey('meds-none')),
               ),
             ],
-          )
-        else
-          for (final m in items)
-            _ItemCard(
-              view: m,
-              onPlan: () => _sheet(
-                (_) => _PlanSheet(svc: _svc, me: _me, itemRootId: m.rootId),
-              ),
-              onDose: () => _sheet(
-                (_) => _DoseSheet(svc: _svc, me: _me, itemRootId: m.rootId),
-              ),
-              onState: (state) => _setState(m.rootId, state),
-            ),
+          ),
       ],
     );
   }

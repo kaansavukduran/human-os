@@ -9,6 +9,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
 import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/entry_list.dart';
 import '../../presentation/widgets/first_step.dart';
 import '../../presentation/widgets/loading_line.dart';
 import '../../presentation/widgets/read_failed_note.dart';
@@ -116,10 +117,17 @@ String _ymd(DateTime d) =>
 
 class _LabsScreenState extends State<LabsScreen> {
   final _form = _LabForm();
-  bool _saved = false;
+
+  /// "Saved" under the Add button. A notifier, so opening or closing the
+  /// sheet repaints that line alone, never the list of results.
+  final _saved = ValueNotifier<bool>(false);
   bool _loaded = false;
   bool _readFailed = false;
   List<TimelineEntry> _entries = const [];
+
+  /// One row per shown version (a conflict lists each), flattened once per
+  /// read so the list builds only the rows in view.
+  List<({HealthRecord record, bool conflict})> _rows = const [];
 
   HeartbeatService get _svc => widget.services.heartbeat;
   String get _me => widget.services.self.id;
@@ -134,6 +142,7 @@ class _LabsScreenState extends State<LabsScreen> {
   @override
   void dispose() {
     _form.dispose();
+    _saved.dispose();
     super.dispose();
   }
 
@@ -143,6 +152,11 @@ class _LabsScreenState extends State<LabsScreen> {
       if (mounted) {
         setState(() {
           _entries = e;
+          _rows = [
+            for (final x in e)
+              for (final r in x.heads)
+                (record: r, conflict: x.status == EntryStatus.conflict),
+          ];
           _loaded = true;
           _readFailed = false;
         });
@@ -162,7 +176,7 @@ class _LabsScreenState extends State<LabsScreen> {
   /// Opens the sheet for a new result, or for a correction of [r].
   Future<void> _open([HealthRecord? r]) async {
     if (r != null) _form.startCorrection(r);
-    setState(() => _saved = false);
+    _saved.value = false;
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -173,11 +187,12 @@ class _LabsScreenState extends State<LabsScreen> {
     if (!mounted) return;
     if (saved == true) {
       _form.clear();
-      setState(() => _saved = true);
+      _saved.value = true;
       await _reload();
     } else if (_form.correcting != null) {
-      // A correction that was not saved gives the add form its own values.
-      setState(_form.clear);
+      // A correction that was not saved gives the add form its own values
+      // (the form lives in the sheet; the list does not change).
+      _form.clear();
     }
   }
 
@@ -185,10 +200,17 @@ class _LabsScreenState extends State<LabsScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final text = Theme.of(context).textTheme;
-    return ListView(
+    final rows = _readFailed || !_loaded ? const <Never>[] : _rows;
+    return EntryList(
       key: const ValueKey('screen-labs'),
-      padding: const EdgeInsets.all(16),
-      children: [
+      itemCount: rows.length,
+      itemBuilder: (_, i) => _LabTile(
+        key: ValueKey('lab-row-${rows[i].record.id}'),
+        record: rows[i].record,
+        conflict: rows[i].conflict,
+        onCorrect: () => _open(rows[i].record),
+      ),
+      header: [
         const AreaIntro(
           area: DestinationId.labs,
           terms: ['reference_interval', 'flag', 'unit'],
@@ -209,18 +231,22 @@ class _LabsScreenState extends State<LabsScreen> {
             label: Text(s.labAdd),
           ),
         ),
-        if (_saved)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Semantics(
-              liveRegion: true,
-              child: Text(
-                s.saved,
-                key: const ValueKey('lab-saved'),
-                style: text.bodySmall,
-              ),
-            ),
-          ),
+        ValueListenableBuilder<bool>(
+          valueListenable: _saved,
+          builder: (context, saved, _) => !saved
+              ? const SizedBox.shrink()
+              : Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      s.saved,
+                      key: const ValueKey('lab-saved'),
+                      style: text.bodySmall,
+                    ),
+                  ),
+                ),
+        ),
         const SizedBox(height: 16),
         if (_readFailed)
           ReadFailedNote(id: 'labs', onRetry: _retry)
@@ -236,16 +262,7 @@ class _LabsScreenState extends State<LabsScreen> {
               icon: const Icon(Icons.add),
               label: Text(s.labAdd),
             ),
-          )
-        else
-          for (final e in _entries)
-            for (final r in e.heads)
-              _LabTile(
-                key: ValueKey('lab-row-${r.id}'),
-                record: r,
-                conflict: e.status == EntryStatus.conflict,
-                onCorrect: () => _open(r),
-              ),
+          ),
       ],
     );
   }

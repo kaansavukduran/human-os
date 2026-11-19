@@ -33,7 +33,8 @@ class _WeightCardState extends State<WeightCard> {
   bool? _padChoice;
 
   bool get _pad =>
-      _padChoice ?? (AppearanceScope.maybeOf(context)?.value.padOpen ?? false);
+      _padChoice ??
+      (AppearanceScope.watch(context, AppearanceAspect.pad)?.padOpen ?? false);
   List<HealthRecord> _weights = const [];
   List<TimelineEntry> _entries = const [];
   String? _errorCode;
@@ -264,7 +265,7 @@ class _WeightCardState extends State<WeightCard> {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 key: const ValueKey('weight-trend'),
-                icon: const Icon(Icons.show_chart),
+                icon: const Icon(Icons.show_chart_outlined),
                 label: Text(s.seeOverTime),
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(

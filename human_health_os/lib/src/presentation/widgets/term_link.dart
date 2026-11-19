@@ -67,7 +67,7 @@ class TermLink extends StatelessWidget {
 
   Future<void> _open(BuildContext context, GlossaryEntry entry) async {
     final nav = Navigator.of(context);
-    final scope = AppearanceScope.maybeOf(context);
+    final scope = AppearanceScope.read(context);
     final more = await showModalBottomSheet<bool>(
       context: context,
       showDragHandle: true,

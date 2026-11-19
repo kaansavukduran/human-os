@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../app/app_services.dart';
 import '../../app/appearance_scope.dart';
 import '../../domain/settings/appearance.dart';
 import '../../core/capabilities.dart';
+import '../../core/ids.dart' show Clock;
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
@@ -22,32 +25,82 @@ import 'weight_card.dart';
 import 'your_data_card.dart';
 import 'discovery_card.dart';
 
-class TodayScreen extends StatelessWidget {
+class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key, required this.services});
 
   final AppServices services;
 
   @override
+  State<TodayScreen> createState() => _TodayScreenState();
+}
+
+class _TodayScreenState extends State<TodayScreen> {
+  // The cards are made once per services: when the screen builds again
+  // (another section shown, the shell rebuilt), Flutter keeps a card that
+  // is the same widget as before and does not build it again (U031-S4).
+  late WeightCard _weight;
+  late MeasurementsCard _measurements;
+  late SleepCard _sleep;
+  late FeelingCard _feeling;
+  late YourDataCard _yourData;
+
+  @override
+  void initState() {
+    super.initState();
+    _makeCards();
+  }
+
+  @override
+  void didUpdateWidget(TodayScreen old) {
+    super.didUpdateWidget(old);
+    if (old.services != widget.services) _makeCards();
+  }
+
+  void _makeCards() {
+    final services = widget.services;
+    // Keyed, so a card moved by the order settings keeps its element and
+    // what was typed in it.
+    _weight = WeightCard(
+      key: const ValueKey('today-card-weight'),
+      services: services,
+    );
+    _measurements = MeasurementsCard(
+      key: const ValueKey('today-card-measurements'),
+      services: services,
+    );
+    _sleep = SleepCard(
+      key: const ValueKey('today-card-sleep'),
+      services: services,
+    );
+    _feeling = FeelingCard(
+      key: const ValueKey('today-card-feeling'),
+      services: services,
+    );
+    _yourData = YourDataCard(
+      key: const ValueKey('today-card-your-data'),
+      services: services,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final services = widget.services;
     final s = S.of(context);
     final text = Theme.of(context).textTheme;
     final today = destinationById(DestinationId.today);
+    // Only what Today shows: a change to anything else does not build
+    // Today again.
     final look =
-        AppearanceScope.maybeOf(context)?.value ?? const AppearanceSettings();
+        AppearanceScope.watch(context, AppearanceAspect.todayLayout) ??
+        const AppearanceSettings();
     final hidden = look.hiddenSections;
-    final weight = WeightCard(services: services);
-    final measurements = MeasurementsCard(services: services);
+    final weight = _weight;
+    final measurements = _measurements;
     bool show(TodaySection x) => !hidden.contains(x);
     // Sleep and How you feel, together; placed first when chosen.
     final checkIns = [
-      if (show(TodaySection.sleep)) ...[
-        SleepCard(services: services),
-        const SizedBox(height: 28),
-      ],
-      if (show(TodaySection.feeling)) ...[
-        FeelingCard(services: services),
-        const SizedBox(height: 28),
-      ],
+      if (show(TodaySection.sleep)) ...[_sleep, const SizedBox(height: 28)],
+      if (show(TodaySection.feeling)) ...[_feeling, const SizedBox(height: 28)],
     ];
     return ListView(
       key: const ValueKey('screen-today'),
@@ -58,13 +111,7 @@ class TodayScreen extends StatelessWidget {
           child: Text(today.label(s.lang), style: text.headlineSmall),
         ),
         const SizedBox(height: 2),
-        Text(
-          s.dateLine(DateTime.now()),
-          key: const ValueKey('today-date'),
-          style: text.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.outline,
-          ),
-        ),
+        _DateLine(clock: services.heartbeat.clock),
         const SizedBox(height: 20),
         if (look.checkInsFirst) ...checkIns,
         look.measurementsFirst ? measurements : weight,
@@ -88,7 +135,7 @@ class TodayScreen extends StatelessWidget {
             title: s.howToTitle,
             hint: s.howToTileHint,
             onTap: () {
-              AppearanceScope.maybeOf(context)?.visit(DiscoveryStep.howTo);
+              AppearanceScope.read(context)?.visit(DiscoveryStep.howTo);
               Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const HowToScreen()),
               );
@@ -132,7 +179,7 @@ class TodayScreen extends StatelessWidget {
           const SizedBox(height: 8),
           _ToolTile(
             key: const ValueKey('tool-guide'),
-            icon: Icons.accessibility_new,
+            icon: Icons.accessibility_new_outlined,
             title: s.guideTitle,
             hint: s.guideTileHint,
             onTap: () => Navigator.of(context).push(
@@ -167,7 +214,7 @@ class TodayScreen extends StatelessWidget {
           const SizedBox(height: 28),
         ],
         if (show(TodaySection.yourData)) ...[
-          YourDataCard(services: services),
+          _yourData,
           const SizedBox(height: 28),
         ],
         if (look.discoveryEnabled) ...[
@@ -261,6 +308,64 @@ class TodayScreen extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Today's date, written again just after each local midnight, so a screen
+/// left open overnight never shows yesterday (U031-S4).
+class _DateLine extends StatefulWidget {
+  const _DateLine({required this.clock});
+
+  final Clock clock;
+
+  @override
+  State<_DateLine> createState() => _DateLineState();
+}
+
+class _DateLineState extends State<_DateLine> {
+  Timer? _midnight;
+
+  @override
+  void initState() {
+    super.initState();
+    _schedule();
+  }
+
+  @override
+  void didUpdateWidget(_DateLine old) {
+    super.didUpdateWidget(old);
+    if (old.clock != widget.clock) _schedule();
+  }
+
+  @override
+  void dispose() {
+    _midnight?.cancel();
+    super.dispose();
+  }
+
+  /// Fires a second after the next local midnight (DateTime works out a
+  /// daylight-saving day of 23 or 25 hours).
+  void _schedule() {
+    _midnight?.cancel();
+    final now = widget.clock.nowUtc().toLocal();
+    final next = DateTime(now.year, now.month, now.day + 1);
+    _midnight = Timer(next.difference(now) + const Duration(seconds: 1), () {
+      if (!mounted) return;
+      setState(() {});
+      _schedule();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Text(
+      S.of(context).dateLine(widget.clock.nowUtc().toLocal()),
+      key: const ValueKey('today-date'),
+      style: theme.textTheme.bodyMedium?.copyWith(
+        color: theme.colorScheme.outline,
+      ),
     );
   }
 }

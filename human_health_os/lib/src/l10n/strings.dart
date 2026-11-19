@@ -47,7 +47,9 @@ class S {
 
   static S of(BuildContext context) => S(
     langOf(context),
-    units: AppearanceScope.maybeOf(context)?.value.units ?? UnitSystem.metric,
+    units:
+        AppearanceScope.watch(context, AppearanceAspect.display)?.units ??
+        UnitSystem.metric,
   );
 
   /// ", about 159.6 lb" for a screen reader when US units are chosen.

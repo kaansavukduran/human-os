@@ -7,6 +7,7 @@ import '../../l10n/strings.dart';
 import '../../presentation/widgets/aion.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/entry_list.dart';
 import '../../presentation/widgets/loading_line.dart';
 import '../../navigation/destinations.dart';
 import '../../presentation/widgets/sheet_parts.dart';
@@ -73,10 +74,30 @@ class _PreventiveScreenState extends State<PreventiveScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final entries = _entries;
-    return ListView(
+    final shown = _readFailed ? null : entries;
+    return EntryList(
       key: const ValueKey('screen-preventive'),
-      padding: const EdgeInsets.all(16),
-      children: [
+      itemCount: shown?.length ?? 0,
+      itemBuilder: (_, i) {
+        final r = shown![i];
+        return Card(
+          key: ValueKey('prev-entry-${r.id}'),
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            title: Text(s.prevLine(r.details! as PreventiveEntryDetails)),
+            // Under the text, so a narrow window never squeezes it.
+            subtitle: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                key: ValueKey('prev-correct-${r.id}'),
+                onPressed: () => _open(correcting: r),
+                child: Text(s.amendAction(AmendReason.correction)),
+              ),
+            ),
+          ),
+        );
+      },
+      header: [
         AreaIntro(
           area: DestinationId.preventive,
           title: s.prevTitle,
@@ -106,25 +127,7 @@ class _PreventiveScreenState extends State<PreventiveScreen> {
                 child: Text(s.prevNone, key: const ValueKey('prev-none')),
               ),
             ],
-          )
-        else
-          for (final r in entries)
-            Card(
-              key: ValueKey('prev-entry-${r.id}'),
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                title: Text(s.prevLine(r.details! as PreventiveEntryDetails)),
-                // Under the text, so a narrow window never squeezes it.
-                subtitle: Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    key: ValueKey('prev-correct-${r.id}'),
-                    onPressed: () => _open(correcting: r),
-                    child: Text(s.amendAction(AmendReason.correction)),
-                  ),
-                ),
-              ),
-            ),
+          ),
       ],
     );
   }

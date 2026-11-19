@@ -8,6 +8,7 @@ import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/aion.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/entry_list.dart';
 import '../../presentation/widgets/loading_line.dart';
 import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
@@ -73,10 +74,37 @@ class _NutritionScreenState extends State<NutritionScreen> {
     final s = S.of(context);
     final scheme = Theme.of(context).colorScheme;
     final entries = _entries;
-    return ListView(
+    final shown = _readFailed ? null : entries;
+    return EntryList(
       key: const ValueKey('screen-nutrition'),
-      padding: const EdgeInsets.all(16),
-      children: [
+      itemCount: shown?.length ?? 0,
+      itemBuilder: (_, i) {
+        final r = shown![i];
+        return Card(
+          key: ValueKey('food-entry-${r.id}'),
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            title: Text(s.foodLine(r.details! as FoodEntryDetails)),
+            // The button sits under the text, so a narrow window or large
+            // text never squeezes the entry into a thin column.
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  fmtWhen(r.observedAt),
+                  style: TextStyle(color: scheme.onSurfaceVariant),
+                ),
+                TextButton(
+                  key: ValueKey('food-correct-${r.id}'),
+                  onPressed: () => _add(correcting: r),
+                  child: Text(s.amendAction(AmendReason.correction)),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      header: [
         AreaIntro(
           area: DestinationId.nutrition,
           title: s.foodTitle,
@@ -106,32 +134,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 child: Text(s.foodNone, key: const ValueKey('food-none')),
               ),
             ],
-          )
-        else
-          for (final r in entries)
-            Card(
-              key: ValueKey('food-entry-${r.id}'),
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                title: Text(s.foodLine(r.details! as FoodEntryDetails)),
-                // The button sits under the text, so a narrow window or large
-                // text never squeezes the entry into a thin column.
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      fmtWhen(r.observedAt),
-                      style: TextStyle(color: scheme.onSurfaceVariant),
-                    ),
-                    TextButton(
-                      key: ValueKey('food-correct-${r.id}'),
-                      onPressed: () => _add(correcting: r),
-                      child: Text(s.amendAction(AmendReason.correction)),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          ),
       ],
     );
   }

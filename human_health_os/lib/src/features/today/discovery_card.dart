@@ -14,8 +14,10 @@ class DiscoveryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = AppearanceScope.maybeOf(context);
-    final a = controller?.value ?? const AppearanceSettings();
+    final controller = AppearanceScope.read(context);
+    final a =
+        AppearanceScope.watch(context, AppearanceAspect.discovery) ??
+        const AppearanceSettings();
     final s = S.of(context);
     return Card(
       key: const ValueKey('discovery-card'),
@@ -73,8 +75,11 @@ class DiscoveryCard extends StatelessWidget {
               ),
             TextButton(
               key: const ValueKey('discovery-hide'),
-              onPressed: () =>
-                  controller?.update(a.copyWith(discoveryEnabled: false)),
+              // From the current settings, not this card's snapshot, so a
+              // change made elsewhere is never undone.
+              onPressed: () => controller?.update(
+                controller.value.copyWith(discoveryEnabled: false),
+              ),
               child: Text(s.discoveryHide),
             ),
           ],

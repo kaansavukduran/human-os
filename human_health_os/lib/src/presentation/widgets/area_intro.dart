@@ -40,7 +40,7 @@ class _AreaIntroState extends State<AreaIntro> {
   String get _id => widget.area.name;
 
   void _set(BuildContext context, {required bool closed}) {
-    final scope = AppearanceScope.maybeOf(context);
+    final scope = AppearanceScope.read(context);
     if (scope == null) {
       setState(() => _closedHere = closed);
       return;
@@ -54,24 +54,27 @@ class _AreaIntroState extends State<AreaIntro> {
     final theme = Theme.of(context);
     final text = theme.textTheme;
     final d = destinationById(widget.area);
-    final scope = AppearanceScope.maybeOf(context);
-    final closed = scope == null
+    final look = AppearanceScope.watch(context, AppearanceAspect.explained);
+    final closed = look == null
         ? _closedHere
-        : scope.value.explainedAreas.contains(_id);
+        : look.explainedAreas.contains(_id);
     final label = text.labelMedium?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
 
     Widget line(String key, String heading, String body) => Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        key: ValueKey('area-$key-$_id'),
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(heading, style: label),
-          const SizedBox(height: 2),
-          Text(body, style: text.bodyMedium),
-        ],
+      child: Semantics(
+        container: true,
+        child: Column(
+          key: ValueKey('area-$key-$_id'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(heading, style: label),
+            const SizedBox(height: 2),
+            Text(body, style: text.bodyMedium),
+          ],
+        ),
       ),
     );
 
@@ -83,7 +86,10 @@ class _AreaIntroState extends State<AreaIntro> {
       key: ValueKey('area-intro-$_id'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Containers: without them the heading took in every line under it
+        // and was announced as one long banner (found by the web smoke).
         Semantics(
+          container: true,
           header: true,
           child: Text(
             widget.title ?? d.label(s.lang),

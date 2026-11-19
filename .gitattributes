@@ -4,3 +4,6 @@ human_health_os/test/fixtures/** -text
 contracts/** -text
 # Scripts run on Linux and macOS hosts.
 *.sh text eol=lf
+# Reviewed font files and their licences are hashed in tests (D-042):
+# never convert line endings on checkout (Windows CI).
+human_health_os/assets/fonts/** -text

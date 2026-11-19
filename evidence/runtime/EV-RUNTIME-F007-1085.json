@@ -1,0 +1,94 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-RUNTIME-F007-1085",
+  "kind": "RUNTIME",
+  "forge_id": "Q001@v0.32",
+  "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "env HOME=/tmp/claude-0/f008/linux/schema5-home LANG=C.UTF-8 xvfb-run -a -s '-screen 0 1280x900x24' tools/linux/measurements_smoke.sh f008-dev-schema5 reports/runtime/linux-q001 /tmp/claude-0/f008/linux/schema5-home -- human_health_os/build/linux/x64/release/bundle/human_health_os",
+  "argv": [
+    "env",
+    "HOME=/tmp/claude-0/f008/linux/schema5-home",
+    "LANG=C.UTF-8",
+    "xvfb-run",
+    "-a",
+    "-s",
+    "-screen 0 1280x900x24",
+    "tools/linux/measurements_smoke.sh",
+    "f008-dev-schema5",
+    "reports/runtime/linux-q001",
+    "/tmp/claude-0/f008/linux/schema5-home",
+    "--",
+    "human_health_os/build/linux/x64/release/bundle/human_health_os"
+  ],
+  "cwd": ".",
+  "started_at": "2026-11-19T19:36:02.804Z",
+  "finished_at": "2026-11-19T19:36:21.713Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.4",
+    "python": "Python 3.13.18"
+  },
+  "host": "Linux 6.18.44-fc-v653 x86_64",
+  "summary": "# result: PASS",
+  "log_sha256": "81a0bff3fcad8b672754d40586c174ab9e172647c709c35dede0e92bb6e46198",
+  "log_lines": 24,
+  "log_tail": [
+    "** (org.humanhealthos.HumanHealthOS:4256): CRITICAL **: 19:36:03.399: void fl_gnome_settings_set_interface_settings(FlGnomeSettings *, GSettings *): assertion 'G_IS_SETTINGS(settings)' failed",
+    "# screenshot: f008-dev-schema5-today.png",
+    "# screenshot: f008-dev-schema5-measurements.png",
+    "# screenshot: f008-dev-schema5-history.png",
+    "# liveness: alive",
+    "# vault sha256 after: e81f91aad1a8990904abcda152e14ec81c652e96b3779ed5a1b619dfe76a5112",
+    "# vault file: unchanged",
+    "# files: <home>/.local/share/human-health-os/appearance.json <home>/.local/share/human-health-os/vault.hhoslog.jsonl ",
+    "# data folder: only the vault and the display preferences",
+    "# preferences: unchanged",
+    "# error events: none",
+    "# result: PASS"
+  ],
+  "lockfile_sha256": "1499e9db5d664254fb35f0a9733052eb8dfb5b4331e3947f01e63669de88aeda",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "1499e9db5d664254fb35f0a9733052eb8dfb5b4331e3947f01e63669de88aeda",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os",
+    "tools/linux/measurements_smoke.sh"
+  ],
+  "target": "linux",
+  "arch": "x86_64",
+  "profile": "development",
+  "artifacts": [
+    {
+      "path": "/home/user/claudereponewscience/reports/runtime/linux-q001/f008-dev-schema5.log",
+      "type": "file",
+      "bytes": 1503,
+      "sha256": "81a0bff3fcad8b672754d40586c174ab9e172647c709c35dede0e92bb6e46198"
+    },
+    {
+      "path": "/home/user/claudereponewscience/reports/runtime/linux-q001/f008-dev-schema5-measurements.png",
+      "type": "file",
+      "bytes": 103433,
+      "sha256": "104777015ebfce55cf975a2f74a9b693fa3f1fa19f2d4a84db29fe81cea8ac58"
+    },
+    {
+      "path": "/home/user/claudereponewscience/reports/runtime/linux-q001/f008-dev-schema5-history.png",
+      "type": "file",
+      "bytes": 77362,
+      "sha256": "0f7a6800bc92d0be28060426886b9ea14b0ac776235db6b7ce70297b91e4d60f"
+    },
+    {
+      "path": "/home/user/claudereponewscience/human_health_os/build/linux/x64/release/bundle/lib/libapp.so",
+      "type": "file",
+      "bytes": 8192904,
+      "sha256": "8325ba0433e7493fa356c70df632810a605f27b066d62ecd38c3e0d94cc6b4ce"
+    }
+  ]
+}

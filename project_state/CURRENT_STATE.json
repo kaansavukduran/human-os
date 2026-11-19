@@ -3,53 +3,9 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "IMPLEMENTING",
+  "development_state": "READY",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": {
-    "forge_id": "Q001",
-    "contract": "v0.32",
-    "run_id": "Q001@v0.32",
-    "slice": "Screen matrix in Chromium: every main screen on phone, tablet and desktop, EN/TR, palettes and 2x text; PASS/FAIL/NOT TESTED report; with F011-S3 (three-language vector parity table)",
-    "goal": "Screen matrix in Chromium: every main screen on phone, tablet and desktop, EN/TR, palettes and 2x text; PASS/FAIL/NOT TESTED report",
-    "status": "IMPLEMENTING",
-    "baseline_commit": "730a69d",
-    "app_revision": null,
-    "started_at": "2026-11-19T18:40:00Z",
-    "finished_at": null,
-    "scope": [
-      "tools/flutter_screen_matrix.mjs",
-      "reports/runtime/screen-matrix",
-      "human_health_os/lib/src/presentation/navigation/app_shell.dart",
-      "tools/verify_contracts.py",
-      "packages/domain"
-    ],
-    "acceptance_criteria": [
-      "AC-1 every main screen opened at 5 viewports in EN/TR with palettes and 2x text",
-      "AC-2 each FAIL fixed with a regression test or explained",
-      "AC-3 73/73 vectors in Dart, TS and Python",
-      "AC-4 gates pass"
-    ],
-    "completed_steps": [
-      "F011-S3 7097bb5",
-      "Q001 0a45dcd (132/132 cells)"
-    ],
-    "last_verified_gate": null,
-    "next_action": "gates",
-    "files_touched": [],
-    "migration_ids": [],
-    "evidence_ids": [],
-    "verified_gates": [],
-    "blocker": null,
-    "result": null,
-    "limitations": [
-      "real devices, Firefox, Safari, real screen readers NOT TESTED"
-    ],
-    "depends_on": [
-      "R015"
-    ],
-    "review": null,
-    "out_of_scope": []
-  },
+  "active_forge": null,
   "suspended_forges": [
     {
       "forge_id": "F015-L1",
@@ -60,7 +16,7 @@
       "next_action": "add libgles2 / libGLESv2.so.2()(64bit) dependencies, adopt D-012 names, rebuild staging3, rerun the Linux matrix incl. Ubuntu 22.04"
     }
   ],
-  "last_completed_forge": "R015@v0.32 (2026-11-19, source revision e04d577679b6)",
+  "last_completed_forge": "Q001@v0.32 (2026-11-19, source revision d55ec9634e96)",
   "baseline": {
     "git_commit": "254c534f10b0a5d01e96edcc0bcb5630fbba6936",
     "working_tree": "clean at v0.32 Phase 0 start (only docs/handoff/v0.32 untracked)",
@@ -73,93 +29,93 @@
   "verified_gates": [
     {
       "gate": "flutter pub get",
-      "evidence_id": "EV-TEST-F007-1063",
+      "evidence_id": "EV-TEST-F007-1076",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
       "gate": "dart format --set-exit-if-changed . (0 changed)",
-      "evidence_id": "EV-TEST-F007-1064",
+      "evidence_id": "EV-TEST-F007-1077",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
       "gate": "flutter analyze (no issues)",
-      "evidence_id": "EV-TEST-F007-1065",
+      "evidence_id": "EV-TEST-F007-1078",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
-      "gate": "flutter test, TZ=UTC (951 PASS, 1 skipped)",
-      "evidence_id": "EV-TEST-F007-1066",
+      "gate": "flutter test, TZ=UTC (953 PASS, 1 skipped)",
+      "evidence_id": "EV-TEST-F007-1079",
       "criterion": "AC-1..AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
       "gate": "state/evidence tooling unit tests",
-      "evidence_id": "EV-TEST-F007-1067",
+      "evidence_id": "EV-TEST-F007-1080",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
       "gate": "flutter build web --release --no-web-resources-cdn (development profile) COMPILED",
-      "evidence_id": "EV-BUILD-F007-1068",
+      "evidence_id": "EV-BUILD-F007-1081",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
       "gate": "Playwright smoke in Chromium (135 checks): Today, Timeline, Labs add sheet, measurements, genetics, backup, every area with its new intro; no console errors, no external requests",
-      "evidence_id": "EV-RUNTIME-F007-1069",
+      "evidence_id": "EV-RUNTIME-F007-1082",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
       "gate": "Linux integration on real files (9 PASS)",
-      "evidence_id": "EV-TEST-F007-1070",
+      "evidence_id": "EV-TEST-F007-1083",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
       "gate": "flutter build linux --release (development profile) COMPILED",
-      "evidence_id": "EV-BUILD-F007-1071",
+      "evidence_id": "EV-BUILD-F007-1084",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
       "gate": "Linux release binary on the schema-5 fixture for a returning person (Xvfb): vault and display preferences unchanged, no other files, no error events",
-      "evidence_id": "EV-RUNTIME-F007-1072",
+      "evidence_id": "EV-RUNTIME-F007-1085",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
-      "gate": "flutter test with TZ=America/New_York (952 PASS)",
-      "evidence_id": "EV-TEST-F007-1073",
+      "gate": "flutter test with TZ=America/New_York (954 PASS)",
+      "evidence_id": "EV-TEST-F007-1086",
       "criterion": "AC-1..AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
-      "gate": "contracts verification (TS reference)",
-      "evidence_id": "EV-TEST-F007-1074",
+      "gate": "contracts verification with the per-engine parity table: 73/73 vectors in TS and Python, Dart from its receipt",
+      "evidence_id": "EV-TEST-F007-1087",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     },
     {
       "gate": "pnpm test",
-      "evidence_id": "EV-TEST-F007-1075",
+      "evidence_id": "EV-TEST-F007-1088",
       "criterion": "AC-4",
-      "source_revision": "e04d577679b65c6cf363763b0dd725edf1ef75ec",
+      "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
       "result": "PASS"
     }
   ],
@@ -192,16 +148,16 @@
     }
   ],
   "next_recommended_forge": {
-    "forge_id": "Q001",
+    "forge_id": "R016",
     "contract": "v0.32",
-    "run_id": "Q001@v0.32",
-    "slice": "Screen matrix in Chromium: every main screen on phone, tablet and desktop, EN/TR, palettes and 2x text; PASS/FAIL/NOT TESTED report",
-    "why": "AIONIA §14.10/§14.11: test every important screen on the target sizes and report honestly.",
+    "run_id": "R016@v0.32",
+    "slice": "Matrix and slop leftovers: nav labels never break inside a word at 2x text, the back button named once, one add action on empty Labs, no repeated Labs note, plainer Today tools",
+    "why": "Noticed by the Q001 screen matrix and the U031-S4 slop audit but not yet fixed.",
     "depends_on": [
-      "R015"
+      "Q001"
     ]
   },
-  "updated_at": "2026-11-19T18:50:00Z",
+  "updated_at": "2026-11-19T20:20:00Z",
   "authoritative_sources": {
     "product_semantics": "docs/handoff/v0.24/LONGEVITY_APP_MASTER_HANDOFF_v0.24.md",
     "process_master": "docs/handoff/v0.32/ (D-013); v0.31 superseded (D-011)",
@@ -13216,6 +13172,302 @@
         "U031"
       ],
       "review": "Fixes for the U031 review: SnackBar persists under accessible navigation, the date line refreshes on resume, Aion lines claim no storage",
+      "out_of_scope": []
+    },
+    "Q001@v0.32": {
+      "forge_id": "Q001",
+      "contract": "v0.32",
+      "run_id": "Q001@v0.32",
+      "slice": "Screen matrix in Chromium: every main screen on phone, tablet and desktop, EN/TR, palettes and 2x text; PASS/FAIL/NOT TESTED report; with F011-S3 (three-language vector parity table)",
+      "goal": "Screen matrix in Chromium: every main screen on phone, tablet and desktop, EN/TR, palettes and 2x text; PASS/FAIL/NOT TESTED report",
+      "status": "DONE",
+      "baseline_commit": "730a69d",
+      "app_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+      "started_at": "2026-11-19T18:40:00Z",
+      "finished_at": "2026-11-19T20:20:00Z",
+      "scope": [
+        "tools/flutter_screen_matrix.mjs",
+        "reports/runtime/screen-matrix",
+        "human_health_os/lib/src/presentation/navigation/app_shell.dart",
+        "tools/verify_contracts.py",
+        "packages/domain"
+      ],
+      "acceptance_criteria": [
+        "AC-1 every main screen opened at 5 viewports in EN/TR with palettes and 2x text",
+        "AC-2 each FAIL fixed with a regression test or explained",
+        "AC-3 73/73 vectors in Dart, TS and Python",
+        "AC-4 gates pass"
+      ],
+      "completed_steps": [
+        "F011-S3 7097bb5",
+        "Q001 0a45dcd (132/132 cells)",
+        "GATES: 13 receipts on clean tree d55ec96, all PASS"
+      ],
+      "last_verified_gate": "EV-TEST-F007-1088",
+      "next_action": null,
+      "files_touched": [
+        "docs/ROADMAP.md",
+        "human_health_os/lib/src/navigation/app_shell.dart",
+        "human_health_os/test/widget/shell_test.dart",
+        "packages/domain/test/hardening.test.ts",
+        "project_state/CURRENT_STATE.json",
+        "project_state/KNOWN_GAPS.md",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_en-US_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_en-US_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_en-US_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_en-US_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_en-US_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_en-US_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_en-US_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_en-US_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_tr-TR_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_tr-TR_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_tr-TR_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_tr-TR_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_tr-TR_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_tr-TR_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_tr-TR_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_tr-TR_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_tr-TR_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_desktop_tr-TR_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_en-US_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_en-US_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_en-US_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_en-US_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_en-US_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_en-US_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_en-US_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_en-US_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_tr-TR_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_tr-TR_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_tr-TR_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_tr-TR_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_tr-TR_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_tr-TR_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_tr-TR_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_tr-TR_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_tr-TR_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_phone_tr-TR_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_en-US_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_en-US_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_en-US_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_en-US_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_en-US_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_en-US_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_en-US_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_en-US_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_tr-TR_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_tr-TR_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_tr-TR_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_tr-TR_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_tr-TR_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_tr-TR_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_tr-TR_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_tr-TR_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_tr-TR_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_small-phone_tr-TR_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_en-US_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_en-US_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_en-US_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_en-US_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_en-US_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_en-US_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_en-US_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_en-US_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_tr-TR_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_tr-TR_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_tr-TR_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_tr-TR_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_tr-TR_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_tr-TR_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_tr-TR_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_tr-TR_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_tr-TR_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-landscape_tr-TR_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_en-US_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_en-US_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_en-US_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_en-US_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_en-US_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_en-US_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_en-US_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_en-US_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_tr-TR_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_tr-TR_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_tr-TR_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_tr-TR_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_tr-TR_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_tr-TR_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_tr-TR_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_tr-TR_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_tr-TR_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/base_tablet-portrait_tr-TR_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/matrix.json",
+        "reports/runtime/screen-matrix/9f65215e4449/matrix.md",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-axolotl_desktop_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-axolotl_desktop_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-axolotl_phone_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-axolotl_phone_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-matrix_desktop_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-matrix_desktop_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-matrix_phone_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-matrix_phone_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-trans_desktop_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-trans_desktop_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-trans_phone_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/palette-trans_phone_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_en-US_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_en-US_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_en-US_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_en-US_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_en-US_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_en-US_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_en-US_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_en-US_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_en-US_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_en-US_Today.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_tr-TR_Activity.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_tr-TR_Conditions.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_tr-TR_Documents.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_tr-TR_Labs.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_tr-TR_Medications.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_tr-TR_Nutrition.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_tr-TR_Preventive.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_tr-TR_Settings.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_tr-TR_Timeline.png",
+        "reports/runtime/screen-matrix/9f65215e4449/text-2x_small-phone_tr-TR_Today.png",
+        "reports/tests/verify_contracts.json",
+        "tools/flutter_screen_matrix.mjs",
+        "tools/verify_contracts.py"
+      ],
+      "migration_ids": [],
+      "evidence_ids": [
+        "EV-TEST-F007-1076",
+        "EV-TEST-F007-1077",
+        "EV-TEST-F007-1078",
+        "EV-TEST-F007-1079",
+        "EV-TEST-F007-1080",
+        "EV-BUILD-F007-1081",
+        "EV-RUNTIME-F007-1082",
+        "EV-TEST-F007-1083",
+        "EV-BUILD-F007-1084",
+        "EV-RUNTIME-F007-1085",
+        "EV-TEST-F007-1086",
+        "EV-TEST-F007-1087",
+        "EV-TEST-F007-1088"
+      ],
+      "verified_gates": [
+        {
+          "gate": "flutter pub get",
+          "evidence_id": "EV-TEST-F007-1076",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "dart format --set-exit-if-changed . (0 changed)",
+          "evidence_id": "EV-TEST-F007-1077",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter analyze (no issues)",
+          "evidence_id": "EV-TEST-F007-1078",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test, TZ=UTC (953 PASS, 1 skipped)",
+          "evidence_id": "EV-TEST-F007-1079",
+          "criterion": "AC-1..AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "state/evidence tooling unit tests",
+          "evidence_id": "EV-TEST-F007-1080",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter build web --release --no-web-resources-cdn (development profile) COMPILED",
+          "evidence_id": "EV-BUILD-F007-1081",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "Playwright smoke in Chromium (135 checks): Today, Timeline, Labs add sheet, measurements, genetics, backup, every area with its new intro; no console errors, no external requests",
+          "evidence_id": "EV-RUNTIME-F007-1082",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "Linux integration on real files (9 PASS)",
+          "evidence_id": "EV-TEST-F007-1083",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter build linux --release (development profile) COMPILED",
+          "evidence_id": "EV-BUILD-F007-1084",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "Linux release binary on the schema-5 fixture for a returning person (Xvfb): vault and display preferences unchanged, no other files, no error events",
+          "evidence_id": "EV-RUNTIME-F007-1085",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test with TZ=America/New_York (954 PASS)",
+          "evidence_id": "EV-TEST-F007-1086",
+          "criterion": "AC-1..AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "contracts verification with the per-engine parity table: 73/73 vectors in TS and Python, Dart from its receipt",
+          "evidence_id": "EV-TEST-F007-1087",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        },
+        {
+          "gate": "pnpm test",
+          "evidence_id": "EV-TEST-F007-1088",
+          "criterion": "AC-4",
+          "source_revision": "d55ec9634e96a63d3b8e9ae367adb80de0ac5ebf",
+          "result": "PASS"
+        }
+      ],
+      "blocker": null,
+      "result": "Q001_COMPLETE",
+      "limitations": [
+        "real devices, Firefox, Safari, real screen readers NOT TESTED"
+      ],
+      "depends_on": [
+        "R015"
+      ],
+      "review": "Screen matrix 132/132 PASS after one fix (tablet rail target 38 px -> 48 px); F011-S3 parity table; real devices, Firefox, Safari, real screen readers NOT TESTED",
       "out_of_scope": []
     }
   },

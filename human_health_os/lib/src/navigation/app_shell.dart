@@ -431,6 +431,11 @@ class _CompactBar extends StatelessWidget {
         final picked = await showModalBottomSheet<DestinationId>(
           context: context,
           showDragHandle: true,
+          // Sized by its entries, not capped at 9/16 of the screen, so a
+          // short list never scrolls inside the sheet (AIONIA v1.7 §22); it
+          // scrolls only when the window is too short for every entry.
+          isScrollControlled: true,
+          useSafeArea: true,
           builder: (context) => SafeArea(
             child: ListView(
               key: const ValueKey('more-sheet'),

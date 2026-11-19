@@ -53,7 +53,7 @@ void main() {
       expect(find.text(h), findsOneWidget, reason: h);
     }
     double y(String text) => tester.getTopLeft(find.text(text)).dy;
-    expect(y(s.toolsGroupApp), lessThan(topOf(tester, 'tool-settings')));
+    expect(y(s.toolsGroupApp), lessThan(topOf(tester, 'tool-howto')));
     expect(topOf(tester, 'tool-summary'), lessThan(y(s.toolsGroupLearn)));
     expect(y(s.toolsGroupLearn), lessThan(topOf(tester, 'tool-glossary')));
     expect(topOf(tester, 'tool-guide'), lessThan(y(s.toolsGroupFiles)));

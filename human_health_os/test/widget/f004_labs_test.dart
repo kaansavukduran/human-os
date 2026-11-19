@@ -176,6 +176,8 @@ void main() {
   ) async {
     final s = await start(tester);
     await go(tester, s, 'Labs');
+    // Results come first; the form opens in a sheet (U030).
+    await tapKey(tester, 'lab-add');
     await fill(tester, 'lab-analyte', 'HbA1c');
     await fill(tester, 'lab-value', '5,4');
     await fill(tester, 'lab-unit', '%');
@@ -352,6 +354,7 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('Labs').last);
     await settle(tester);
+    await tapKey(tester, 'lab-add');
     await fill(tester, 'lab-analyte', 'Hemoglobin A1c (IFCC)');
     await fill(tester, 'lab-value', '37');
     await fill(tester, 'lab-unit', 'mmol/mol');
@@ -380,8 +383,11 @@ void main() {
       );
     });
     await go(tester, s, 'Labs');
+    await tapKey(tester, 'lab-add');
     await fill(tester, 'lab-date', '2026-10-05');
     await fill(tester, 'lab-laboratory', 'New Lab');
+    // Closing the add sheet keeps what was typed.
+    await tapKey(tester, 'lab-cancel');
     await tapKey(tester, 'lab-correct-${old.id}');
     expect(
       tester
@@ -392,6 +398,7 @@ void main() {
     );
     await tester.tap(find.text('Cancel'));
     await settle(tester);
+    await tapKey(tester, 'lab-add');
     expect(
       tester
           .widget<TextField>(find.byKey(const ValueKey('lab-date')))

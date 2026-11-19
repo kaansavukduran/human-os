@@ -6,6 +6,7 @@ import '../../domain/engines/core_derived.dart'
     show coreDerivedPackId, coreDerivedPackVersion;
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/widgets/read_failed_note.dart';
 import '../measurements/measurement_format.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
@@ -46,7 +47,12 @@ class _DerivedScreenState extends State<DerivedScreen> {
           RecordKind.waistCircumference,
         ),
       );
-      if (mounted) setState(() => _rows = rows);
+      if (mounted) {
+        setState(() {
+          _rows = rows;
+          _failed = false;
+        });
+      }
     } on Object {
       // The records could not be read: said in words, never a spinner forever.
       if (mounted) setState(() => _failed = true);
@@ -63,9 +69,12 @@ class _DerivedScreenState extends State<DerivedScreen> {
       body: _failed
           ? Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
-                s.derivedReadFailed,
-                key: const ValueKey('derived-failed'),
+              child: ReadFailedNote(
+                id: 'derived',
+                onRetry: () {
+                  setState(() => _failed = false);
+                  _load();
+                },
               ),
             )
           : rows == null

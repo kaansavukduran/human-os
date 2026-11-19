@@ -5,6 +5,7 @@ import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/widgets/aion.dart';
+import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 
 /// Documents (F010 slice 1): references to the documents the person keeps,
@@ -22,6 +23,7 @@ class DocumentsScreen extends StatefulWidget {
 
 class _DocumentsScreenState extends State<DocumentsScreen> {
   List<HealthRecord>? _entries;
+  bool _readFailed = false;
 
   HeartbeatService get _svc => widget.services.heartbeat;
   String get _me => widget.services.self.id;
@@ -33,8 +35,23 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   Future<void> _reload() async {
-    final entries = await _svc.documents(_me);
-    if (mounted) setState(() => _entries = entries);
+    try {
+      final entries = await _svc.documents(_me);
+      if (mounted) {
+        setState(() {
+          _entries = entries;
+          _readFailed = false;
+        });
+      }
+    } on Object {
+      // Said in words with Try again, never a spinner forever (AIONIA v1.2).
+      if (mounted) setState(() => _readFailed = true);
+    }
+  }
+
+  void _retry() {
+    setState(() => _readFailed = false);
+    _reload();
   }
 
   Future<void> _open({HealthRecord? correcting}) async {
@@ -75,7 +92,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        if (entries == null)
+        if (_readFailed)
+          ReadFailedNote(id: 'doc', onRetry: _retry)
+        else if (entries == null)
           const Center(child: CircularProgressIndicator())
         else if (entries.isEmpty)
           Row(

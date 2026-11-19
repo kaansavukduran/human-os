@@ -9,10 +9,10 @@ import 'package:human_health_os/src/l10n/strings.dart';
 import 'f004_labs_test.dart' show interpretive, judged;
 import 'u005_settings_test.dart' show launchWith;
 
-/// Opens Settings from Today and reports, 50 ms in, how many moving
+/// Opens Settings from the app bar and reports, 50 ms in, how many moving
 /// transitions (fade, scale, slide) wrap the new page.
 Future<int> transitionsWhileOpening(WidgetTester tester) async {
-  final f = find.byKey(const ValueKey('tool-settings'));
+  final f = find.byKey(const ValueKey('open-settings'));
   await tester.ensureVisible(f);
   await tester.pumpAndSettle();
   await tester.tap(f);
@@ -78,7 +78,7 @@ void main() {
       tester,
       initial: const AppearanceSettings(reduceMotion: true),
     );
-    final f = find.byKey(const ValueKey('tool-settings'));
+    final f = find.byKey(const ValueKey('open-settings'));
     await tester.ensureVisible(f);
     await tester.pumpAndSettle();
     await tester.tap(f);

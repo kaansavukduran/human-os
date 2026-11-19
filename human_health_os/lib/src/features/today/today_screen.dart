@@ -15,7 +15,6 @@ import '../guide/glossary_screen.dart';
 import '../phyto/phyto_screen.dart';
 import '../report/summary_screen.dart';
 import '../help/how_to_screen.dart';
-import '../settings/settings_screen.dart';
 import 'measurements_card.dart';
 import 'feeling_card.dart';
 import 'sleep_card.dart';
@@ -81,21 +80,8 @@ class TodayScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _ToolGroup(s.toolsGroupApp),
-          _ToolTile(
-            key: const ValueKey('tool-settings'),
-            icon: Icons.tune,
-            title: s.settingsTitle,
-            hint: s.settingsTileHint,
-            onTap: () {
-              AppearanceScope.maybeOf(context)?.visit(DiscoveryStep.settings);
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => SettingsScreen(config: services.config),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 8),
+          // Settings is not repeated here: the app bar and the rail or More
+          // sheet already open it (U030, one entry less).
           _ToolTile(
             key: const ValueKey('tool-howto'),
             icon: Icons.help_outline,
@@ -196,7 +182,7 @@ class TodayScreen extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
-                s.checkInsAndMissions,
+                s.dailyMissions,
                 style: text.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 ),

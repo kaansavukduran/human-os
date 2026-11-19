@@ -6,6 +6,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/aion.dart';
+import '../../presentation/widgets/read_failed_note.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
 /// Medicines and supplements (F008): what the person uses, how it is meant
@@ -22,6 +23,7 @@ class MedicationsScreen extends StatefulWidget {
 
 class _MedicationsScreenState extends State<MedicationsScreen> {
   List<MedicationView>? _items;
+  bool _readFailed = false;
 
   HeartbeatService get _svc => widget.services.heartbeat;
   String get _me => widget.services.self.id;
@@ -33,8 +35,23 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
   }
 
   Future<void> _reload() async {
-    final items = await _svc.medications(_me);
-    if (mounted) setState(() => _items = items);
+    try {
+      final items = await _svc.medications(_me);
+      if (mounted) {
+        setState(() {
+          _items = items;
+          _readFailed = false;
+        });
+      }
+    } on Object {
+      // Said in words with Try again, never a spinner forever (AIONIA v1.2).
+      if (mounted) setState(() => _readFailed = true);
+    }
+  }
+
+  void _retry() {
+    setState(() => _readFailed = false);
+    _reload();
   }
 
   bool _busy = false;
@@ -126,7 +143,9 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        if (items == null)
+        if (_readFailed)
+          ReadFailedNote(id: 'meds', onRetry: _retry)
+        else if (items == null)
           const Center(child: CircularProgressIndicator())
         else if (items.isEmpty)
           Row(
@@ -189,9 +208,14 @@ class _ItemCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '${item.name} · ${s.medsCategoryLabel(item.category)}',
-              style: text.titleMedium,
+            Semantics(
+              // Its own node: only the title is the heading, not the card.
+              container: true,
+              header: true,
+              child: Text(
+                '${item.name} · ${s.medsCategoryLabel(item.category)}',
+                style: text.titleMedium,
+              ),
             ),
             if (facts.isNotEmpty) Text(facts, style: text.bodyMedium),
             const SizedBox(height: 8),

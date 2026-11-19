@@ -395,7 +395,10 @@ class _YourDataCardState extends State<YourDataCard> {
               if (!files.canRestore)
                 Text(s.browserRestoreNotBuilt, style: text.bodyMedium)
               else ...[
-                Text(s.backupsTitle, style: text.titleMedium),
+                Semantics(
+                  header: true,
+                  child: Text(s.backupsTitle, style: text.titleMedium),
+                ),
                 if (_backups.isEmpty)
                   Text(
                     s.noBackups,

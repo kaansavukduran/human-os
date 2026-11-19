@@ -4,6 +4,7 @@ import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
@@ -21,6 +22,7 @@ class FeelingCard extends StatefulWidget {
 
 class _FeelingCardState extends State<FeelingCard> {
   List<HealthRecord>? _entries;
+  bool _readFailed = false;
 
   HeartbeatService get _svc => widget.services.heartbeat;
   String get _me => widget.services.self.id;
@@ -32,8 +34,23 @@ class _FeelingCardState extends State<FeelingCard> {
   }
 
   Future<void> _reload() async {
-    final entries = await _svc.feelings(_me);
-    if (mounted) setState(() => _entries = entries);
+    try {
+      final entries = await _svc.feelings(_me);
+      if (mounted) {
+        setState(() {
+          _entries = entries;
+          _readFailed = false;
+        });
+      }
+    } on Object {
+      // Said in words with Try again, never blank (AIONIA v1.2).
+      if (mounted) setState(() => _readFailed = true);
+    }
+  }
+
+  void _retry() {
+    setState(() => _readFailed = false);
+    _reload();
   }
 
   Future<void> _open({HealthRecord? correcting}) async {
@@ -65,9 +82,24 @@ class _FeelingCardState extends State<FeelingCard> {
               child: Text(s.feelTitle, style: text.titleMedium),
             ),
             const SizedBox(height: 4),
-            if (entries != null && entries.isEmpty)
+            if (_readFailed)
+              ReadFailedNote(id: 'feel', onRetry: _retry)
+            else if (entries == null)
+              const SizedBox(
+                // One text line high, so the card does not jump when the
+                // records arrive (AIONIA v1.2: never blank while reading).
+                height: 20,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox.square(
+                    dimension: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              )
+            else if (entries.isEmpty)
               Text(s.feelNone, key: const ValueKey('feel-none'))
-            else if (entries != null)
+            else
               for (final r in entries.take(2))
                 Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,

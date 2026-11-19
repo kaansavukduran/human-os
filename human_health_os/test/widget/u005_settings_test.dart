@@ -64,7 +64,9 @@ void main() {
     await tester.tap(find.byTooltip('Geri').first);
     await settle(tester);
     expect(find.text('Bugün'), findsWidgets);
-    await tapKey(tester, 'tool-settings');
+    // One entry less (U030): Today has no Settings tile; the app bar opens it.
+    expect(find.byKey(const ValueKey('tool-settings')), findsNothing);
+    await tapKey(tester, 'open-settings');
     expect(find.byKey(const ValueKey('screen-settings')), findsOneWidget);
   });
 
@@ -148,7 +150,6 @@ void main() {
       final s = S(lang);
       for (final w in [
         s.settingsTitle,
-        s.settingsTileHint,
         s.settingsLanguage,
         s.settingsTheme,
         s.settingsAccent,

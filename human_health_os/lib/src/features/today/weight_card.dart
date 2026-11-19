@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../presentation/widgets/aion.dart';
 import '../../app/appearance_scope.dart';
 import '../../presentation/widgets/number_pad.dart';
+import '../../presentation/widgets/read_failed_note.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 import '../trends/trend_screen.dart';
 
@@ -38,6 +39,7 @@ class _WeightCardState extends State<WeightCard> {
   String? _errorCode;
   bool _busy = false;
   bool _justSaved = false;
+  bool _readFailed = false;
 
   HeartbeatService get _svc => widget.services.heartbeat;
 
@@ -54,13 +56,25 @@ class _WeightCardState extends State<WeightCard> {
   }
 
   Future<void> _reload() async {
-    final entries = await _svc.weightTimeline(widget.services.self.id);
-    if (mounted) {
-      setState(() {
-        _entries = entries;
-        _weights = [for (final e in entries) ...e.heads];
-      });
+    try {
+      final entries = await _svc.weightTimeline(widget.services.self.id);
+      if (mounted) {
+        setState(() {
+          _entries = entries;
+          _weights = [for (final e in entries) ...e.heads];
+          _readFailed = false;
+        });
+      }
+    } on Object {
+      // Said in words with Try again; never "no weight yet" for records
+      // that could not be read (AIONIA v1.2, unknown is not missing).
+      if (mounted) setState(() => _readFailed = true);
     }
+  }
+
+  void _retry() {
+    setState(() => _readFailed = false);
+    _reload();
   }
 
   Future<void> _save() async {
@@ -159,7 +173,9 @@ class _WeightCardState extends State<WeightCard> {
             ),
             const SizedBox(height: 8),
             const SizedBox(height: 12),
-            if (conflict)
+            if (_readFailed)
+              ReadFailedNote(id: 'weight', onRetry: _retry)
+            else if (conflict)
               Text(
                 s.versionsDisagree,
                 key: const ValueKey('weight-conflict'),
@@ -288,7 +304,10 @@ class _WeightCardState extends State<WeightCard> {
             ],
             if (_weights.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Text(s.history, style: text.titleMedium),
+              Semantics(
+                header: true,
+                child: Text(s.history, style: text.titleMedium),
+              ),
               const SizedBox(height: 4),
               for (final w in _weights.take(10))
                 Padding(

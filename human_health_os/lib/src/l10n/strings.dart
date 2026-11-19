@@ -68,6 +68,14 @@ class S {
   String get more => _t('More', 'Diğer');
   String get notBuiltYet => _t('Not built yet', 'Henüz yok');
 
+  /// Any area whose records could not be read (AIONIA v1.2): said in words,
+  /// with Try again, never a spinner forever.
+  String get readFailed => _t(
+    'Your records could not be read just now. Nothing was changed.',
+    'Kayıtların şu an okunamadı. Hiçbir şey değiştirilmedi.',
+  );
+  String get tryAgain => _t('Try again', 'Tekrar dene');
+
   /// Shown for a planned destination; the Forge id stays a developer field
   /// (destinations.dart) and is never printed (U028).
   String get plannedLater =>
@@ -116,10 +124,8 @@ class S {
     'Human OS is being built to keep every part of your health on one timeline. Today it records body weight, blood pressure, resting heart rate and waist circumference by hand; each entry keeps where it came from.',
     'Human OS, sağlığının her parçasını tek bir zaman çizelgesinde tutmak için geliştiriliyor. Şu an kilo, tansiyon, dinlenme nabzı ve bel çevresi elle kaydediliyor; her kayıt nereden geldiğini saklar.',
   );
-  String get checkInsAndMissions => _t(
-    'Check-ins and daily missions: not built yet.',
-    'Günlük yoklamalar ve görevler: henüz yok.',
-  );
+  String get dailyMissions =>
+      _t('Daily missions: not built yet.', 'Günlük görevler: henüz yok.');
   String get yourData => _t('Your data', 'Verilerin');
   String get available => _t('Available', 'Kullanılabilir');
   String get notImplemented => _t('Not built yet', 'Henüz yok');
@@ -1109,10 +1115,6 @@ class S {
 
   // Worked out from your records (U029, D-039): a number and how it was
   // worked out; never a category, band or advice.
-  String get derivedReadFailed => _t(
-    'Your records could not be read just now. Nothing was changed.',
-    'Kayıtların şu an okunamadı. Hiçbir şey değiştirilmedi.',
-  );
   String get derivedTitle =>
       _t('Worked out from your records', 'Kayıtlarından hesaplananlar');
   String get derivedTileHint => _t(
@@ -1396,10 +1398,6 @@ class S {
   String get discoveryVisited => _t('Opened', 'Açıldı');
   String get discoveryHide =>
       _t('Turn off discovery progress', 'Keşif ilerlemesini kapat');
-  String get settingsTileHint => _t(
-    'Language (Dil), light or dark, colour, text size',
-    'Dil (Language), açık ya da koyu, renk, yazı boyutu',
-  );
   String get settingsLanguage => _t('Language', 'Dil');
   String get settingsTheme => _t('Appearance', 'Görünüm');
   String get settingsAccent => _t('Colour', 'Renk');
@@ -1943,6 +1941,7 @@ class S {
   );
   String get labAddTitle =>
       _t('Add a result from a report', 'Rapordan sonuç ekle');
+  String get labAdd => _t('Add a result', 'Sonuç ekle');
   String get labCorrectTitle =>
       _t('Correct this result (new version)', 'Bu sonucu düzelt (yeni sürüm)');
   String get labAnalyte => _t('Test name as printed', 'Raporda yazan test adı');

@@ -4,6 +4,7 @@ import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
@@ -21,6 +22,7 @@ class SleepCard extends StatefulWidget {
 
 class _SleepCardState extends State<SleepCard> {
   List<HealthRecord>? _nights;
+  bool _readFailed = false;
 
   HeartbeatService get _svc => widget.services.heartbeat;
   String get _me => widget.services.self.id;
@@ -32,8 +34,23 @@ class _SleepCardState extends State<SleepCard> {
   }
 
   Future<void> _reload() async {
-    final nights = await _svc.sleepNights(_me);
-    if (mounted) setState(() => _nights = nights);
+    try {
+      final nights = await _svc.sleepNights(_me);
+      if (mounted) {
+        setState(() {
+          _nights = nights;
+          _readFailed = false;
+        });
+      }
+    } on Object {
+      // Said in words with Try again, never blank (AIONIA v1.2).
+      if (mounted) setState(() => _readFailed = true);
+    }
+  }
+
+  void _retry() {
+    setState(() => _readFailed = false);
+    _reload();
   }
 
   Future<void> _add({HealthRecord? correcting}) async {
@@ -66,8 +83,21 @@ class _SleepCardState extends State<SleepCard> {
             const SizedBox(height: 4),
             Text(s.sleepIntro, style: text.bodyMedium),
             const SizedBox(height: 12),
-            if (nights == null)
-              const SizedBox.shrink()
+            if (_readFailed)
+              ReadFailedNote(id: 'sleep', onRetry: _retry)
+            else if (nights == null)
+              const SizedBox(
+                // One text line high, so the card does not jump when the
+                // records arrive (AIONIA v1.2: never blank while reading).
+                height: 20,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox.square(
+                    dimension: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              )
             else if (nights.isEmpty)
               Text(s.sleepNone, key: const ValueKey('sleep-none'))
             else

@@ -9,6 +9,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
 import '../measurements/measurement_format.dart';
+import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/status_chip.dart';
 
 /// Timeline (ladder F003): every fact once, newest first, with its versions.
@@ -27,6 +28,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   List<TimelineEntry> _entries = const [];
   bool _showHidden = false;
   bool _loaded = false;
+  bool _readFailed = false;
 
   HeartbeatService get _svc => widget.services.heartbeat;
   String get _me => widget.services.self.id;
@@ -38,13 +40,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Future<void> _reload() async {
-    final e = await _svc.timeline(_me, includeHidden: _showHidden);
-    if (mounted) {
-      setState(() {
-        _entries = e;
-        _loaded = true;
-      });
+    try {
+      final e = await _svc.timeline(_me, includeHidden: _showHidden);
+      if (mounted) {
+        setState(() {
+          _entries = e;
+          _loaded = true;
+          _readFailed = false;
+        });
+      }
+    } on Object {
+      // Said in words with Try again, never a blank list (AIONIA v1.2).
+      if (mounted) setState(() => _readFailed = true);
     }
+  }
+
+  void _retry() {
+    setState(() => _readFailed = false);
+    _reload();
   }
 
   @override
@@ -85,7 +98,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
             _reload();
           },
         ),
-        if (_loaded && _entries.isEmpty)
+        if (_readFailed)
+          ReadFailedNote(id: 'timeline', onRetry: _retry)
+        else if (!_loaded)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else if (_entries.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Text(
@@ -94,12 +114,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
               style: text.titleMedium,
             ),
           ),
-        for (final e in _entries)
-          _EntryTile(
-            key: ValueKey('timeline-entry-${e.rootId}'),
-            entry: e,
-            onTap: () => _openDetail(e),
-          ),
+        if (!_readFailed)
+          for (final e in _entries)
+            _EntryTile(
+              key: ValueKey('timeline-entry-${e.rootId}'),
+              entry: e,
+              onTap: () => _openDetail(e),
+            ),
       ],
     );
   }
@@ -501,7 +522,10 @@ class _EntryDetailState extends State<_EntryDetail> {
             const SizedBox(height: 4),
             Text(s.entryStatusExplain(e.status), style: text.bodyMedium),
             const SizedBox(height: 12),
-            Text(s.versions, style: text.titleSmall),
+            Semantics(
+              header: true,
+              child: Text(s.versions, style: text.titleSmall),
+            ),
             for (final v in e.versions.reversed)
               ListTile(
                 key: ValueKey('version-${v.id}'),

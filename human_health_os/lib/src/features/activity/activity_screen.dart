@@ -7,6 +7,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/aion.dart';
+import '../../presentation/widgets/read_failed_note.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
 /// Activity (F007 slice 6): walks, workouts and steps typed by hand. Minutes
@@ -23,6 +24,7 @@ class ActivityScreen extends StatefulWidget {
 
 class _ActivityScreenState extends State<ActivityScreen> {
   List<HealthRecord>? _entries;
+  bool _readFailed = false;
 
   HeartbeatService get _svc => widget.services.heartbeat;
   String get _me => widget.services.self.id;
@@ -34,8 +36,23 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   Future<void> _reload() async {
-    final entries = await _svc.activities(_me);
-    if (mounted) setState(() => _entries = entries);
+    try {
+      final entries = await _svc.activities(_me);
+      if (mounted) {
+        setState(() {
+          _entries = entries;
+          _readFailed = false;
+        });
+      }
+    } on Object {
+      // Said in words with Try again, never a spinner forever (AIONIA v1.2).
+      if (mounted) setState(() => _readFailed = true);
+    }
+  }
+
+  void _retry() {
+    setState(() => _readFailed = false);
+    _reload();
   }
 
   Future<void> _open({HealthRecord? correcting}) async {
@@ -77,7 +94,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        if (entries == null)
+        if (_readFailed)
+          ReadFailedNote(id: 'act', onRetry: _retry)
+        else if (entries == null)
           const Center(child: CircularProgressIndicator())
         else if (entries.isEmpty)
           Row(

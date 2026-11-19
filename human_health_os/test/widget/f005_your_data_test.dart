@@ -307,6 +307,8 @@ void main() {
     // Labs gives the real reason, not "storage failed" (review finding).
     await tester.tap(find.text('Labs').first);
     await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('lab-add')));
+    await settle(tester);
     await tester.enterText(find.byKey(const ValueKey('lab-analyte')), 'CRP');
     await tester.enterText(find.byKey(const ValueKey('lab-value')), '3');
     final save = find.byKey(const ValueKey('lab-save'));

@@ -2624,6 +2624,69 @@ class S {
     'I have written down the recovery key',
     'Kurtarma anahtarını bir yere yazdım',
   );
+  // Recovery key confirmation (G-38, D-046).
+  String get recoveryKeyWrittenContinue =>
+      _t('I wrote it down, check it', 'Yazdım, kontrol et');
+  String get confirmKeyTitle =>
+      _t('Check the recovery key', 'Kurtarma anahtarını kontrol et');
+  String confirmKeyBody(int a, int b) => _t(
+    'Type groups $a and $b of the key, from where you wrote it down. Groups are counted from the left, 1 to 8. Pasting from a password manager is fine.',
+    'Anahtarın $a. ve $b. gruplarını, yazdığın yerden bakarak gir. Gruplar soldan 1’den 8’e sayılır. Bir parola yöneticisinden yapıştırmak da olur.',
+  );
+  String confirmGroupLabel(int n) => _t('Group $n', '$n. grup');
+  String get confirmGroupHint =>
+      _t('4 characters, like K7QM', '4 karakter, örneğin K7QM');
+  String confirmGroupEmpty(int n) => _t('Type group $n.', '$n. grubu yaz.');
+  String confirmGroupWrong(int n) => _t(
+    'This is not group $n of the key shown. Check what you wrote, or show the key again.',
+    'Bu, gösterilen anahtarın $n. grubu değil. Yazdığını kontrol et ya da anahtarı yeniden göster.',
+  );
+  String get confirmKeySummary => _t(
+    'A group does not match. Try again; there is no limit on tries.',
+    'Bir grup uyuşmuyor. Yeniden dene; deneme sınırı yok.',
+  );
+  String get showKeyAgain =>
+      _t('Show the key again', 'Anahtarı yeniden göster');
+
+  // The app lock (G-36, D-046).
+  String get lockTitle =>
+      _t('Lock after inactivity', 'Kullanılmayınca kilitle');
+  String get lockOff => _t('Off', 'Kapalı');
+  String lockMinutes(int n) => _t('$n min', '$n dk');
+  String lockMinutesSpoken(int n) =>
+      _t(n == 1 ? 'after 1 minute' : 'after $n minutes', '$n dakika sonra');
+  String get lockHidden =>
+      _t('Lock when the app is hidden', 'Uygulama gizlenince kilitle');
+  String get lockHiddenNote => _t(
+    'When you switch to another app, minimise the window or the screen turns off.',
+    'Başka bir uygulamaya geçince, pencereyi küçültünce ya da ekran kapanınca.',
+  );
+  String get lockExplain => _t(
+    'When it locks, the key is dropped from memory and the vault opens again only with your passphrase or recovery key. Every saved record is kept; text you have not saved is cleared. A notice appears 30 seconds before, and any tap, click or key press keeps the app open. Typing on a phone’s on-screen keyboard alone does not count: tap the screen.',
+    'Kilitlenince anahtar bellekten silinir; kasa yalnız parolan ya da kurtarma anahtarınla yeniden açılır. Kaydedilen her kayıt korunur; kaydetmediğin yazılar silinir. 30 saniye önce bir uyarı çıkar; herhangi bir dokunuş, tıklama ya da tuş uygulamayı açık tutar. Telefonun ekran klavyesinde yazmak tek başına sayılmaz: ekrana dokun.',
+  );
+  String get lockUnencrypted => _t(
+    'Not available in this build: it saves without encryption (a development build), so there is no key to drop. The lock works in builds with an encrypted vault.',
+    'Bu sürümde yok: kayıtlar şifresiz tutuluyor (geliştirme sürümü), bu yüzden bellekten silinecek bir anahtar yok. Kilit, şifreli kasası olan sürümlerde çalışır.',
+  );
+  String get lockNothingSaved => _t(
+    'Not available in this session: nothing is kept in an encrypted vault, so there is nothing to lock. Closing the app clears this session.',
+    'Bu oturumda yok: şifreli kasada hiçbir şey tutulmuyor, kilitlenecek bir şey yok. Uygulamayı kapatmak bu oturumu siler.',
+  );
+  String lockWarning(int seconds) => _t(
+    'Locking in $seconds s. Keep working to stay open. Text you have not saved will be cleared.',
+    '$seconds sn içinde kilitleniyor. Açık kalması için kullanmaya devam et. Kaydetmediğin yazılar silinecek.',
+  );
+  String get lockWarningSpoken => _t(
+    'Human OS locks in 30 seconds. Tap, click or press a key to stay open. Text you have not saved will be cleared.',
+    'Human OS 30 saniye içinde kilitleniyor. Açık kalması için dokun, tıkla ya da bir tuşa bas. Kaydetmediğin yazılar silinecek.',
+  );
+  String get lockStayOpen => _t('Stay open', 'Açık kalsın');
+  String get appLockedNotice => _t(
+    'Human OS locked itself. Every saved record is kept; text you had not saved was cleared.',
+    'Human OS kendini kilitledi. Kaydedilen her kayıt korunuyor; kaydetmediğin yazılar silindi.',
+  );
+
   String get createVault =>
       _t('Create the encrypted vault', 'Şifreli kasayı oluştur');
   String get derivingKey => _t(

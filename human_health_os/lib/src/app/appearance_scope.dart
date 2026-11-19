@@ -54,6 +54,14 @@ class AppearanceController extends ValueNotifier<AppearanceSettings> {
     if (saveFailed != failedBefore) notifyListeners();
   }
 
+  /// Every save started so far has finished (or failed).
+  Future<void> get pendingSaves => _saving;
+
+  /// Stops saving to [store] (the app lock closed the vault whose key
+  /// sealed it, G-36): the choices on screen stay, later changes are kept
+  /// for this session only, and the next opened vault's store is adopted.
+  void detachStore() => store = MemoryAppearanceStore(value);
+
   /// Saves run one after another, so two quick changes never write the same
   /// file at once; the last change is the one kept (R005).
   Future<void> _saving = Future<void>.value();

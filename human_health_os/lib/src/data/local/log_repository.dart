@@ -108,6 +108,21 @@ class LogRepository implements HealthRepository {
   /// replaced by a restore: this session's memory no longer matches it).
   void lock(String code) => _lockedCode = code;
 
+  /// True once [close] ran.
+  bool get isClosed => _closed;
+  bool _closed = false;
+
+  /// Ends this session's use of the store (the app lock, G-36, D-046):
+  /// every later write is refused with [code], a record write already in
+  /// flight finishes first (a saved record is never cut short), then the
+  /// decrypted state is dropped. Writes nothing; reads return nothing.
+  Future<void> close([String code = 'VAULT_LOCKED']) async {
+    _lockedCode ??= code;
+    await _recordWrites;
+    _closed = true;
+    _state = null;
+  }
+
   void _checkWritable() {
     final locked = _lockedCode;
     if (locked != null) throw StorageWriteRefused(locked);
@@ -162,7 +177,8 @@ class LogRepository implements HealthRepository {
   }
 
   @override
-  Future<List<Profile>> profiles() async => _s.profiles.values.toList();
+  Future<List<Profile>> profiles() async =>
+      _closed ? const [] : _s.profiles.values.toList();
 
   @override
   Future<void> putProfile(Profile profile) async {
@@ -233,12 +249,14 @@ class LogRepository implements HealthRepository {
   Future<List<HealthRecord>> records(
     String profileId, {
     RecordKind? kind,
-  }) async => [
-    for (final id in _s.order)
-      if (_s.records[id]!.profileId == profileId &&
-          (kind == null || _s.records[id]!.kind == kind))
-        _s.records[id]!,
-  ];
+  }) async => _closed
+      ? const []
+      : [
+          for (final id in _s.order)
+            if (_s.records[id]!.profileId == profileId &&
+                (kind == null || _s.records[id]!.kind == kind))
+              _s.records[id]!,
+        ];
 }
 
 /// Memory-only sink (tests and platforms without a persistent adapter yet).

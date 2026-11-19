@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/human_os_app.dart' show fontFamilyFor;
+import '../../app/app_lock.dart';
 import '../../app/appearance_scope.dart';
 import '../../config/app_config.dart';
 import '../../domain/settings/appearance.dart';
@@ -340,9 +341,84 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+          section(
+            s.lockTitle,
+            _AppLockSettings(
+              settings: a,
+              availability: AppLockScope.of(context),
+              onChange: set,
+            ),
+          ),
           section(s.settingsUpdatesTitle, _UpdatesAndAbout(config: config)),
         ],
       ),
+    );
+  }
+}
+
+/// Lock after inactivity and lock when hidden (G-36, D-046). Off unless the
+/// person turns them on; disabled, with the reason, where there is no
+/// encrypted vault key to drop.
+class _AppLockSettings extends StatelessWidget {
+  const _AppLockSettings({
+    required this.settings,
+    required this.availability,
+    required this.onChange,
+  });
+
+  final AppearanceSettings settings;
+  final AppLockAvailability availability;
+  final void Function(AppearanceSettings) onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final text = Theme.of(context).textTheme;
+    final on = availability == AppLockAvailability.available;
+    final reason = switch (availability) {
+      AppLockAvailability.available => null,
+      AppLockAvailability.unencrypted => s.lockUnencrypted,
+      AppLockAvailability.nothingSaved => s.lockNothingSaved,
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (reason != null) ...[
+          Text(
+            reason,
+            key: const ValueKey('set-lock-reason'),
+            style: text.bodyMedium,
+          ),
+          const SizedBox(height: 8),
+        ],
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final m in AppearanceSettings.lockMinuteChoices)
+              ChoiceChip(
+                key: ValueKey('set-lock-$m'),
+                label: Text(m == 0 ? s.lockOff : s.lockMinutes(m)),
+                tooltip: m == 0 ? null : s.lockMinutesSpoken(m),
+                selected: on && settings.lockAfterMinutes == m,
+                onSelected: on
+                    ? (_) => onChange(settings.copyWith(lockAfterMinutes: m))
+                    : null,
+              ),
+          ],
+        ),
+        SwitchListTile(
+          key: const ValueKey('set-lock-hidden'),
+          contentPadding: EdgeInsets.zero,
+          title: Text(s.lockHidden),
+          subtitle: Text(s.lockHiddenNote),
+          value: on && settings.lockWhenHidden,
+          onChanged: on
+              ? (v) => onChange(settings.copyWith(lockWhenHidden: v))
+              : null,
+        ),
+        if (on) Text(s.lockExplain, style: text.bodySmall),
+      ],
     );
   }
 }

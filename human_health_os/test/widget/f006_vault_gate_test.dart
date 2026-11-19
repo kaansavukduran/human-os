@@ -226,8 +226,19 @@ Future<String> createThroughGate(WidgetTester tester) async {
   await tapKey(tester, 'gate-continue');
   final key = textOf(tester, 'gate-recovery-key');
   await tapKey(tester, 'gate-key-written');
+  await confirmRecoveryGroups(tester, key);
   await tapKey(tester, 'gate-create-vault');
   return key;
+}
+
+/// Types back the two recovery key groups the gate asks for (G-38).
+Future<void> confirmRecoveryGroups(WidgetTester tester, String key) async {
+  final groups = key.split('-');
+  for (var n = 1; n <= groups.length; n++) {
+    final f = find.byKey(ValueKey('gate-confirm-group-$n'));
+    if (f.evaluate().isNotEmpty) await tester.enterText(f, groups[n - 1]);
+  }
+  await tester.pump();
 }
 
 /// The latest weight shown on Today.
@@ -264,21 +275,22 @@ void main() {
     await tapKey(tester, 'gate-continue');
     final first = textOf(tester, 'gate-recovery-key');
     expect(first, matches(RegExp(r'^([A-Z2-7]{4}-){7}[A-Z2-7]{4}$')));
-    final create = find.byKey(const ValueKey('gate-create-vault'));
     expect(
-      tester.widget<FilledButton>(create).onPressed,
-      isNull,
-      reason: 'not before the key is written down',
+      find.byKey(const ValueKey('gate-create-vault')),
+      findsNothing,
+      reason: 'not before the key is written down and checked',
     );
     // Going back discards the key; a new one is made next time.
     await tapKey(tester, 'gate-back');
     await type(tester, 'gate-passphrase', pass);
     await type(tester, 'gate-passphrase-confirm', pass);
     await tapKey(tester, 'gate-continue');
-    expect(textOf(tester, 'gate-recovery-key'), isNot(first));
+    final second = textOf(tester, 'gate-recovery-key');
+    expect(second, isNot(first));
     expect(disk.raw.text, isNull);
 
     await tapKey(tester, 'gate-key-written');
+    await confirmRecoveryGroups(tester, second);
     await tapKey(tester, 'gate-create-vault');
     expect(find.byKey(const ValueKey('screen-today')), findsOneWidget);
     expect(find.textContaining('· encrypted'), findsWidgets);

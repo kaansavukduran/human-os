@@ -41,6 +41,7 @@ class AppServices {
     this.reopenAfterRestore,
     this.replacedBy,
     this.reloadPage,
+    this.closeVault,
   });
 
   final AppConfig config;
@@ -112,4 +113,11 @@ class AppServices {
   /// Reloads the page: in the browser the way out once a restore has run,
   /// whether it finished or not (G-29). Null outside the browser.
   final void Function()? reloadPage;
+
+  /// Closes an opened encrypted vault for the app lock (G-36, D-046): a
+  /// record write in flight finishes, then every later write is refused,
+  /// the decrypted state is dropped and the data key is overwritten in
+  /// memory. Writes nothing. Null where there is no key to drop
+  /// (development builds, memory-only sessions).
+  final Future<void> Function()? closeVault;
 }

@@ -567,6 +567,7 @@ void main() {
         .data!;
     await tapKey(tester, 'gate-key-written');
     await tester.pumpAndSettle();
+    await confirmRecoveryGroups(tester, key);
     await tapKey(tester, 'gate-create-vault');
     await waitFor(tester, find.byKey(const ValueKey('screen-today')));
 
@@ -946,3 +947,13 @@ void main() {
 
 /// A fixed, synthetic recovery key: integration runs stay reproducible.
 String newRecoveryKeyForIt() => 'K7QM-2XRA-PLMN-B3DE-ZZ4H-QW5T-RT6Y-HJ7U';
+
+/// Types back the two recovery key groups the gate asks for (G-38).
+Future<void> confirmRecoveryGroups(WidgetTester tester, String key) async {
+  final groups = key.split('-');
+  for (var n = 1; n <= groups.length; n++) {
+    final f = find.byKey(ValueKey('gate-confirm-group-$n'));
+    if (f.evaluate().isNotEmpty) await tester.enterText(f, groups[n - 1]);
+  }
+  await tester.pump();
+}

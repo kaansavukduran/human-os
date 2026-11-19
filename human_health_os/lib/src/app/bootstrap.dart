@@ -55,6 +55,16 @@ class VaultGate {
   /// ([StorageReason.sessionOnly]) or it is unreadable.
   final Future<AppServices> Function(StorageReason reason, {String? detail})
   memoryOnly;
+
+  /// The same gate for a vault that is now [next] (after the app lock, the
+  /// vault exists and is locked: G-36). A new object, so the gate screen
+  /// starts afresh.
+  VaultGate withInspection(VaultInspection next) => VaultGate(
+    vault: vault,
+    inspection: next,
+    open: open,
+    memoryOnly: memoryOnly,
+  );
 }
 
 /// [env] and [executablePath] stand in for the process environment and the
@@ -289,7 +299,20 @@ Future<AppServices> servicesFor(
     reopenAfterRestore: reopen,
     replacedBy: replacedBy,
     reloadPage: reloadPage,
+    closeVault: closeVaultOf(repo),
   );
+}
+
+/// How the app lock closes [repo] (G-36, D-046); null unless it is an
+/// encrypted vault, the only store with a key to drop.
+Future<void> Function()? closeVaultOf(HealthRepository repo) {
+  if (repo is! LogRepository) return null;
+  final sink = repo.sink;
+  if (sink is! EncryptedLogSink) return null;
+  return () async {
+    await repo.close();
+    sink.close();
+  };
 }
 
 /// A backup of exactly what is stored: the plaintext development log, or

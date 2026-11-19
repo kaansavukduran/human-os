@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../core/redact.dart' show logEvent;
+import '../domain/ports/health_repository.dart' show StorageDurability;
 import '../domain/settings/appearance.dart';
 import '../domain/settings/date_style.dart';
 import '../features/onboarding/first_run_screen.dart';
@@ -10,6 +12,7 @@ import '../l10n/strings.dart';
 import '../navigation/app_shell.dart';
 import '../presentation/theme/human_os_theme.dart';
 import '../presentation/widgets/interface_scale.dart';
+import 'app_lock.dart';
 import 'app_services.dart';
 import 'appearance_scope.dart';
 import 'bootstrap.dart';
@@ -61,7 +64,10 @@ class HumanOsApp extends StatefulWidget {
 
 class _HumanOsAppState extends State<HumanOsApp> {
   void _vaultOpened(AppServices s) {
-    setState(() => _use(s));
+    setState(() {
+      _use(s);
+      _lockedNotice = false;
+    });
     final prefs = s.vaultPreferences;
     // Only a session store is replaced: a store that already keeps choices
     // (development desktop) stays as it is.
@@ -91,12 +97,62 @@ class _HumanOsAppState extends State<HumanOsApp> {
   }
 
   bool _introDone = false;
+
+  /// The gate shown while no services are open: the one the app started
+  /// with, or a new one after the app lock (G-36).
+  VaultGate? _gate;
+
+  /// The gate is shown because the app locked itself.
+  bool _lockedNotice = false;
+  bool _locking = false;
+  final _navigator = GlobalKey<NavigatorState>();
+
+  /// The app lock (G-36, D-046): open sheets and pages close (unsaved
+  /// typing is discarded), the gate comes back at once, then the vault is
+  /// closed: a record write in flight finishes, the decrypted state and
+  /// the key are dropped. Nothing is written.
+  Future<void> _lock(AppLockCause cause) async {
+    final s = _services;
+    final gate = _gate;
+    final close = s?.closeVault;
+    if (_locking || s == null || gate == null || close == null) return;
+    _locking = true;
+    try {
+      _navigator.currentState?.popUntil((r) => r.isFirst);
+      // Preferences were sealed with this vault's key: later changes stay
+      // for this session until the next unlock adopts the vault's store.
+      _appearance.detachStore();
+      setState(() {
+        _use(null);
+        _gate = gate.withInspection(const VaultInspection(VaultAccess.unlock));
+        _lockedNotice = true;
+      });
+      await _appearance.pendingSaves;
+      await close();
+      logEvent('app_locked', fields: {'cause': cause.name});
+    } catch (e) {
+      logEvent('app_lock_failed', error: e);
+    } finally {
+      _locking = false;
+    }
+  }
+
+  AppLockAvailability get _lockAvailability {
+    final s = _services;
+    if (s == null) return AppLockAvailability.nothingSaved;
+    if (s.closeVault != null) return AppLockAvailability.available;
+    return s.storage.durability == StorageDurability.memoryOnly
+        ? AppLockAvailability.nothingSaved
+        : AppLockAvailability.unencrypted;
+  }
+
   late AppearanceController _appearance =
       widget.appearance ?? AppearanceController(MemoryAppearanceStore());
 
   @override
   void initState() {
     super.initState();
+    _gate = widget.gate;
     _use(widget.services);
     _appearance.addListener(_changed);
   }
@@ -116,6 +172,8 @@ class _HumanOsAppState extends State<HumanOsApp> {
     // A new app instance (a test's "relaunch") starts from its own inputs.
     if (widget.services != old.services || widget.gate != old.gate) {
       _use(widget.services);
+      _gate = widget.gate;
+      _lockedNotice = false;
     }
     if (widget.appearance != null && widget.appearance != _appearance) {
       _appearance.removeListener(_changed);
@@ -167,9 +225,11 @@ class _HumanOsAppState extends State<HumanOsApp> {
     displayDateOrder = a.dateOrder;
     displayClock = a.clock;
     final themes = _themesFor(a);
+    final lockable = _lockAvailability == AppLockAvailability.available;
     return AppearanceScope(
       controller: _appearance,
       child: MaterialApp(
+        navigatorKey: _navigator,
         title: 'Human OS',
         debugShowCheckedModeBanner: false,
         theme: themes.$1,
@@ -208,7 +268,20 @@ class _HumanOsAppState extends State<HumanOsApp> {
           final factor = a.textFactor;
           return MediaQuery(
             data: mq.copyWith(textScaler: _Scaled(mq.textScaler, factor)),
-            child: InterfaceScale(percent: a.interfacePercent, child: child!),
+            child: AppLockScope(
+              availability: _lockAvailability,
+              child: InterfaceScale(
+                percent: a.interfacePercent,
+                child: AppLockGuard(
+                  idle: lockable && a.lockAfterMinutes > 0
+                      ? Duration(minutes: a.lockAfterMinutes)
+                      : null,
+                  lockWhenHidden: lockable && a.lockWhenHidden,
+                  onLock: _lock,
+                  child: child!,
+                ),
+              ),
+            ),
           );
         },
         home: services != null
@@ -221,12 +294,13 @@ class _HumanOsAppState extends State<HumanOsApp> {
                       !_appearance.store.persistent &&
                       !_introDone &&
                       !a.firstRunDone &&
-                      widget.gate!.inspection.access == VaultAccess.create
+                      _gate!.inspection.access == VaultAccess.create
                   ? FirstRunScreen(onDone: _finishIntro)
                   : VaultGateScreen(
-                      key: ObjectKey(widget.gate),
-                      gate: widget.gate!,
+                      key: ObjectKey(_gate),
+                      gate: _gate!,
                       onReady: _vaultOpened,
+                      lockedNotice: _lockedNotice,
                     )),
       ),
     );

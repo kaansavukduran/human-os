@@ -4,6 +4,8 @@
 /// explained without false promises (v0.24 key loss, DR-09).
 library;
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../app/app_services.dart';
@@ -17,7 +19,45 @@ import '../../data/local/vault_log.dart' show VaultFormatError;
 import '../../domain/ports/storage_status.dart';
 import '../../l10n/strings.dart';
 
-enum _Mode { create, recoveryKey, unlock, recover, keyLost, unreadable }
+enum _Mode {
+  create,
+  recoveryKey,
+  confirmKey,
+  unlock,
+  recover,
+  keyLost,
+  unreadable,
+}
+
+/// Two different groups of a recovery key to type back (G-38), numbered
+/// 1 to [recoveryKeyGroups] from the left, in ascending order.
+(int, int) pickConfirmGroups(Random random) {
+  final a = random.nextInt(recoveryKeyGroups) + 1;
+  var b = random.nextInt(recoveryKeyGroups - 1) + 1;
+  if (b >= a) b++;
+  return a < b ? (a, b) : (b, a);
+}
+
+/// A recovery key has eight groups of four characters.
+const int recoveryKeyGroups = 8;
+
+/// Whether [typed] is group [n] (1-based) of [key]. Read like a typed
+/// recovery key: case, spaces and dashes do not matter, and 0, 1 and 8
+/// count as O, I and B. The whole key, pasted from a password manager,
+/// counts as well (its group [n] is compared).
+bool groupMatches(String key, int n, String typed) {
+  final clean = typed
+      .toUpperCase()
+      .replaceAll(RegExp(r'[\s\-]'), '')
+      .replaceAll('0', 'O')
+      .replaceAll('1', 'I')
+      .replaceAll('8', 'B');
+  final groups = key.split('-');
+  if (n < 1 || n > groups.length) return false;
+  final want = groups[n - 1];
+  if (clean.length == want.length) return clean == want;
+  return clean == groups.join('');
+}
 
 /// What a gate step had already written when opening the app failed.
 enum _Wrote { vault, passphrase }
@@ -44,9 +84,23 @@ const Set<String> newerVaultCodes = {
 const Set<String> keepInPlaceCodes = {...newerVaultCodes, 'VAULT_READ_FAILED'};
 
 class VaultGateScreen extends StatefulWidget {
-  const VaultGateScreen({super.key, required this.gate, required this.onReady});
+  const VaultGateScreen({
+    super.key,
+    required this.gate,
+    required this.onReady,
+    this.lockedNotice = false,
+    this.random,
+  });
 
   final VaultGate gate;
+
+  /// Shown because the app locked itself (G-36): the unlock screen says
+  /// that saved records are kept and unsaved typing was cleared.
+  final bool lockedNotice;
+
+  /// Picks the recovery key groups to type back; a secure source when null
+  /// (tests pass a seeded one).
+  final Random? random;
 
   /// Called once with the app's services (vault opened, or memory only).
   final void Function(AppServices services) onReady;
@@ -67,7 +121,16 @@ class _VaultGateScreenState extends State<VaultGateScreen> {
   /// once, then both are dropped.
   String? _newPassphrase;
   String? _recoveryKey;
-  bool _keyWrittenDown = false;
+
+  /// The two groups asked for (1-based); new ones at every showing.
+  (int, int)? _groups;
+  String? _groupError1;
+  String? _groupError2;
+  late final Random _random = widget.random ?? Random.secure();
+  final _group1 = TextEditingController();
+  final _group2 = TextEditingController();
+  final _group1Focus = FocusNode();
+  final _group2Focus = FocusNode();
 
   final _pass = TextEditingController();
   final _confirm = TextEditingController();
@@ -96,6 +159,10 @@ class _VaultGateScreenState extends State<VaultGateScreen> {
     _confirm.dispose();
     _key.dispose();
     _passFocus.dispose();
+    _group1.dispose();
+    _group2.dispose();
+    _group1Focus.dispose();
+    _group2Focus.dispose();
     super.dispose();
   }
 
@@ -106,10 +173,18 @@ class _VaultGateScreenState extends State<VaultGateScreen> {
     _confirm.clear();
     _key.clear();
     _obscure = true;
-    if (mode != _Mode.recoveryKey) {
+    _group1.clear();
+    _group2.clear();
+    _groupError1 = null;
+    _groupError2 = null;
+    if (mode == _Mode.recoveryKey) {
+      // Every showing asks for two new groups.
+      _groups = pickConfirmGroups(_random);
+    }
+    if (mode != _Mode.recoveryKey && mode != _Mode.confirmKey) {
       _newPassphrase = null;
       _recoveryKey = null;
-      _keyWrittenDown = false;
+      _groups = null;
     }
   });
 
@@ -142,6 +217,8 @@ class _VaultGateScreenState extends State<VaultGateScreen> {
       logEvent(done, fields: {'warnings': services.loadWarnings.length});
       _newPassphrase = null;
       _recoveryKey = null;
+      _group1.clear();
+      _group2.clear();
       _pass.clear();
       _confirm.clear();
       _key.clear();
@@ -387,38 +464,122 @@ class _VaultGateScreenState extends State<VaultGateScreen> {
         letterSpacing: 1.2,
       ),
     ),
-    const SizedBox(height: 8),
-    CheckboxListTile(
-      key: const ValueKey('gate-key-written'),
-      contentPadding: EdgeInsets.zero,
-      controlAffinity: ListTileControlAffinity.leading,
-      value: _keyWrittenDown,
-      onChanged: _busy
-          ? null
-          : (v) => setState(() => _keyWrittenDown = v ?? false),
-      title: Text(s.recoveryKeySaved),
-    ),
     _errorText(text),
     _primary(
-      s.createVault,
-      'gate-create-vault',
-      _keyWrittenDown
-          ? () => _run(
-              () async => _openAfterWrite(
-                await _vault.create(
-                  passphrase: _newPassphrase!,
-                  recoveryKey: _recoveryKey!,
-                ),
-                _Wrote.vault,
-              ),
-              s,
-              done: 'vault_created',
-              failed: 'vault_create_failed',
-            )
-          : null,
+      s.recoveryKeyWrittenContinue,
+      'gate-key-written',
+      () => _go(_Mode.confirmKey),
     ),
     _secondary(s.gateBack, 'gate-back', () => _go(_Mode.create)),
   ];
+
+  /// Types back two groups of the key just shown (G-38). A wrong group
+  /// says which one and keeps both fields; there is no limit on tries.
+  List<Widget> _confirmKey(S s, TextTheme text) {
+    final (a, b) = _groups!;
+    void create() {
+      final key = _recoveryKey!;
+      String? check(int n, String typed) => typed.trim().isEmpty
+          ? s.confirmGroupEmpty(n)
+          : (groupMatches(key, n, typed) ? null : s.confirmGroupWrong(n));
+      final e1 = check(a, _group1.text);
+      final e2 = check(b, _group2.text);
+      if (e1 != null || e2 != null) {
+        setState(() {
+          _groupError1 = e1;
+          _groupError2 = e2;
+          _error = s.confirmKeySummary;
+        });
+        (e1 != null ? _group1Focus : _group2Focus).requestFocus();
+        return;
+      }
+      setState(() {
+        _groupError1 = null;
+        _groupError2 = null;
+      });
+      _run(
+        () async => _openAfterWrite(
+          await _vault.create(passphrase: _newPassphrase!, recoveryKey: key),
+          _Wrote.vault,
+        ),
+        s,
+        done: 'vault_created',
+        failed: 'vault_create_failed',
+      );
+    }
+
+    Widget group(
+      int n,
+      TextEditingController c,
+      FocusNode focus,
+      String? error,
+      void Function() clearError, {
+      required bool last,
+    }) => Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: TextField(
+        key: ValueKey('gate-confirm-group-$n'),
+        controller: c,
+        focusNode: focus,
+        readOnly: _busy,
+        autocorrect: false,
+        enableSuggestions: false,
+        keyboardType: TextInputType.visiblePassword,
+        textCapitalization: TextCapitalization.characters,
+        textInputAction: last ? TextInputAction.done : TextInputAction.next,
+        onChanged: (_) {
+          if (error != null) {
+            setState(() {
+              clearError();
+              _error = null;
+            });
+          }
+        },
+        onSubmitted: (_) => last ? create() : _group2Focus.requestFocus(),
+        decoration: InputDecoration(
+          labelText: s.confirmGroupLabel(n),
+          helperText: s.confirmGroupHint,
+          errorText: error,
+          errorMaxLines: 4,
+          helperMaxLines: 2,
+          border: const OutlineInputBorder(),
+        ),
+      ),
+    );
+
+    return [
+      _title(s.confirmKeyTitle, text),
+      Text(
+        s.confirmKeyBody(a, b),
+        key: const ValueKey('gate-confirm-body'),
+        style: text.bodyLarge,
+      ),
+      group(
+        a,
+        _group1,
+        _group1Focus,
+        _groupError1,
+        () => _groupError1 = null,
+        last: false,
+      ),
+      group(
+        b,
+        _group2,
+        _group2Focus,
+        _groupError2,
+        () => _groupError2 = null,
+        last: true,
+      ),
+      _errorText(text),
+      _primary(s.createVault, 'gate-create-vault', create),
+      _secondary(
+        s.showKeyAgain,
+        'gate-show-key-again',
+        () => _go(_Mode.recoveryKey),
+      ),
+      _secondary(s.gateBack, 'gate-back', () => _go(_Mode.create)),
+    ];
+  }
 
   List<Widget> _unlock(S s, TextTheme text) {
     void go() => _run(
@@ -430,6 +591,14 @@ class _VaultGateScreenState extends State<VaultGateScreen> {
     );
     return [
       _title(s.unlockTitle, text),
+      if (widget.lockedNotice) ...[
+        Text(
+          s.appLockedNotice,
+          key: const ValueKey('gate-locked-notice'),
+          style: text.bodyLarge,
+        ),
+        const SizedBox(height: 8),
+      ],
       Text(s.unlockBody, style: text.bodyLarge),
       _field(
         _pass,
@@ -585,6 +754,7 @@ class _VaultGateScreenState extends State<VaultGateScreen> {
     final children = switch (_mode) {
       _Mode.create => _create(s, text),
       _Mode.recoveryKey => _showRecoveryKey(s, text),
+      _Mode.confirmKey => _confirmKey(s, text),
       _Mode.unlock => _unlock(s, text),
       _Mode.recover => _recover(s, text),
       _Mode.keyLost => _keyLost(s, text),

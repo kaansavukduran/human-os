@@ -76,7 +76,23 @@ class AppearanceSettings {
     this.discoveryEnabled = true,
     this.discovered = const {},
     this.explainedAreas = const {},
+    this.lockAfterMinutes = 0,
+    this.lockWhenHidden = false,
   });
+
+  /// The app lock of an encrypted vault (G-36, D-046): minutes without
+  /// use before the vault locks itself; 0 is off (the default). Only the
+  /// values in [lockMinuteChoices]; anything else reads as off.
+  final int lockAfterMinutes;
+
+  /// Lock as soon as the app is hidden or paused (off by default).
+  final bool lockWhenHidden;
+
+  /// The choices offered for [lockAfterMinutes].
+  static const List<int> lockMinuteChoices = [0, 1, 5, 15, 30];
+
+  static int parseLockMinutes(Object? v) =>
+      v is int && lockMinuteChoices.contains(v) ? v : 0;
 
   /// Areas whose short "what this is" introduction the person closed
   /// (U031): the introduction stays closed there. Names of areas, never
@@ -211,6 +227,8 @@ class AppearanceSettings {
     dateOrder: dateOrder,
     clock: clock,
     firstRunDone: firstRunDone,
+    lockAfterMinutes: lockAfterMinutes,
+    lockWhenHidden: lockWhenHidden,
   );
 
   /// Multiplies the text size the system asks for.
@@ -247,6 +265,8 @@ class AppearanceSettings {
     DateOrder? dateOrder,
     ClockStyle? clock,
     bool? firstRunDone,
+    int? lockAfterMinutes,
+    bool? lockWhenHidden,
   }) => AppearanceSettings(
     interfacePercent: interfacePercent ?? this.interfacePercent,
     discoveryEnabled: discoveryEnabled ?? this.discoveryEnabled,
@@ -274,6 +294,8 @@ class AppearanceSettings {
     dateOrder: dateOrder ?? this.dateOrder,
     clock: clock ?? this.clock,
     firstRunDone: firstRunDone ?? this.firstRunDone,
+    lockAfterMinutes: lockAfterMinutes ?? this.lockAfterMinutes,
+    lockWhenHidden: lockWhenHidden ?? this.lockWhenHidden,
   );
 
   Map<String, Object?> toJson() => {
@@ -305,6 +327,8 @@ class AppearanceSettings {
     'dateOrder': dateOrder.name,
     'clock': clock.name,
     'firstRunDone': firstRunDone,
+    'lockAfterMinutes': lockAfterMinutes,
+    'lockWhenHidden': lockWhenHidden,
   };
 
   /// Reads saved settings; anything unknown or missing falls back to the
@@ -377,6 +401,8 @@ class AppearanceSettings {
       dateOrder: pick(DateOrder.values, json['dateOrder'], DateOrder.iso),
       clock: pick(ClockStyle.values, json['clock'], ClockStyle.h24),
       firstRunDone: json['firstRunDone'] == true,
+      lockAfterMinutes: parseLockMinutes(json['lockAfterMinutes']),
+      lockWhenHidden: json['lockWhenHidden'] == true,
     );
   }
 
@@ -408,7 +434,9 @@ class AppearanceSettings {
       other.units == units &&
       other.dateOrder == dateOrder &&
       other.clock == clock &&
-      other.firstRunDone == firstRunDone;
+      other.firstRunDone == firstRunDone &&
+      other.lockAfterMinutes == lockAfterMinutes &&
+      other.lockWhenHidden == lockWhenHidden;
 
   @override
   int get hashCode => Object.hash(
@@ -439,6 +467,8 @@ class AppearanceSettings {
       firstRunDone,
       palette,
       explainedAreas.length,
+      lockAfterMinutes,
+      lockWhenHidden,
     ),
   );
 }

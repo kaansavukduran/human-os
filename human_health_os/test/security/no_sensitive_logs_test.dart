@@ -447,8 +447,12 @@ Future<void> _failCreate(WidgetTester tester, VaultGate gate) async {
   );
   await tester.tap(find.byKey(const ValueKey('gate-continue')));
   await tester.pumpAndSettle();
+  final key = tester
+      .widget<SelectableText>(find.byKey(const ValueKey('gate-recovery-key')))
+      .data!;
   await tester.tap(find.byKey(const ValueKey('gate-key-written')));
   await tester.pumpAndSettle();
+  await confirmRecoveryGroups(tester, key);
   await tester.tap(find.byKey(const ValueKey('gate-create-vault')));
   await tester.runAsync(
     () => Future<void>.delayed(const Duration(milliseconds: 50)),
@@ -468,4 +472,14 @@ class _ThrowingSink implements LogSink {
   @override
   Future<void> appendLine(String line) async =>
       throw FileSystemException('cannot write $line', path);
+}
+
+/// Types back the two recovery key groups the gate asks for (G-38).
+Future<void> confirmRecoveryGroups(WidgetTester tester, String key) async {
+  final groups = key.split('-');
+  for (var n = 1; n <= groups.length; n++) {
+    final f = find.byKey(ValueKey('gate-confirm-group-$n'));
+    if (f.evaluate().isNotEmpty) await tester.enterText(f, groups[n - 1]);
+  }
+  await tester.pump();
 }

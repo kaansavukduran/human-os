@@ -390,6 +390,30 @@ class EncryptedLogSink implements LogSink {
 
   final LogSink raw;
   final Uint8List _dataKey;
+
+  /// True once [close] ran: the key is gone and nothing more is read,
+  /// sealed or written through this sink (the app lock, G-36, D-046).
+  bool _closed = false;
+
+  bool get isClosed => _closed;
+
+  /// The data key, while this sink is open.
+  Uint8List get _key {
+    if (_closed) throw const StorageWriteRefused('VAULT_LOCKED');
+    return _dataKey;
+  }
+
+  /// Drops the data key from memory (its bytes are overwritten with zeros)
+  /// and refuses every later read, seal and write with `VAULT_LOCKED`.
+  /// Writes nothing. A new unlock makes a new sink. Strings already
+  /// decrypted cannot be wiped (G-37); the app drops every reference.
+  void close() {
+    if (_closed) return;
+    _closed = true;
+    _pending = null;
+    _dataKey.fillRange(0, _dataKey.length, 0);
+  }
+
   final KeyDeriver _derive;
   EnvelopeHeader? _header;
   ({String passphrase, String recovery, KdfParams Function() newKdf})? _pending;
@@ -414,7 +438,7 @@ class EncryptedLogSink implements LogSink {
   /// a file beside the vault, under this vault's key with their own
   /// associated data, so they open only with this vault (U018).
   String sealPreferences(String json) {
-    final s = seal(_dataKey, _utf8(json), _prefsAad(vaultId));
+    final s = seal(_key, _utf8(json), _prefsAad(vaultId));
     return jsonEncode({
       'format': preferencesFormat,
       'vault_id': vaultId,
@@ -432,7 +456,7 @@ class EncryptedLogSink implements LogSink {
         return null;
       }
       final plain = openSealed(
-        _dataKey,
+        _key,
         base64Decode(m['n']! as String),
         base64Decode(m['c']! as String),
         _prefsAad(vaultId),
@@ -449,7 +473,7 @@ class EncryptedLogSink implements LogSink {
     if (header.vaultId != vaultId) {
       throw const VaultEnvelopeError('ENVELOPE_UNREADABLE');
     }
-    return openEnvelopeText(text, _dataKey, vaultId);
+    return openEnvelopeText(text, _key, vaultId);
   }
 
   /// The stored envelope and what it holds, read once (a backup must
@@ -462,6 +486,7 @@ class EncryptedLogSink implements LogSink {
 
   @override
   Future<String?> read() async {
+    if (_closed) throw const StorageWriteRefused('VAULT_LOCKED');
     // Measured before reading: a line added in between makes the size
     // differ at the next append, which then reads again.
     final size = await _storedSize();
@@ -478,6 +503,7 @@ class EncryptedLogSink implements LogSink {
 
   @override
   Future<void> create(String text) async {
+    if (_closed) throw const StorageWriteRefused('VAULT_LOCKED');
     final pending = _pending;
     if (pending == null) {
       throw StateError('An existing vault is never created again');
@@ -488,7 +514,7 @@ class EncryptedLogSink implements LogSink {
       await KeySlot.wrap(
         KeyKind.passphrase,
         pending.passphrase,
-        _dataKey,
+        _key,
         id,
         derive: _derive,
         kdf: pending.newKdf(),
@@ -496,7 +522,7 @@ class EncryptedLogSink implements LogSink {
       await KeySlot.wrap(
         KeyKind.recovery,
         pending.recovery,
-        _dataKey,
+        _key,
         id,
         derive: _derive,
         kdf: pending.newKdf(),
@@ -513,7 +539,7 @@ class EncryptedLogSink implements LogSink {
   }
 
   String _sealLine(String id, int seq, String line) {
-    final s = seal(_dataKey, _utf8(line), _entryAad(id, seq));
+    final s = seal(_key, _utf8(line), _entryAad(id, seq));
     return jsonEncode({
       's': seq,
       'n': base64Encode(s.nonce),
@@ -523,6 +549,7 @@ class EncryptedLogSink implements LogSink {
 
   @override
   Future<void> appendLine(String line) async {
+    if (_closed) throw const StorageWriteRefused('VAULT_LOCKED');
     if (line.isEmpty) {
       // Ends a torn last line (log_repository.dart); carries no data.
       await _write('');
@@ -578,7 +605,7 @@ class EncryptedLogSink implements LogSink {
     if (stored.vaultId != vaultId) {
       throw const StorageWriteRefused('VAULT_CHANGED');
     }
-    _nextSeq = max(_nextSeq, openEnvelopeText(text, _dataKey, vaultId).nextSeq);
+    _nextSeq = max(_nextSeq, openEnvelopeText(text, _key, vaultId).nextSeq);
     _header = stored;
     _size = size;
     _stale = false;
@@ -596,7 +623,7 @@ class EncryptedLogSink implements LogSink {
     final slot = await KeySlot.wrap(
       KeyKind.passphrase,
       newPassphrase,
-      _dataKey,
+      _key,
       header.vaultId,
       derive: _derive,
       kdf: newKdf(),

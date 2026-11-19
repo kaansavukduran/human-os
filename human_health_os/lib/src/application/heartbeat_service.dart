@@ -36,10 +36,17 @@ class LabInput {
     this.laboratory = '',
     this.sourceFlag = '',
     this.referenceText = '',
+    this.kind = LabValueKind.number,
   });
 
   final String analyte;
+
+  /// The value as printed: a number ("5,4"), a comparator and a number
+  /// ("< 5") or text ("Pozitif"), as [kind] says.
   final String value;
+
+  /// How the report prints the value (F004-S2, D-043).
+  final LabValueKind kind;
 
   /// The report lists the test but gives no value (missing ≠ zero).
   final bool notReported;
@@ -96,6 +103,101 @@ double parseLabDecimal(String raw) {
     throw const InputError('AMBIGUOUS_SEPARATOR');
   }
   return parseDecimal(raw);
+}
+
+/// A number with a unit typed after it ("5 mg/dL", "37mmol/mol", "6 %").
+final RegExp _unitAfterNumber = RegExp(
+  r'^\d+([.,]\d+)?\s*[\p{L}%/µ°]',
+  unicode: true,
+);
+
+/// A comparator typed first: "<", ">", "≤", "≥" or "=".
+final RegExp _comparatorFirst = RegExp(r'^[<>≤≥=]');
+
+/// The number of a plain lab value. Besides [parseLabDecimal]'s rules, a
+/// comparator first ("<5") is `VALUE_HAS_COMPARATOR` and a unit after the
+/// number ("5 mg/dL") is `UNIT_IN_VALUE`, so the message says what to do.
+double parseLabNumber(String raw) {
+  final t = raw.trim();
+  if (_comparatorFirst.hasMatch(t)) {
+    throw const InputError('VALUE_HAS_COMPARATOR', 'value');
+  }
+  if (_unitAfterNumber.hasMatch(t)) {
+    throw const InputError('UNIT_IN_VALUE', 'value');
+  }
+  try {
+    final v = parseLabDecimal(t);
+    if (!v.isFinite) throw const InputError('NOT_A_NUMBER');
+    return v;
+  } on InputError catch (e) {
+    throw InputError(e.code, 'value');
+  }
+}
+
+/// A censored lab value ("< 5", "<=0,1", "> 1000", "≥ 90"): one comparator
+/// and one number, the number kept exactly as typed. Refused: blank
+/// (`EMPTY`), no comparator (`CENSORED_NEEDS_COMPARATOR`), a comparator
+/// alone (`CENSORED_NEEDS_NUMBER`), two comparators or a stray "="
+/// (`COMPARATOR_UNCLEAR`), a unit in the value (`UNIT_IN_VALUE`), and a
+/// number [parseLabDecimal] refuses. Every error is about the value field.
+({LabComparator comparator, String limitText}) parseCensoredLab(String raw) {
+  final t = raw.trim();
+  if (t.isEmpty) throw const InputError('EMPTY', 'value');
+  LabComparator? comparator;
+  var rest = '';
+  // Longest typed form first, so "<=" is never read as "<" then "=".
+  for (final e in LabComparator.typed.entries) {
+    if (t.startsWith(e.key)) {
+      comparator = e.value;
+      rest = t.substring(e.key.length).trim();
+      break;
+    }
+  }
+  if (comparator == null) {
+    throw InputError(
+      _comparatorFirst.hasMatch(t)
+          ? 'COMPARATOR_UNCLEAR'
+          : 'CENSORED_NEEDS_COMPARATOR',
+      'value',
+    );
+  }
+  if (rest.isEmpty) throw const InputError('CENSORED_NEEDS_NUMBER', 'value');
+  if (_comparatorFirst.hasMatch(rest)) {
+    throw const InputError('COMPARATOR_UNCLEAR', 'value');
+  }
+  if (_unitAfterNumber.hasMatch(rest)) {
+    throw const InputError('UNIT_IN_VALUE', 'value');
+  }
+  try {
+    parseLabDecimal(rest);
+  } on InputError catch (e) {
+    throw InputError(e.code, 'value');
+  }
+  return (comparator: comparator, limitText: rest);
+}
+
+/// A lab result printed as text ("Pozitif", "Reaktif değil", "1+"), kept
+/// verbatim apart from surrounding spaces. A plain number
+/// (`TEXT_IS_A_NUMBER`) or a censored value (`TEXT_IS_CENSORED`) is refused:
+/// it has its own kind, so it is not hidden from what a number can do.
+String parseLabText(String raw) {
+  final t = raw.trim();
+  if (t.isEmpty) throw const InputError('EMPTY', 'value');
+  if (t.runes.length > LabPrintedResult.maxTextLength) {
+    throw const InputError('TEXT_TOO_LONG', 'value');
+  }
+  if (RegExp(r'^[+-]?\d+([.,]\d+)?$').hasMatch(t.replaceAll(' ', ''))) {
+    throw const InputError('TEXT_IS_A_NUMBER', 'value');
+  }
+  var censored = false;
+  try {
+    parseCensoredLab(t);
+    censored = true;
+  } on InputError {
+    censored = false;
+  }
+  if (censored) throw const InputError('TEXT_IS_CENSORED', 'value');
+  return t;
 }
 
 class HeartbeatService {
@@ -280,19 +382,35 @@ class HeartbeatService {
     }
     String? opt(String raw) => raw.trim().isEmpty ? null : raw.trim();
     final unit = opt(input.unit);
-    final double? value = input.notReported
+    final kind = input.notReported ? LabValueKind.number : input.kind;
+    final double? value = input.notReported || kind != LabValueKind.number
         ? null
-        : parseLabDecimal(input.value);
+        : parseLabNumber(input.value);
+    final LabPrintedResult? printed = switch (kind) {
+      _ when input.notReported => null,
+      LabValueKind.number => null,
+      LabValueKind.censored => () {
+        final c = parseCensoredLab(input.value);
+        return LabPrintedResult.censored(
+          comparator: c.comparator,
+          limitText: c.limitText,
+          unit: unit,
+        );
+      }(),
+      LabValueKind.text => LabPrintedResult.text(
+        text: parseLabText(input.value),
+        unit: unit,
+      ),
+    };
+    final present = value != null || printed != null;
     return HealthRecord(
       id: _ids.newId(),
       profileId: profileId,
       kind: RecordKind.labResult,
       state: RecordState.reported,
-      valueStatus: value == null
-          ? ValueStatus.notReported
-          : ValueStatus.present,
+      valueStatus: present ? ValueStatus.present : ValueStatus.notReported,
       quantity: value == null ? null : Quantity(value, unit),
-      originalText: value == null ? null : input.value.trim(),
+      originalText: present ? input.value.trim() : null,
       provenance: const Provenance.manual(),
       observedAt: sample,
       recordedAt: now,
@@ -304,7 +422,13 @@ class HeartbeatService {
         laboratory: opt(input.laboratory),
         sourceFlag: opt(input.sourceFlag),
         referenceText: opt(input.referenceText),
+        result: printed,
       ),
+      // Only a value that is not a plain number needs schema 14 (D-043);
+      // a plain number stays readable by every app since F004.
+      schemaVersion: printed == null
+          ? HealthRecord.writeSchemaFor(RecordKind.labResult)
+          : HealthRecord.labPrintedResultSchema,
     );
   }
 

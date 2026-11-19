@@ -123,8 +123,11 @@ class DoctorSummary {
     final lab = r.lab;
     final unit = r.quantity?.unit ?? '';
     final typed = r.originalText ?? '';
+    final printed = lab?.result;
     final value = r.valueStatus != ValueStatus.present
         ? s.valueStatus(r.valueStatus)
+        : printed != null
+        ? labPrintedValue(s, r, printed)
         : typed.isNotEmpty
         ? '$typed ${unit.isEmpty ? s.unitNotGiven : unit}'
         : measurementValue(s, r);

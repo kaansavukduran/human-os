@@ -43,6 +43,9 @@ class _LabForm {
   final flag = TextEditingController();
   final range = TextEditingController();
   bool notReported = false;
+
+  /// How the report prints the value (F004-S2): Number by default.
+  LabValueKind kind = LabValueKind.number;
   HealthRecord? correcting;
 
   /// The add form's sample date and laboratory, kept while a correction
@@ -71,6 +74,7 @@ class _LabForm {
     laboratory: laboratory.text,
     sourceFlag: flag.text,
     referenceText: range.text,
+    kind: kind,
   );
 
   void startCorrection(HealthRecord r) {
@@ -79,8 +83,9 @@ class _LabForm {
     correcting = r;
     analyte.text = lab.analyteLabel;
     notReported = r.valueStatus != ValueStatus.present;
+    kind = lab.valueKind;
     value.text = r.originalText ?? '';
-    unit.text = r.quantity?.unit ?? '';
+    unit.text = r.quantity?.unit ?? lab.result?.unit ?? '';
     date.text = _ymd(r.observedAt);
     specimen.text = lab.specimen ?? '';
     laboratory.text = lab.laboratory ?? '';
@@ -96,6 +101,7 @@ class _LabForm {
       c.clear();
     }
     notReported = false;
+    kind = LabValueKind.number;
     correcting = null;
     final add = addMode;
     if (add != null) {
@@ -300,7 +306,15 @@ class _LabSheetState extends State<_LabSheet> {
     'NOT_A_NUMBER' ||
     'AMBIGUOUS_SEPARATOR' ||
     'OUT_OF_RANGE' ||
-    'NOT_POSITIVE' => 'value',
+    'NOT_POSITIVE' ||
+    'VALUE_HAS_COMPARATOR' ||
+    'UNIT_IN_VALUE' ||
+    'CENSORED_NEEDS_COMPARATOR' ||
+    'CENSORED_NEEDS_NUMBER' ||
+    'COMPARATOR_UNCLEAR' ||
+    'TEXT_IS_A_NUMBER' ||
+    'TEXT_IS_CENSORED' ||
+    'TEXT_TOO_LONG' => 'value',
     _ => null,
   };
 
@@ -395,12 +409,37 @@ class _LabSheetState extends State<_LabSheet> {
           'analyte',
           helper: s.labAnalyteHelp,
         ),
+        // How the value is printed (F004-S2): the field below changes with
+        // it. Number is the default; nothing is guessed from the text.
+        Text(s.labKindTitle, style: text.labelLarge),
+        const SizedBox(height: 6),
+        Wrap(
+          key: const ValueKey('lab-kind'),
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            for (final k in LabValueKind.values)
+              ChoiceChip(
+                key: ValueKey('lab-kind-${k.code}'),
+                label: Text(s.labKind(k)),
+                selected: _f.kind == k,
+                onSelected: _f.notReported
+                    ? null
+                    : (_) => setState(() {
+                        _f.kind = k;
+                        _errorCode = null;
+                      }),
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
         _field(
           _f.value,
-          s.labValue,
+          s.labValueLabel(_f.kind),
           'lab-value',
           'value',
-          number: true,
+          helper: s.labValueHelp(_f.kind),
+          number: _f.kind == LabValueKind.number,
           enabled: !_f.notReported,
         ),
         CheckboxListTile(

@@ -16,7 +16,10 @@
 ///   named in [DerivedRow.unresolved];
 /// - no staleness rule exists in the engines, so none is added here: every
 ///   record used keeps its own date and [DerivedRow.daysApart] says how far
-///   apart they are, as a plain fact.
+///   apart they are, as a plain fact;
+/// - no lab result is an input today; if one ever is, it is read through
+///   [labNumberFor], so a value below or above a limit or printed as text
+///   stays "not usable as a number" with that reason (D-043).
 library;
 
 import '../engines/calc_result.dart';
@@ -74,7 +77,14 @@ class DerivedRow {
 }
 
 /// The record's measured quantity in [unit], or null when it has none.
+/// A lab result is read only through [labNumberFor] (F004-S2, D-043): a
+/// censored ("< 5") or text ("Pozitif") value is never a number here.
 double? _valueIn(HealthRecord r, String unit) {
+  if (r.kind == RecordKind.labResult) {
+    final n = labNumberFor(r);
+    final v = n.value;
+    return n.usable && n.unit == unit && v != null && isPresent(v) ? v : null;
+  }
   if (r.valueStatus != ValueStatus.present) return null;
   final q = r.quantity;
   if (q == null || q.unit != unit || !isPresent(q.value)) return null;

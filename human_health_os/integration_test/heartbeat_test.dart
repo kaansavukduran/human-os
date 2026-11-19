@@ -314,6 +314,73 @@ void main() {
     dir.deleteSync(recursive: true);
   });
 
+  testWidgets('F004-S2: a censored and a text lab result survive a relaunch '
+      'on the real file vault, shown as printed', (tester) async {
+    final dir = Directory.systemTemp.createTempSync('hhos-it-f004s2-');
+    final vault = File('${dir.path}/$vaultFileName');
+    LogRepository open() => LogRepository(
+      sink: FileLogSink(vault),
+      durability: StorageDurability.localFile,
+      location: vault.path,
+    );
+    final a = open();
+    await a.open();
+    final s1 = await servicesFor(dev, HostPlatform.linux, a);
+    final censored = await s1.heartbeat.recordLab(
+      profileId: s1.self.id,
+      input: const LabInput(
+        analyte: 'CRP',
+        value: '< 5',
+        notReported: false,
+        unit: 'mg/L',
+        sampleDate: '2026-10-03',
+        kind: LabValueKind.censored,
+      ),
+    );
+    final text = await s1.heartbeat.recordLab(
+      profileId: s1.self.id,
+      input: const LabInput(
+        analyte: 'HBsAg',
+        value: 'Negatif',
+        notReported: false,
+        unit: '',
+        sampleDate: '2026-10-03',
+        kind: LabValueKind.text,
+      ),
+    );
+
+    final b = open(); // relaunch
+    final report = await b.open();
+    expect(report.warnings, isEmpty);
+    final s2 = await servicesFor(dev, HostPlatform.linux, b, report: report);
+    final again = {
+      for (final e in await s2.heartbeat.labTimeline(s2.self.id))
+        e.shown.id: e.shown,
+    };
+    expect(again[censored.id]!.toJson(), censored.toJson());
+    expect(again[text.id]!.toJson(), text.toJson());
+    expect(again[censored.id]!.quantity, isNull, reason: 'never a number');
+    expect(again[censored.id]!.schemaVersion, 14);
+    await tester.pumpWidget(HumanOsApp(services: s2, appearance: english()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Labs').first);
+    await tester.pumpAndSettle();
+    final list = find
+        .descendant(
+          of: find.byKey(const ValueKey('screen-labs')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    for (final t in [
+      'below 5 mg/L (as printed: < 5)',
+      'Negatif (text as printed)',
+    ]) {
+      await tester.scrollUntilVisible(find.text(t), 200, scrollable: list);
+      expect(find.text(t), findsOneWidget);
+    }
+    dir.deleteSync(recursive: true);
+  });
+
   testWidgets('F005 restore drill: backup -> lose the vault -> fresh start '
       '-> restore -> relaunch shows the same records', (tester) async {
     if (!Platform.isLinux) return;

@@ -213,6 +213,35 @@ class S {
       'Is that a decimal point or a thousands separator? Write thousands without a separator (150000) and decimals with one digit group, e.g. 7.5.',
       'Bu ondalık ayırıcı mı, binlik ayırıcı mı? Binlikleri ayırıcısız yaz (150000), ondalığı ör. 7,5 gibi yaz.',
     ),
+    // Lab values that are not plain numbers (F004-S2, D-043).
+    'VALUE_HAS_COMPARATOR' => _t(
+      'This value starts with a sign such as <. Choose "Below or above a limit" above.',
+      'Bu değer < gibi bir işaretle başlıyor. Yukarıdan "Bir sınırın altı ya da üstü"nü seç.',
+    ),
+    'UNIT_IN_VALUE' => _t(
+      'Type only the number here and the unit in "Unit as printed".',
+      'Buraya yalnız sayıyı, birimi "Raporda yazan birim" alanına yaz.',
+    ),
+    'CENSORED_NEEDS_COMPARATOR' => _t(
+      'Start with the sign as printed: <, <=, > or >= (≤ and ≥ also work), e.g. < 5.',
+      'Raporda yazan işaretle başla: <, <=, > ya da >= (≤ ve ≥ de olur), ör. < 5.',
+    ),
+    'CENSORED_NEEDS_NUMBER' => _t(
+      'Add the number after the sign, e.g. < 5 or > 1000.',
+      'İşaretten sonra sayıyı ekle, ör. < 5 ya da > 1000.',
+    ),
+    'COMPARATOR_UNCLEAR' => _t(
+      'Use one sign before the number: <, <=, >, >=, ≤ or ≥.',
+      'Sayıdan önce tek bir işaret kullan: <, <=, >, >=, ≤ ya da ≥.',
+    ),
+    'TEXT_IS_A_NUMBER' => _t(
+      'This is a number. Choose "Number" above so it is kept as one.',
+      'Bu bir sayı. Sayı olarak kalması için yukarıdan "Sayı"yı seç.',
+    ),
+    'TEXT_IS_CENSORED' => _t(
+      'This is a sign and a number. Choose "Below or above a limit" above.',
+      'Bu bir işaret ve sayı. Yukarıdan "Bir sınırın altı ya da üstü"nü seç.',
+    ),
     'LAB_ANALYTE_EMPTY' => _t(
       'Enter the test name as printed.',
       'Raporda yazan test adını gir.',
@@ -2007,6 +2036,73 @@ class S {
   String labPrintedRange(String r) =>
       _t('Lab\'s printed range: $r', 'Laboratuvarın yazdığı aralık: $r');
   String get labNoRangePrinted => _t('No range printed', 'Aralık yazılmamış');
+
+  // How the value is printed (F004-S2, D-043). The words describe the
+  // printed form only; nothing compares the value with a range.
+  String get labKindTitle => _t('Kind of result', 'Sonucun türü');
+  String labKind(LabValueKind k) => switch (k) {
+    LabValueKind.number => _t('Number', 'Sayı'),
+    LabValueKind.censored => _t(
+      'Below or above a limit',
+      'Bir sınırın altı ya da üstü',
+    ),
+    LabValueKind.text => _t('Text as printed', 'Raporda yazan metin'),
+  };
+  String labValueLabel(LabValueKind k) => switch (k) {
+    LabValueKind.number => labValue,
+    LabValueKind.censored => _t(
+      'Sign and number as printed',
+      'Raporda yazan işaret ve sayı',
+    ),
+    LabValueKind.text => _t('Result as printed', 'Raporda yazan sonuç'),
+  };
+  String labValueHelp(LabValueKind k) => switch (k) {
+    LabValueKind.number => _t(
+      'Only the number, e.g. 5,4 or 91. Words or a sign such as <: choose another kind above.',
+      'Yalnız sayı, ör. 5,4 ya da 91. Kelime ya da < gibi bir işaret varsa yukarıdan başka bir tür seç.',
+    ),
+    LabValueKind.censored => _t(
+      'E.g. < 5, <=0,1, > 1000 or ≥ 90. It is kept as a limit, never as the number itself.',
+      'Ör. < 5, <=0,1, > 1000 ya da ≥ 90. Sınır olarak saklanır, sayının kendisi sayılmaz.',
+    ),
+    LabValueKind.text => _t(
+      'Copy it exactly, e.g. Pozitif, Negatif, Reaktif değil, trace or 1+. Human OS gives it no meaning.',
+      'Aynen yaz, ör. Pozitif, Negatif, Reaktif değil, eser ya da 1+. Human OS ona bir anlam yüklemez.',
+    ),
+  };
+
+  /// A censored value in words, e.g. "below 5 mg/dL (as printed: < 5)".
+  String labCensoredValue(
+    LabComparator c,
+    String limit,
+    String? unit,
+    String asPrinted,
+  ) {
+    final n = unit == null ? limit : '$limit $unit';
+    final noUnit = unit == null ? '$unitNotGiven; ' : '';
+    return switch (lang) {
+      AppLang.en =>
+        '${switch (c) {
+          LabComparator.lessThan => 'below',
+          LabComparator.lessOrEqual => 'at or below',
+          LabComparator.greaterThan => 'above',
+          LabComparator.greaterOrEqual => 'at or above',
+        }} $n (${noUnit}as printed: $asPrinted)',
+      AppLang.tr =>
+        '$n ${switch (c) {
+          LabComparator.lessThan => 'altı',
+          LabComparator.lessOrEqual => 've altı',
+          LabComparator.greaterThan => 'üstü',
+          LabComparator.greaterOrEqual => 've üstü',
+        }} (${noUnit}raporda: $asPrinted)',
+    };
+  }
+
+  /// A text value as printed, with its unit when one was printed.
+  String labTextValue(String text, String? unit) => _t(
+    '${unit == null ? text : '$text $unit'} (text as printed)',
+    '${unit == null ? text : '$text $unit'} (raporda yazan metin)',
+  );
   String get unitNotGiven => _t('unit not given', 'birim verilmedi');
 
   String versionsCount(int n) => _t('$n versions', '$n sürüm');

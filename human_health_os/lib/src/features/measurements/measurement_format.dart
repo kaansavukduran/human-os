@@ -133,3 +133,17 @@ List<String> previousNotes(List<HealthRecord> records, {int max = 8}) {
   }
   return out;
 }
+
+/// A lab value that is not a plain number (F004-S2, D-043), exactly as
+/// printed: a censored value says the printed sign in words and repeats
+/// what was typed; a text value is the text with its unit. No judgement.
+String labPrintedValue(S s, HealthRecord r, LabPrintedResult p) =>
+    switch (p.kind) {
+      LabValueKind.censored => s.labCensoredValue(
+        p.comparator!,
+        p.limitText!,
+        p.unit,
+        r.originalText ?? '${p.comparator!.symbol} ${p.limitText}',
+      ),
+      _ => s.labTextValue(p.text ?? r.originalText ?? '', p.unit),
+    };

@@ -156,6 +156,10 @@ String fmtValue(S s, HealthRecord r) {
       ?d.amount,
     ].join(' · ');
   }
+  final printed = r.lab?.result;
+  if (printed != null && r.valueStatus == ValueStatus.present) {
+    return labPrintedValue(s, r, printed);
+  }
   final q = r.quantity;
   if (r.valueStatus != ValueStatus.present || q == null) {
     return s.valueStatus(r.valueStatus);

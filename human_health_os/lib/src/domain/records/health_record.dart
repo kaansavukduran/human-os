@@ -358,9 +358,19 @@ class HealthRecord {
   ///   `medication.item`, `medication.plan` and `medication.intake`, each
   ///   with its own `details` type. No new key. Older records read
   ///   unchanged.
+  /// - 7 to 13: sleep, feeling, food, activity, condition, preventive and
+  ///   document kinds (D-031 to D-036, D-040), each additive.
+  /// - 14 (F004-S2, step RS-014, additive, D-043): adds the optional
+  ///   `lab.result` object, a lab value that is not a plain number (censored
+  ///   "< 5" or text "Pozitif") kept as printed, with no quantity. Only such
+  ///   a lab result is written at 14; a plain number stays at 3. Older
+  ///   records read unchanged.
   ///
   /// The newest schema this app reads; a newer one refuses the whole store.
-  static const int currentSchemaVersion = 13;
+  static const int currentSchemaVersion = 14;
+
+  /// The schema that introduced [LabPrintedResult] (D-043).
+  static const int labPrintedResultSchema = 14;
 
   /// A record that needs nothing from a newer schema is written at this one
   /// (D-018): weight and lab results stay readable by the apps of F004 to
@@ -437,6 +447,13 @@ class HealthRecord {
         'Measurement context and details need record schema 4',
       );
     }
+    final printed = lab?.result;
+    if (printed != null && schemaVersion < labPrintedResultSchema) {
+      throw const RecordValidationError(
+        'FIELD_NEEDS_NEWER_SCHEMA',
+        'A lab value that is not a plain number needs record schema 14',
+      );
+    }
     final present = valueStatus == ValueStatus.present;
     if (kind.isStructured) {
       if (quantity != null) {
@@ -453,7 +470,7 @@ class HealthRecord {
           'A present ${kind.code} needs its details',
         );
       }
-    } else if (present && quantity == null) {
+    } else if (present && quantity == null && printed == null) {
       throw const RecordValidationError(
         'PRESENT_REQUIRES_QUANTITY',
         'A present value needs a quantity',
@@ -575,6 +592,24 @@ class HealthRecord {
       case RecordKind.labResult:
         // No plausibility range: the app holds no clinical thresholds. Only
         // a finite number and the printed name are required.
+        if (printed != null) {
+          if (!present) {
+            throw const RecordValidationError(
+              'LAB_RESULT_NEEDS_PRESENT',
+              'A value not reported carries no printed result',
+            );
+          }
+          if (quantity != null) {
+            throw const RecordValidationError(
+              'LAB_VALUE_TWICE',
+              'A censored or text lab result carries no number',
+            );
+          }
+          final code = printed.problem();
+          if (code != null) {
+            throw RecordValidationError(code, 'lab.result: $code');
+          }
+        }
         final v = quantity?.value;
         if (v != null && !v.isFinite) {
           throw const RecordValidationError(
@@ -730,6 +765,47 @@ class HealthRecord {
             ),
     );
   }
+}
+
+/// Whether a lab result can be used as a number by a calculation (F004-S2,
+/// D-043). [value] is set only for a present plain number; otherwise
+/// [notUsableReason] says why not, e.g. `LAB_VALUE_CENSORED`: a "< 5" is
+/// not 5 and not any other number.
+class LabNumber {
+  const LabNumber._(this.value, this.unit, this.notUsableReason);
+
+  final double? value;
+  final String? unit;
+
+  /// `NOT_A_LAB_RESULT`, `LAB_VALUE_MISSING` (not reported: missing ≠ zero),
+  /// `LAB_VALUE_CENSORED` (below or above a limit: the true value is not
+  /// known) or `LAB_VALUE_TEXT` (printed as text: no number); null when
+  /// [value] is usable.
+  final String? notUsableReason;
+
+  bool get usable => value != null;
+}
+
+/// The only way a calculation may read a lab value as a number.
+LabNumber labNumberFor(HealthRecord r) {
+  if (r.kind != RecordKind.labResult) {
+    return const LabNumber._(null, null, 'NOT_A_LAB_RESULT');
+  }
+  final printed = r.lab?.result;
+  if (printed != null) {
+    return LabNumber._(
+      null,
+      printed.unit,
+      printed.kind == LabValueKind.censored
+          ? 'LAB_VALUE_CENSORED'
+          : 'LAB_VALUE_TEXT',
+    );
+  }
+  final q = r.quantity;
+  if (r.valueStatus != ValueStatus.present || q == null || !q.value.isFinite) {
+    return const LabNumber._(null, null, 'LAB_VALUE_MISSING');
+  }
+  return LabNumber._(q.value, q.unit, null);
 }
 
 /// The current versions (newest observation first): the heads of every live

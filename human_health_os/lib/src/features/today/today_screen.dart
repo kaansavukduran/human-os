@@ -131,7 +131,6 @@ class _TodayScreenState extends State<TodayScreen> {
           // sheet already open it (U030, one entry less).
           _ToolTile(
             key: const ValueKey('tool-howto'),
-            icon: Icons.help_outline,
             title: s.howToTitle,
             hint: s.howToTileHint,
             onTap: () {
@@ -141,10 +140,8 @@ class _TodayScreenState extends State<TodayScreen> {
               );
             },
           ),
-          const SizedBox(height: 8),
           _ToolTile(
             key: const ValueKey('tool-summary'),
-            icon: Icons.assignment_outlined,
             title: s.summaryTitle,
             hint: s.summaryTileHint,
             onTap: () => Navigator.of(context).push(
@@ -153,10 +150,8 @@ class _TodayScreenState extends State<TodayScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
           _ToolTile(
             key: const ValueKey('tool-derived'),
-            icon: Icons.calculate_outlined,
             title: s.derivedTitle,
             hint: s.derivedTileHint,
             onTap: () => Navigator.of(context).push(
@@ -169,17 +164,14 @@ class _TodayScreenState extends State<TodayScreen> {
           _ToolGroup(s.toolsGroupLearn),
           _ToolTile(
             key: const ValueKey('tool-glossary'),
-            icon: Icons.menu_book_outlined,
             title: s.glossaryTitle,
             hint: s.glossaryTileHint,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (_) => const GlossaryScreen()),
             ),
           ),
-          const SizedBox(height: 8),
           _ToolTile(
             key: const ValueKey('tool-guide'),
-            icon: Icons.accessibility_new_outlined,
             title: s.guideTitle,
             hint: s.guideTileHint,
             onTap: () => Navigator.of(context).push(
@@ -190,7 +182,6 @@ class _TodayScreenState extends State<TodayScreen> {
           _ToolGroup(s.toolsGroupFiles),
           _ToolTile(
             key: const ValueKey('tool-phyto'),
-            icon: Icons.eco_outlined,
             title: s.phytoTitle,
             hint: s.phytoTileHint,
             onTap: () => Navigator.of(context).push(
@@ -199,10 +190,8 @@ class _TodayScreenState extends State<TodayScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
           _ToolTile(
             key: const ValueKey('tool-genetics'),
-            icon: Icons.biotech_outlined,
             title: s.geneticsTitle,
             hint: s.geneticsTileHint,
             onTap: () => Navigator.of(context).push(
@@ -468,17 +457,20 @@ class _ToolGroup extends StatelessWidget {
   );
 }
 
-/// A way into a tool that is not a daily number (G001).
+/// A way into a tool that is not a daily number (G001): a plain row with
+/// its title and one line on what it is for, under its group's heading.
+/// No leading icon (R016, DESIGN_BRIEF anti-pattern 2): the seven pictures
+/// (help, clipboard, calculator, book, figure, leaf, microscope) added no
+/// meaning that the title and the group heading did not already give. The
+/// chevron stays: it is the one mark that says "opens a page".
 class _ToolTile extends StatelessWidget {
   const _ToolTile({
     super.key,
-    required this.icon,
     required this.title,
     required this.hint,
     required this.onTap,
   });
 
-  final IconData icon;
   final String title;
   final String hint;
   final VoidCallback onTap;
@@ -487,51 +479,45 @@ class _ToolTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Material(
-          color: scheme.surfaceContainerLowest,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: scheme.outlineVariant),
-          ),
-          // A button for assistive technology and the browser, named by its
-          // title and hint (an InkWell alone is only a tap target).
-          child: Semantics(
-            container: true,
-            button: true,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: onTap,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Icon(icon, color: scheme.primary),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(title, style: text.titleMedium),
-                          Text(
-                            hint,
-                            style: text.bodyMedium?.copyWith(
-                              color: scheme.outline,
-                            ),
+    // A button for assistive technology and the browser, named by its
+    // title and hint (an InkWell alone is only a tap target).
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+      ),
+      child: Semantics(
+        container: true,
+        button: true,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: text.titleMedium),
+                        Text(
+                          hint,
+                          style: text.bodyMedium?.copyWith(
+                            color: scheme.onSurfaceVariant,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    Icon(Icons.chevron_right, color: scheme.outline),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(Icons.chevron_right, color: scheme.outline),
+                ],
               ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

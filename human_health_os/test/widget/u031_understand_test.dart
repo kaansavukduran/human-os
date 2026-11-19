@@ -316,7 +316,15 @@ void main() {
       find.text('Type one result exactly as your report prints it.'),
       findsOneWidget,
     );
-    await tapKey(tester, 'labs-empty-add');
+    // R016: the one add action sits in the first step when Labs is empty.
+    expect(
+      find.descendant(
+        of: labsEmpty,
+        matching: find.byKey(const ValueKey('lab-add')),
+      ),
+      findsOneWidget,
+    );
+    await tapKey(tester, 'lab-add');
     expect(find.byKey(const ValueKey('lab-form')), findsOneWidget);
     await tapKey(tester, 'lab-cancel');
 

@@ -425,7 +425,8 @@ class _CompactBar extends StatelessWidget {
     final s = S.of(context);
     final primary = kPrimaryDestinations.map(destinationById).toList();
     final inPrimary = kPrimaryDestinations.indexOf(current);
-    return NavigationBar(
+    final labels = [for (final d in primary) d.label(s.lang), s.more];
+    final bar = NavigationBar(
       key: const ValueKey('nav-bar'),
       selectedIndex: inPrimary >= 0 ? inPrimary : primary.length,
       onDestinationSelected: (i) async {
@@ -497,5 +498,80 @@ class _CompactBar extends StatelessWidget {
         ),
       ],
     );
+    // A label may wrap between its words ("Zaman / çizelgesi") but never
+    // inside one ("Medicati / ons" at 2× text on 320 dp, Q001). Each item
+    // gets an equal share of the width; when the longest word of any label
+    // does not fit in its share at the person's text size, the labels are
+    // scaled down just enough for it to fit. Every label stays whole and
+    // visible (no ellipsis, no hidden unselected labels), and the screen
+    // reader name is unchanged (R016).
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final media = MediaQuery.of(context);
+        final width =
+            constraints.maxWidth - media.padding.left - media.padding.right;
+        final scaler = navLabelScaler(
+          context,
+          labels: labels,
+          share: width / labels.length,
+        );
+        if (scaler == null) return bar;
+        return MediaQuery(
+          data: media.copyWith(textScaler: scaler),
+          child: bar,
+        );
+      },
+    );
   }
+}
+
+/// The bottom bar's label size cap (Material's own, 1.3×).
+const double kNavLabelMaxScale = 1.3;
+
+/// The text scaler that lets the longest word of every label fit on one line
+/// in [share] logical pixels, or null when the current text size already
+/// does. Measured with the bar's selected (bold, widest) label style.
+TextScaler? navLabelScaler(
+  BuildContext context, {
+  required List<String> labels,
+  required double share,
+}) {
+  final theme = Theme.of(context);
+  final style = (theme.textTheme.bodyMedium ?? const TextStyle()).merge(
+    theme.navigationBarTheme.labelTextStyle?.resolve({WidgetState.selected}) ??
+        theme.textTheme.labelMedium,
+  );
+  final current = MediaQuery.textScalerOf(context)
+      .clamp(maxScaleFactor: kNavLabelMaxScale);
+  final direction = Directionality.of(context);
+  // A hair of room so rounding never pushes a word onto a second line.
+  final room = share - 2;
+  double widest(TextScaler scaler) {
+    var max = 0.0;
+    for (final label in labels) {
+      for (final word in label.split(RegExp(r'\s+'))) {
+        if (word.isEmpty) continue;
+        final painter = TextPainter(
+          text: TextSpan(text: word, style: style),
+          textDirection: direction,
+          textScaler: scaler,
+          maxLines: 1,
+        )..layout();
+        if (painter.width > max) max = painter.width;
+        painter.dispose();
+      }
+    }
+    return max;
+  }
+
+  if (room <= 0 || widest(current) <= room) return null;
+  final size = style.fontSize ?? 14;
+  var factor = current.scale(size) / size;
+  // Text width is close to linear in the scale; a few steps settle rounding.
+  for (var i = 0; i < 8; i++) {
+    final w = widest(TextScaler.linear(factor));
+    if (w <= room) break;
+    factor *= room / w * 0.99;
+  }
+  return TextScaler.linear(factor);
 }

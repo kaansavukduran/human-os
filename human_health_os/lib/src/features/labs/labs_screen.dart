@@ -201,6 +201,13 @@ class _LabsScreenState extends State<LabsScreen> {
     final s = S.of(context);
     final text = Theme.of(context).textTheme;
     final rows = _readFailed || !_loaded ? const <Never>[] : _rows;
+    final empty = !_readFailed && _loaded && _entries.isEmpty;
+    final add = FilledButton.icon(
+      key: const ValueKey('lab-add'),
+      onPressed: _open,
+      icon: const Icon(Icons.add),
+      label: Text(s.labAdd),
+    );
     return EntryList(
       key: const ValueKey('screen-labs'),
       itemCount: rows.length,
@@ -222,15 +229,10 @@ class _LabsScreenState extends State<LabsScreen> {
           style: text.bodySmall,
         ),
         const SizedBox(height: 16),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            key: const ValueKey('lab-add'),
-            onPressed: _open,
-            icon: const Icon(Icons.add),
-            label: Text(s.labAdd),
-          ),
-        ),
+        // One add action on the screen (R016): with no results it sits in
+        // the first step, under the sentence that says what to type;
+        // otherwise here, above the list.
+        if (!empty) Align(alignment: Alignment.centerLeft, child: add),
         ValueListenableBuilder<bool>(
           valueListenable: _saved,
           builder: (context, saved, _) => !saved
@@ -252,16 +254,11 @@ class _LabsScreenState extends State<LabsScreen> {
           ReadFailedNote(id: 'labs', onRetry: _retry)
         else if (!_loaded)
           const LoadingLine()
-        else if (_entries.isEmpty)
+        else if (empty)
           FirstStep(
             key: const ValueKey('labs-empty'),
             text: s.labsFirstStep,
-            action: TextButton.icon(
-              key: const ValueKey('labs-empty-add'),
-              onPressed: _open,
-              icon: const Icon(Icons.add),
-              label: Text(s.labAdd),
-            ),
+            action: add,
           ),
       ],
     );

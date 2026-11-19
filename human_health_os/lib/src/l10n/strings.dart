@@ -1956,10 +1956,12 @@ class S {
     '$rsid, kromozom $chr, konum $pos, ${geneticsGenotypeSpoken(call)}',
   );
 
-  // Labs (F004): everything is shown as the report printed it.
+  // Labs (F004): everything is shown as the report printed it. "As printed"
+  // is said once, by the area intro ("what this is"); this note keeps only
+  // what the intro does not say (R016).
   String get labsNoInterpretation => _t(
-    'Values, flags and ranges are shown exactly as the lab printed them. Human OS does not interpret lab results or say whether they are good or bad.',
-    'Değerler, işaretler ve aralıklar laboratuvarın yazdığı gibi gösterilir. Human OS lab sonuçlarını yorumlamaz, iyi ya da kötü olduklarını söylemez.',
+    'Human OS does not interpret lab results or say whether they are good or bad.',
+    'Human OS lab sonuçlarını yorumlamaz, iyi ya da kötü olduklarını söylemez.',
   );
   String get labAddTitle =>
       _t('Add a result from a report', 'Rapordan sonuç ekle');

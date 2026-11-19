@@ -350,13 +350,14 @@ void main() {
   });
 
   group('slop audit', () {
-    testWidgets('Today\'s tools and the trend buttons use the outlined icon '
-        'family', (tester) async {
+    testWidgets('Today\'s tools carry no filled icon and the trend buttons '
+        'use the outlined icon family', (tester) async {
       final s = await start(tester, size: const Size(1280, 3200));
       await tester.pumpWidget(HumanOsApp(services: s));
       await settle(tester);
+      // R016: Today's tools are plain rows without a leading icon.
       expect(find.byIcon(Icons.accessibility_new), findsNothing);
-      expect(find.byIcon(Icons.accessibility_new_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.accessibility_new_outlined), findsNothing);
       await tester.runAsync(
         () => s.heartbeat.recordWeightKg(profileId: s.self.id, input: '70'),
       );

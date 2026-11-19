@@ -93,9 +93,9 @@ const SCREENS = {
 };
 const SETTINGS_FIRST_HEADING = { 'en-US': 'Appearance and accessibility', 'tr-TR': 'Görünüm ve erişilebilirlik' };
 const MORE = { 'en-US': 'More', 'tr-TR': 'Diğer' };
-// Flutter's back button carries its tooltip twice in the semantics text
-// ("Back Back"), so allow the repeat.
-const BACK = { 'en-US': /^Back(\s+Back)?$/, 'tr-TR': /^Geri(\s+Geri)?$/ };
+// The back button is named once (R016: Flutter's Android icon label, which
+// repeated the tooltip as "Back Back", is removed by the app theme).
+const BACK = { 'en-US': /^Back$/, 'tr-TR': /^Geri$/ };
 const ALL = SCREENS['en-US'].map(([id]) => id);
 // One group = one page load; its cells are visited in order.
 const GROUPS = [];

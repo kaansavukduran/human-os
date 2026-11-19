@@ -4,12 +4,24 @@
 library;
 
 import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
 
 import '../../domain/settings/appearance.dart';
 import 'palettes.dart';
 
 export 'palettes.dart';
+
+/// Back and close icons without a semantic label of their own (R016); the
+/// IconButton's tooltip ("Back" / "Geri") is the one name.
+final ActionIconThemeData kUnlabelledActionIcons = ActionIconThemeData(
+  backButtonIconBuilder: (_) => Icon(switch (defaultTargetPlatform) {
+    TargetPlatform.iOS ||
+    TargetPlatform.macOS => Icons.arrow_back_ios_new_rounded,
+    _ => Icons.arrow_back,
+  }),
+  closeButtonIconBuilder: (_) => const Icon(Icons.close),
+);
 
 @immutable
 class HealthRoleColors extends ThemeExtension<HealthRoleColors> {
@@ -263,6 +275,11 @@ ThemeData buildHumanOsTheme(
     textTheme: text,
     fontFamily: fontFamily,
     extensions: [dark ? HealthRoleColors.dark : HealthRoleColors.light],
+    // The back and close icons carry no label of their own: the button's
+    // tooltip already names it. Flutter adds the same word to the icon on
+    // Android (also Android Chrome), so a screen reader read "Back Back"
+    // (R016).
+    actionIconTheme: kUnlabelledActionIcons,
     appBarTheme: AppBarTheme(
       backgroundColor: surface,
       foregroundColor: ink,

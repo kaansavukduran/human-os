@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:human_health_os/src/domain/settings/appearance.dart';
 
-import 'f007_measurements_test.dart' show tapKey;
 import 'u005_settings_test.dart' show launchWith;
 
 void main() {

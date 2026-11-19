@@ -3,9 +3,55 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "U031",
+    "contract": "v0.32",
+    "run_id": "U031@v0.32",
+    "slice": "YKSmania interface logic: named palettes (Matrix, Axolotl, Trans) with AA contrast, optional Lexend, area intros and term popovers, guided empty states, rebuild optimisations",
+    "goal": "Human OS follows the YKSmania interface logic where it fits a health app: named palettes with live preview and AA contrast, optional Lexend, every area explains itself to someone with no prior knowledge, term popovers, guided empty states, named loading, lighter rebuilds; no XP, streaks or judging colours.",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "95e6761",
+    "app_revision": "2f28cf9",
+    "started_at": "2026-11-19T16:45:00Z",
+    "finished_at": null,
+    "scope": [
+      "human_health_os/lib",
+      "human_health_os/test",
+      "human_health_os/assets/fonts",
+      "tools/flutter_web_smoke.mjs"
+    ],
+    "acceptance_criteria": [
+      "AC-1 palettes persist additively and pass WCAG AA in normal and high contrast",
+      "AC-2 Lexend bundled offline with OFL (D-042)",
+      "AC-3 every area shows what it is, what you can do and what it never does",
+      "AC-4 full suites, web smoke, Linux build and runtime pass"
+    ],
+    "completed_steps": [
+      "S1 palettes 389c01d",
+      "S2 Lexend 2f41a2e",
+      "S3 understanding 5b1c13c"
+    ],
+    "last_verified_gate": null,
+    "next_action": "S4 performance and slop audit, then gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox and Safari NOT TESTED"
+    ],
+    "depends_on": [
+      "U030"
+    ],
+    "review": null,
+    "out_of_scope": [
+      "XP, streaks, celebration, study timer from YKSmania (would judge or gamify health data)"
+    ]
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

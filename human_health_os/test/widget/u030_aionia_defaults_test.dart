@@ -15,6 +15,9 @@ void main() {
     final empty = AppearanceSettings.fromJson(const {});
     expect(empty.theme, ThemeChoice.dark);
     expect(empty.font, FontChoice.system);
+    // U031: a fresh install has the standard palette.
+    expect(fresh.palette, PaletteChoice.standard);
+    expect(empty.palette, PaletteChoice.standard);
   });
 
   test('a stored choice is kept, never replaced by the new default', () {

@@ -114,6 +114,43 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           section(
+            s.settingsPalette,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    for (final p in PaletteChoice.values)
+                      _PaletteSwatch(
+                        choice: p,
+                        label: s.paletteName(p),
+                        sample: s.paletteSample,
+                        tokens:
+                            tokensFor(p, highContrast: a.highContrast) ??
+                            standardTokens(
+                              _standardBrightness(context, a.theme),
+                              a.accent,
+                              highContrast: a.highContrast,
+                            ),
+                        selected: a.palette == p,
+                        onTap: () => set(a.copyWith(palette: p)),
+                      ),
+                  ],
+                ),
+                if (a.palette != PaletteChoice.standard) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    s.paletteNote(s.paletteName(a.palette)),
+                    key: const ValueKey('palette-note'),
+                    style: text.bodySmall,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          section(
             s.settingsAccent,
             Wrap(
               spacing: 12,
@@ -447,6 +484,117 @@ class _ScaleControlState extends State<_ScaleControl> {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// The brightness Standard would use with the saved theme choice.
+Brightness _standardBrightness(BuildContext context, ThemeChoice theme) =>
+    switch (theme) {
+      ThemeChoice.light => Brightness.light,
+      ThemeChoice.dark => Brightness.dark,
+      ThemeChoice.system => MediaQuery.platformBrightnessOf(context),
+    };
+
+/// A palette as a small live preview in its own tokens: a title, a sample
+/// number in ink (values are never coloured), a field edge and an accent
+/// pill (the accent marks actions only).
+class _PaletteSwatch extends StatelessWidget {
+  const _PaletteSwatch({
+    required this.choice,
+    required this.label,
+    required this.sample,
+    required this.tokens,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final PaletteChoice choice;
+  final String label;
+  final String sample;
+  final PaletteTokens tokens;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final t = tokens;
+    final base = theme.textTheme;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: InkWell(
+        key: ValueKey('set-palette-${choice.name}'),
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          width: 132,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: t.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.outlineVariant,
+              width: selected ? 3 : 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: base.labelLarge?.copyWith(
+                        color: t.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  if (selected) Icon(Icons.check, color: t.ink, size: 18),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: t.card,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: t.fieldEdge),
+                ),
+                child: Text(
+                  sample,
+                  style: base.titleMedium?.copyWith(color: t.ink),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: t.primary,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  'Aa',
+                  style: base.labelSmall?.copyWith(color: t.onPrimary),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

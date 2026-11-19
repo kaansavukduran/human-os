@@ -44,6 +44,17 @@ void main() {
   testWidgets('first introduction step shows Aion', (tester) async {
     await launchWith(tester);
     await tapKey(tester, 'open-settings');
+    // The Settings list builds lazily; bring the button into the list first.
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('set-first-run')),
+      400,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('screen-settings')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     final again = find.byKey(const ValueKey('set-first-run'));
     await tester.ensureVisible(again);
     await settle(tester);

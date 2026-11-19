@@ -14,6 +14,12 @@ enum LanguageChoice { system, tr, en }
 
 enum ThemeChoice { system, light, dark }
 
+/// A named colour family (U031, from the owner's YKSmania app). Separate
+/// from [ThemeChoice], the brightness axis: Matrix and Axolotl are dark,
+/// Trans is light, and the saved theme and accent stay for Standard. A
+/// palette colours surfaces, text and actions only; it never judges a value.
+enum PaletteChoice { standard, matrix, axolotl, trans }
+
 /// Accent colours. Each has a light and a dark tone chosen for at least
 /// 4.5:1 against the app's surfaces; none is red or amber, so an accent never
 /// looks like an error or a warning, and no colour judges a value.
@@ -45,6 +51,7 @@ class AppearanceSettings {
     this.language = LanguageChoice.system,
     this.theme = ThemeChoice.dark,
     this.accent = AccentChoice.teal,
+    this.palette = PaletteChoice.standard,
     this.textSize = TextSizeChoice.system,
     this.tileOrder = const [],
     this.hiddenTiles = const {},
@@ -87,6 +94,7 @@ class AppearanceSettings {
   final LanguageChoice language;
   final ThemeChoice theme;
   final AccentChoice accent;
+  final PaletteChoice palette;
   final TextSizeChoice textSize;
 
   /// Measurement tile codes in the order chosen; codes not listed follow in
@@ -169,6 +177,7 @@ class AppearanceSettings {
     language: language,
     theme: theme,
     accent: accent,
+    palette: palette,
     textSize: textSize,
     startScreen: startScreen,
     density: density,
@@ -197,6 +206,7 @@ class AppearanceSettings {
     LanguageChoice? language,
     ThemeChoice? theme,
     AccentChoice? accent,
+    PaletteChoice? palette,
     TextSizeChoice? textSize,
     List<String>? tileOrder,
     Set<String>? hiddenTiles,
@@ -222,6 +232,7 @@ class AppearanceSettings {
     language: language ?? this.language,
     theme: theme ?? this.theme,
     accent: accent ?? this.accent,
+    palette: palette ?? this.palette,
     textSize: textSize ?? this.textSize,
     tileOrder: tileOrder ?? this.tileOrder,
     hiddenTiles: hiddenTiles ?? this.hiddenTiles,
@@ -251,6 +262,7 @@ class AppearanceSettings {
     'language': language.name,
     'theme': theme.name,
     'accent': accent.name,
+    'palette': palette.name,
     'textSize': textSize.name,
     'tileOrder': tileOrder,
     'hiddenTiles': hiddenTiles.toList()..sort(),
@@ -305,6 +317,11 @@ class AppearanceSettings {
       ),
       theme: pick(ThemeChoice.values, json['theme'], ThemeChoice.dark),
       accent: pick(AccentChoice.values, json['accent'], AccentChoice.teal),
+      palette: pick(
+        PaletteChoice.values,
+        json['palette'],
+        PaletteChoice.standard,
+      ),
       textSize: pick(
         TextSizeChoice.values,
         json['textSize'],
@@ -347,6 +364,7 @@ class AppearanceSettings {
       other.language == language &&
       other.theme == theme &&
       other.accent == accent &&
+      other.palette == palette &&
       other.textSize == textSize &&
       _sameList(other.tileOrder, tileOrder) &&
       _sameSet(other.hiddenTiles, hiddenTiles) &&
@@ -393,6 +411,7 @@ class AppearanceSettings {
       dateOrder,
       clock,
       firstRunDone,
+      palette,
     ),
   );
 }

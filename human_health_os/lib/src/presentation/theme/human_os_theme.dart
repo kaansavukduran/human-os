@@ -7,6 +7,9 @@ import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 import '../../domain/settings/appearance.dart';
+import 'palettes.dart';
+
+export 'palettes.dart';
 
 @immutable
 class HealthRoleColors extends ThemeExtension<HealthRoleColors> {
@@ -82,69 +85,107 @@ const Map<AccentChoice, (Color, Color)> accentTones = {
   AccentChoice.graphite: (Color(0xFF3F4A55), Color(0xFFB5C0CA)),
 };
 
+/// The Standard look's tokens for [brightness] and [accentChoice]: the
+/// same roles a named palette fills (also used for its Settings preview).
+PaletteTokens standardTokens(
+  Brightness brightness,
+  AccentChoice accentChoice, {
+  bool highContrast = false,
+}) {
+  final dark = brightness == Brightness.dark;
+  final tones = accentTones[accentChoice]!;
+  return PaletteTokens(
+    brightness: brightness,
+    surface: dark ? const Color(0xFF101819) : const Color(0xFFF6F8F8),
+    card: dark ? const Color(0xFF172224) : const Color(0xFFFFFFFF),
+    containerHigh: dark ? const Color(0xFF1D2B2D) : const Color(0xFFEEF2F2),
+    // High contrast: pure ink, and edges as dark as the outline text.
+    ink: highContrast
+        ? (dark ? Colors.white : Colors.black)
+        : (dark ? const Color(0xFFE6EEEE) : const Color(0xFF1B2B2E)),
+    outline: highContrast
+        ? (dark ? const Color(0xFFD5E0E1) : const Color(0xFF2C3A3C))
+        : (dark ? const Color(0xFF8AA0A3) : const Color(0xFF5E7275)),
+    primary: dark ? tones.$2 : tones.$1,
+    onPrimary: dark ? const Color(0xFF06292D) : Colors.white,
+    // Field boundaries need 3:1 against the surface (WCAG 1.4.11).
+    fieldEdge: dark ? const Color(0xFF6C8386) : const Color(0xFF7B8E90),
+    hairline: highContrast
+        ? (dark ? const Color(0xFFB8C8CA) : const Color(0xFF3E4F52))
+        : (dark ? const Color(0xFF2B3A3D) : const Color(0xFFDDE4E4)),
+  );
+}
+
 ThemeData buildHumanOsTheme(
   Brightness brightness, {
   AccentChoice accentChoice = AccentChoice.teal,
+  PaletteChoice palette = PaletteChoice.standard,
   bool highContrast = false,
   bool compact = false,
   String? fontFamily,
   bool wideSpacing = false,
   bool reduceMotion = false,
 }) {
+  // A named palette brings its own brightness and tokens (U031); the
+  // accent choice applies to Standard only.
+  final named = tokensFor(palette, highContrast: highContrast);
+  if (named != null) brightness = named.brightness;
   final dark = brightness == Brightness.dark;
   final tones = accentTones[accentChoice]!;
-  final teal = accentChoice == AccentChoice.teal;
-  final accent = dark ? tones.$2 : tones.$1;
+  final teal = named == null && accentChoice == AccentChoice.teal;
+  // One seeded scheme per theme, reused for every role taken from it.
   final seeded = ColorScheme.fromSeed(
-    seedColor: tones.$1,
+    seedColor: named?.primary ?? tones.$1,
     brightness: brightness,
   );
-  final surface = dark ? const Color(0xFF101819) : const Color(0xFFF6F8F8);
-  final card = dark ? const Color(0xFF172224) : const Color(0xFFFFFFFF);
-  // High contrast: pure ink, and edges as dark as the outline text.
-  final hairline = highContrast
-      ? (dark ? const Color(0xFFB8C8CA) : const Color(0xFF3E4F52))
-      : (dark ? const Color(0xFF2B3A3D) : const Color(0xFFDDE4E4));
-  final ink = highContrast
-      ? (dark ? Colors.white : Colors.black)
-      : (dark ? const Color(0xFFE6EEEE) : const Color(0xFF1B2B2E));
-  final scheme =
-      ColorScheme.fromSeed(
-        seedColor: tones.$1,
-        brightness: brightness,
-      ).copyWith(
-        primary: accent,
-        onPrimary: dark ? const Color(0xFF06292D) : Colors.white,
-        primaryContainer: !teal
+  final t =
+      named ??
+      standardTokens(brightness, accentChoice, highContrast: highContrast);
+  final accent = t.primary;
+  final surface = t.surface;
+  final card = t.card;
+  final hairline = t.hairline;
+  final ink = t.ink;
+  final containerHigh = t.containerHigh;
+  final containerHighest =
+      named?.containerHigh ??
+      (dark ? const Color(0xFF223234) : const Color(0xFFE8EDED));
+  // A named palette's container is its accent laid lightly over the card,
+  // with ink on it.
+  final namedContainer = named == null
+      ? null
+      : Color.alphaBlend(named.primary.withValues(alpha: 0.24), named.card);
+  final scheme = seeded.copyWith(
+    primary: accent,
+    onPrimary: t.onPrimary,
+    primaryContainer:
+        namedContainer ??
+        (!teal
             ? seeded.primaryContainer
             : dark
             ? const Color(0xFF1C3A3E)
-            : const Color(0xFFD9ECEE),
-        onPrimaryContainer: !teal
+            : const Color(0xFFD9ECEE)),
+    onPrimaryContainer:
+        named?.ink ??
+        (!teal
             ? seeded.onPrimaryContainer
             : dark
             ? const Color(0xFFCDEBEE)
-            : const Color(0xFF0E3A40),
-        surface: surface,
-        onSurface: ink,
-        surfaceContainerLowest: card,
-        surfaceContainerLow: card,
-        surfaceContainer: card,
-        surfaceContainerHigh: dark
-            ? const Color(0xFF1D2B2D)
-            : const Color(0xFFEEF2F2),
-        surfaceContainerHighest: dark
-            ? const Color(0xFF223234)
-            : const Color(0xFFE8EDED),
-        outline: highContrast
-            ? (dark ? const Color(0xFFD5E0E1) : const Color(0xFF2C3A3C))
-            : (dark ? const Color(0xFF8AA0A3) : const Color(0xFF5E7275)),
-        outlineVariant: hairline,
-        tertiaryContainer: dark
-            ? const Color(0xFF223234)
-            : const Color(0xFFE8EDED),
-        onTertiaryContainer: ink,
-      );
+            : const Color(0xFF0E3A40)),
+    surface: surface,
+    onSurface: ink,
+    surfaceContainerLowest: card,
+    surfaceContainerLow: card,
+    surfaceContainer: card,
+    surfaceContainerHigh: containerHigh,
+    surfaceContainerHighest: containerHighest,
+    outline: t.outline,
+    outlineVariant: hairline,
+    tertiaryContainer: containerHighest,
+    onTertiaryContainer: ink,
+    error: t.error,
+    onError: named == null ? null : (dark ? named.surface : Colors.white),
+  );
   final base = ThemeData(brightness: brightness, useMaterial3: true);
   final styled = base.textTheme
       .apply(bodyColor: ink, displayColor: ink, fontFamily: fontFamily)
@@ -199,12 +240,14 @@ ThemeData buildHumanOsTheme(
         );
   // Field boundaries need 3:1 against the surface (WCAG 1.4.11); card
   // outlines stay hairline.
-  final fieldEdge = dark ? const Color(0xFF6C8386) : const Color(0xFF7B8E90);
-  final navIndicator = !teal
-      ? seeded.secondaryContainer
-      : dark
-      ? const Color(0xFF2E5F66)
-      : const Color(0xFFBFE0E3);
+  final fieldEdge = t.fieldEdge;
+  final navIndicator =
+      namedContainer ??
+      (!teal
+          ? seeded.secondaryContainer
+          : dark
+          ? const Color(0xFF2E5F66)
+          : const Color(0xFFBFE0E3));
   final radius = BorderRadius.circular(12);
   return ThemeData(
     pageTransitionsTheme: PageTransitionsTheme(

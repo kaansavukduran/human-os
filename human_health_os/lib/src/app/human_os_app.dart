@@ -108,6 +108,42 @@ class _HumanOsAppState extends State<HumanOsApp> {
     }
   }
 
+  /// The light and dark themes, rebuilt only when an input to them changes:
+  /// an unrelated rebuild returns the identical instances.
+  Object? _themeKey;
+  late (ThemeData, ThemeData) _themes;
+
+  (ThemeData, ThemeData) _themesFor(AppearanceSettings a) {
+    final key = (
+      a.palette,
+      a.accent,
+      a.highContrast,
+      a.density,
+      a.font,
+      a.wideSpacing,
+      a.reduceMotion,
+    );
+    if (key == _themeKey) return _themes;
+    ThemeData build(Brightness b) => buildHumanOsTheme(
+      b,
+      accentChoice: a.accent,
+      palette: a.palette,
+      highContrast: a.highContrast,
+      compact: a.density == Density.compact,
+      fontFamily: fontFamilyFor(a.font),
+      wideSpacing: a.wideSpacing,
+      reduceMotion: a.reduceMotion,
+    );
+    // A named palette has one look; both slots share it.
+    final light = build(Brightness.light);
+    _themes = (
+      light,
+      paletteBrightness(a.palette) == null ? build(Brightness.dark) : light,
+    );
+    _themeKey = key;
+    return _themes;
+  }
+
   @override
   Widget build(BuildContext context) {
     final services = _services;
@@ -115,33 +151,24 @@ class _HumanOsAppState extends State<HumanOsApp> {
     // Every displayed time follows the chosen style (display only).
     displayDateOrder = a.dateOrder;
     displayClock = a.clock;
+    final themes = _themesFor(a);
     return AppearanceScope(
       controller: _appearance,
       child: MaterialApp(
         title: 'Human OS',
         debugShowCheckedModeBanner: false,
-        theme: buildHumanOsTheme(
-          Brightness.light,
-          accentChoice: a.accent,
-          highContrast: a.highContrast,
-          compact: a.density == Density.compact,
-          fontFamily: fontFamilyFor(a.font),
-          wideSpacing: a.wideSpacing,
-          reduceMotion: a.reduceMotion,
-        ),
-        darkTheme: buildHumanOsTheme(
-          Brightness.dark,
-          accentChoice: a.accent,
-          highContrast: a.highContrast,
-          compact: a.density == Density.compact,
-          fontFamily: fontFamilyFor(a.font),
-          wideSpacing: a.wideSpacing,
-          reduceMotion: a.reduceMotion,
-        ),
-        themeMode: switch (a.theme) {
-          ThemeChoice.system => ThemeMode.system,
-          ThemeChoice.light => ThemeMode.light,
-          ThemeChoice.dark => ThemeMode.dark,
+        theme: themes.$1,
+        darkTheme: themes.$2,
+        // A named palette has its own brightness (U031); the saved theme
+        // stays for Standard.
+        themeMode: switch (paletteBrightness(a.palette)) {
+          Brightness.dark => ThemeMode.dark,
+          Brightness.light => ThemeMode.light,
+          null => switch (a.theme) {
+            ThemeChoice.system => ThemeMode.system,
+            ThemeChoice.light => ThemeMode.light,
+            ThemeChoice.dark => ThemeMode.dark,
+          },
         },
         locale: switch (a.language) {
           LanguageChoice.system => null,

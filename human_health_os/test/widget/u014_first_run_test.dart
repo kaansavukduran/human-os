@@ -76,6 +76,17 @@ void main() {
     await launchWith(tester);
     expect(find.byKey(const ValueKey('screen-first-run')), findsNothing);
     await tapKey(tester, 'open-settings');
+    // The Settings list builds lazily; bring the button into the list first.
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('set-first-run')),
+      400,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('screen-settings')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     await tapKey(tester, 'set-first-run');
     expect(find.byKey(const ValueKey('screen-first-run')), findsOneWidget);
     await tapKey(tester, 'first-skip');

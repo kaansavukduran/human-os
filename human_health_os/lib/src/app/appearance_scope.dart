@@ -45,9 +45,12 @@ class AppearanceController extends ValueNotifier<AppearanceSettings> {
 
   Future<void> update(AppearanceSettings next) async {
     if (next == value) return;
+    final failedBefore = saveFailed;
+    // Setting the value notifies once; a second notify follows only when
+    // the save outcome shown on the Settings page changed.
     value = next;
     await _save(next);
-    notifyListeners();
+    if (saveFailed != failedBefore) notifyListeners();
   }
 
   /// Saves run one after another, so two quick changes never write the same

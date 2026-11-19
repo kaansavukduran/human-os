@@ -1414,6 +1414,20 @@ class S {
     AccentChoice.green => _t('Green', 'Yeşil'),
     AccentChoice.graphite => _t('Graphite', 'Grafit'),
   };
+  String get settingsPalette => _t('Palette', 'Renk paleti');
+  String paletteName(PaletteChoice p) => switch (p) {
+    PaletteChoice.standard => _t('Standard', 'Standart'),
+    PaletteChoice.matrix => _t('Matrix', 'Matrix'),
+    PaletteChoice.axolotl => _t('Axolotl', 'Aksolotl'),
+    PaletteChoice.trans => _t('Trans', 'Trans'),
+  };
+  String paletteNote(String name) => _t(
+    '$name has its own light or dark look; your theme and accent choices are kept for Standard.',
+    '$name paletinin kendi açık ya da koyu görünümü var; tema ve renk seçimlerin Standart için saklanır.',
+  );
+
+  /// A sample number on a palette preview (not a health value).
+  String get paletteSample => _t('72.4', '72,4');
   String get settingsSpacing => _t('Spacing', 'Yoğunluk');
   String get settingsFont => _t('Font', 'Yazı tipi');
   String get settingsUnits => _t('Units', 'Birimler');

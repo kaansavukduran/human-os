@@ -81,7 +81,7 @@ const SCREENS = {
   'tr-TR': [
     ['Today', 'Bugün', 'Bugün', 'tab'],
     ['Timeline', 'Zaman çizelgesi', 'Zaman çizelgesi', 'tab'],
-    ['Labs', 'Lab', 'Lab', 'tab'],
+    ['Labs', 'Tahliller', 'Tahliller', 'tab'],
     ['Medications', 'İlaçlar', 'İlaçlar ve takviyeler', 'tab'],
     ['Nutrition', 'Beslenme', 'Beslenme', 'area'],
     ['Activity', 'Aktivite', 'Aktivite', 'area'],

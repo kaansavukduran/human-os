@@ -335,4 +335,34 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byKey(const ValueKey('screen-labs')), findsOneWidget);
   });
+
+  // Q001 screen matrix: on a 1180-wide tablet the compact rail made "Learn"
+  // a 38 dp wide target (38×50 in Chromium). Every rail item, in both
+  // languages, is at least 48×48.
+  for (final locale in const [Locale('en'), Locale('tr')]) {
+    testWidgets('compact rail items are at least 48×48 '
+        '(${locale.languageCode})', (tester) async {
+      // The test font draws every glyph as wide as it is tall, wider than
+      // a real font; half-size text gives "Learn" its real-world width.
+      tester.platformDispatcher.textScaleFactorTestValue = 0.5;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await pumpApp(tester, size: const Size(1180, 820), locale: locale);
+      final rail = tester.widget<NavigationRail>(
+        find.byKey(const ValueKey('nav-rail')),
+      );
+      expect(rail.extended, isFalse);
+      final items = [
+        for (final d in plannedDestinations)
+          find.byKey(ValueKey('rail-planned-${d.id.name}')),
+        find.byKey(const ValueKey('rail-settings')),
+      ];
+      for (final item in items) {
+        await tester.ensureVisible(item);
+        await tester.pumpAndSettle();
+        final size = tester.getSize(item);
+        expect(size.width, greaterThanOrEqualTo(48), reason: '$item $size');
+        expect(size.height, greaterThanOrEqualTo(48), reason: '$item $size');
+      }
+    });
+  }
 }

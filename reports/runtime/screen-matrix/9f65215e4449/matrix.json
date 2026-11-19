@@ -1,0 +1,6814 @@
+{
+  "tool": "tools/flutter_screen_matrix.mjs",
+  "ran_at": "2026-11-19T19:24:33.692Z",
+  "git_head": "9f65215e44492761135c95e4663304fc38eeecb1",
+  "working_tree_dirty": false,
+  "browser": "chromium 153.0.8010.12",
+  "release_build": "/home/user/claudereponewscience/.claude/worktrees/agent-a76befd9f1c4c5c43/human_health_os/build/web",
+  "release_main_dart_js_sha256": "c47368db77e2bcc901aa11afcd5f43466657809354251c94d67ab0bc54cf7c90",
+  "debug_build": "/tmp/claude-0/-home-user-claudereponewscience/98b402a0-dcb1-563e-9879-a47a1ee158c6/scratchpad/web-debug2",
+  "debug_main_dart_js_sha256": "c67f066cef1455fe71d20155e0f4c6fe35202d1caf711bc1fce647455bc1d3fc",
+  "viewports": {
+    "small-phone": {
+      "width": 320,
+      "height": 640,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36"
+    },
+    "phone": {
+      "width": 390,
+      "height": 844,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36"
+    },
+    "tablet-portrait": {
+      "width": 820,
+      "height": 1180,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+    },
+    "tablet-landscape": {
+      "width": 1180,
+      "height": 820,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+    },
+    "desktop": {
+      "width": 1440,
+      "height": 900,
+      "touch": false,
+      "ua": null
+    }
+  },
+  "min_touch_target_css_px": 44,
+  "checks": {
+    "heading_visible": "the screen heading (semantics role heading) is on screen",
+    "palette_applied": "palette groups only: the palette was chosen through the Settings UI and its note appeared",
+    "no_page_errors": "no uncaught page errors while the cell was open (load errors count to the first cell of a page)",
+    "no_console_errors": "no console messages of type error",
+    "no_failed_requests": "no failed request and no HTTP status >= 400",
+    "no_horizontal_scroll": "document scrollWidth <= viewport width at every scroll position",
+    "controls_named": "every semantics button, link and tab has a non-empty accessible name",
+    "touch_targets": "touch viewports: every enabled semantics button/link/tab/checkbox/switch/radio/slider or tappable node is >= 44x44 CSS px (largest size seen while scrolling the whole screen)",
+    "no_flutter_overflow": "debug build of the same revision: the console has no \"overflowed by N pixels\" report while the screen is opened and scrolled",
+    "no_flutter_exceptions": "debug build: no other Flutter framework exception report",
+    "text_scaled_2x": "2× text cells only: the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app"
+  },
+  "counts": {
+    "cells": 132,
+    "PASS": 132,
+    "FAIL": 0,
+    "PASS_WITH_NOT_TESTED": 0
+  },
+  "not_tested": [
+    {
+      "what": "Real Android phones and tablets",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Real iPhones and iPads (iOS/iPadOS)",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Windows desktop app",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "macOS desktop app",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Firefox",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Safari",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Screen readers: TalkBack",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Screen readers: VoiceOver",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Screen readers: NVDA",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    }
+  ],
+  "cells": [
+    {
+      "id": "base|small-phone|en-US|Today",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_en-US_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|en-US|Timeline",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Timeline\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "9 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "10 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_en-US_Timeline.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|en-US|Labs",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Labs\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "12 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "12 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_en-US_Labs.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|en-US|Medications",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Medicines and supplements\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "base_small-phone_en-US_Medications.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|en-US|Nutrition",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Nutrition\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_en-US_Nutrition.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|en-US|Activity",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Activity\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_en-US_Activity.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|en-US|Conditions",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Conditions and symptoms\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_en-US_Conditions.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|en-US|Preventive",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Vaccinations, screenings, check-ups\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "base_small-phone_en-US_Preventive.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|en-US|Documents",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Documents\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_en-US_Documents.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|en-US|Settings",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "77 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "base_small-phone_en-US_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Today",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Bugün\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_tr-TR_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Timeline",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Zaman çizelgesi\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "9 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "10 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_tr-TR_Timeline.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Labs",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Lab\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "12 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "12 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_tr-TR_Labs.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Medications",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"İlaçlar ve takviyeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_tr-TR_Medications.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Nutrition",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Beslenme\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_tr-TR_Nutrition.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Activity",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aktivite\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_tr-TR_Activity.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Conditions",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Durumlar ve belirtiler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_tr-TR_Conditions.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Preventive",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aşılar, taramalar, kontroller\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_tr-TR_Preventive.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Documents",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Belgeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_tr-TR_Documents.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Settings",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Ayarlar\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "77 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "base_small-phone_tr-TR_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|en-US|Today",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_en-US_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|en-US|Timeline",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Timeline\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "9 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "10 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_en-US_Timeline.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|en-US|Labs",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Labs\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "12 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "12 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_en-US_Labs.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|en-US|Medications",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Medicines and supplements\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_en-US_Medications.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|en-US|Nutrition",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Nutrition\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_en-US_Nutrition.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|en-US|Activity",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Activity\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_en-US_Activity.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|en-US|Conditions",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Conditions and symptoms\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_en-US_Conditions.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|en-US|Preventive",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Vaccinations, screenings, check-ups\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "base_phone_en-US_Preventive.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|en-US|Documents",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Documents\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_en-US_Documents.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|en-US|Settings",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "79 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "base_phone_en-US_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|tr-TR|Today",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "tr-TR",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Bugün\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_tr-TR_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|tr-TR|Timeline",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "tr-TR",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Zaman çizelgesi\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "9 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "10 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_tr-TR_Timeline.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|tr-TR|Labs",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "tr-TR",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Lab\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "12 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "12 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_tr-TR_Labs.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|tr-TR|Medications",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "tr-TR",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"İlaçlar ve takviyeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_tr-TR_Medications.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|tr-TR|Nutrition",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "tr-TR",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Beslenme\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_tr-TR_Nutrition.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|tr-TR|Activity",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "tr-TR",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aktivite\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_tr-TR_Activity.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|tr-TR|Conditions",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "tr-TR",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Durumlar ve belirtiler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_tr-TR_Conditions.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|tr-TR|Preventive",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "tr-TR",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aşılar, taramalar, kontroller\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_tr-TR_Preventive.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|tr-TR|Documents",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "tr-TR",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Belgeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_phone_tr-TR_Documents.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|phone|tr-TR|Settings",
+      "variant": "base",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "tr-TR",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Ayarlar\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "79 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "base_phone_tr-TR_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|en-US|Today",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_en-US_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|en-US|Timeline",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "en-US",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Timeline\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "9 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "10 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_en-US_Timeline.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|en-US|Labs",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "en-US",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Labs\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "12 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "12 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_en-US_Labs.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|en-US|Medications",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "en-US",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Medicines and supplements\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_en-US_Medications.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|en-US|Nutrition",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "en-US",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Nutrition\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_en-US_Nutrition.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|en-US|Activity",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "en-US",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Activity\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_en-US_Activity.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|en-US|Conditions",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "en-US",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Conditions and symptoms\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_en-US_Conditions.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|en-US|Preventive",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "en-US",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Vaccinations, screenings, check-ups\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_en-US_Preventive.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|en-US|Documents",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "en-US",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Documents\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_en-US_Documents.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|en-US|Settings",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "79 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "base_tablet-portrait_en-US_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|tr-TR|Today",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "tr-TR",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Bugün\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_tr-TR_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|tr-TR|Timeline",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "tr-TR",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Zaman çizelgesi\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "9 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "10 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_tr-TR_Timeline.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|tr-TR|Labs",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "tr-TR",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Lab\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "12 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "12 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_tr-TR_Labs.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|tr-TR|Medications",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "tr-TR",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"İlaçlar ve takviyeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_tr-TR_Medications.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|tr-TR|Nutrition",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "tr-TR",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Beslenme\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_tr-TR_Nutrition.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|tr-TR|Activity",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "tr-TR",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aktivite\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_tr-TR_Activity.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|tr-TR|Conditions",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "tr-TR",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Durumlar ve belirtiler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_tr-TR_Conditions.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|tr-TR|Preventive",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "tr-TR",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aşılar, taramalar, kontroller\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_tr-TR_Preventive.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|tr-TR|Documents",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "tr-TR",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Belgeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-portrait_tr-TR_Documents.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-portrait|tr-TR|Settings",
+      "variant": "base",
+      "viewport": "tablet-portrait",
+      "size": "820x1180",
+      "locale": "tr-TR",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Ayarlar\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 820 vs viewport 820"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "79 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "base_tablet-portrait_tr-TR_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|en-US|Today",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "38 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "38 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_en-US_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|en-US|Timeline",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "en-US",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Timeline\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "16 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "17 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_en-US_Timeline.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|en-US|Labs",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "en-US",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Labs\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "19 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "19 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_en-US_Labs.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|en-US|Medications",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "en-US",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Medicines and supplements\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_en-US_Medications.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|en-US|Nutrition",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "en-US",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Nutrition\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_en-US_Nutrition.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|en-US|Activity",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "en-US",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Activity\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_en-US_Activity.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|en-US|Conditions",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "en-US",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Conditions and symptoms\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_en-US_Conditions.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|en-US|Preventive",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "en-US",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Vaccinations, screenings, check-ups\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_en-US_Preventive.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|en-US|Documents",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "en-US",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Documents\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_en-US_Documents.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|en-US|Settings",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "79 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "base_tablet-landscape_en-US_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|tr-TR|Today",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "tr-TR",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Bugün\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "38 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "38 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_tr-TR_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|tr-TR|Timeline",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "tr-TR",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Zaman çizelgesi\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "16 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "17 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_tr-TR_Timeline.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|tr-TR|Labs",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "tr-TR",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Lab\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "19 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "19 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_tr-TR_Labs.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|tr-TR|Medications",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "tr-TR",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"İlaçlar ve takviyeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_tr-TR_Medications.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|tr-TR|Nutrition",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "tr-TR",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Beslenme\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_tr-TR_Nutrition.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|tr-TR|Activity",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "tr-TR",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aktivite\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_tr-TR_Activity.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|tr-TR|Conditions",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "tr-TR",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Durumlar ve belirtiler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_tr-TR_Conditions.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|tr-TR|Preventive",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "tr-TR",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aşılar, taramalar, kontroller\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_tr-TR_Preventive.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|tr-TR|Documents",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "tr-TR",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Belgeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "15 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_tablet-landscape_tr-TR_Documents.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|tablet-landscape|tr-TR|Settings",
+      "variant": "base",
+      "viewport": "tablet-landscape",
+      "size": "1180x820",
+      "locale": "tr-TR",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Ayarlar\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1180 vs viewport 1180"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "79 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "base_tablet-landscape_tr-TR_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Today",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "38 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_en-US_Today.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Timeline",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Timeline\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "16 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_en-US_Timeline.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Labs",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Labs\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "19 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_en-US_Labs.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Medications",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Medicines and supplements\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_en-US_Medications.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Nutrition",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Nutrition\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_en-US_Nutrition.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Activity",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Activity\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_en-US_Activity.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Conditions",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Conditions and symptoms\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_en-US_Conditions.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Preventive",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Vaccinations, screenings, check-ups\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_en-US_Preventive.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Documents",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Documents\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_en-US_Documents.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Settings",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "base_desktop_en-US_Settings.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Today",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Bugün\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "38 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_tr-TR_Today.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Timeline",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Zaman çizelgesi\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "16 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_tr-TR_Timeline.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Labs",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Lab\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "19 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_tr-TR_Labs.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Medications",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"İlaçlar ve takviyeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_tr-TR_Medications.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Nutrition",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Beslenme\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_tr-TR_Nutrition.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Activity",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aktivite\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_tr-TR_Activity.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Conditions",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Durumlar ve belirtiler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_tr-TR_Conditions.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Preventive",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aşılar, taramalar, kontroller\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_tr-TR_Preventive.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Documents",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Belgeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "15 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_tr-TR_Documents.png",
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Settings",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Ayarlar\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "base_desktop_tr-TR_Settings.png",
+      "status": "PASS"
+    },
+    {
+      "id": "palette-matrix|phone|en-US|Settings",
+      "variant": "palette-matrix",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Matrix chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "79 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "palette-matrix_phone_en-US_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "palette-matrix|phone|en-US|Today",
+      "variant": "palette-matrix",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Matrix chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "palette-matrix_phone_en-US_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "palette-matrix|desktop|en-US|Settings",
+      "variant": "palette-matrix",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Matrix chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "palette-matrix_desktop_en-US_Settings.png",
+      "status": "PASS"
+    },
+    {
+      "id": "palette-matrix|desktop|en-US|Today",
+      "variant": "palette-matrix",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Matrix chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "38 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "palette-matrix_desktop_en-US_Today.png",
+      "status": "PASS"
+    },
+    {
+      "id": "palette-axolotl|phone|en-US|Settings",
+      "variant": "palette-axolotl",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Axolotl chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "79 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "palette-axolotl_phone_en-US_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "palette-axolotl|phone|en-US|Today",
+      "variant": "palette-axolotl",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Axolotl chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "palette-axolotl_phone_en-US_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "palette-axolotl|desktop|en-US|Settings",
+      "variant": "palette-axolotl",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Axolotl chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "palette-axolotl_desktop_en-US_Settings.png",
+      "status": "PASS"
+    },
+    {
+      "id": "palette-axolotl|desktop|en-US|Today",
+      "variant": "palette-axolotl",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Axolotl chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "38 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "palette-axolotl_desktop_en-US_Today.png",
+      "status": "PASS"
+    },
+    {
+      "id": "palette-trans|phone|en-US|Settings",
+      "variant": "palette-trans",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Trans chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "79 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "palette-trans_phone_en-US_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "palette-trans|phone|en-US|Today",
+      "variant": "palette-trans",
+      "viewport": "phone",
+      "size": "390x844",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Trans chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 390 vs viewport 390"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "palette-trans_phone_en-US_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "palette-trans|desktop|en-US|Settings",
+      "variant": "palette-trans",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Trans chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 28,
+      "screenshot": "palette-trans_desktop_en-US_Settings.png",
+      "status": "PASS"
+    },
+    {
+      "id": "palette-trans|desktop|en-US|Today",
+      "variant": "palette-trans",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "palette_applied": {
+          "status": "PASS",
+          "detail": "Trans chosen in Settings"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "38 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "palette-trans_desktop_en-US_Today.png",
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|en-US|Today",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Today\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_en-US_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|en-US|Timeline",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Timeline\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "9 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "10 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_en-US_Timeline.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|en-US|Labs",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Labs\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "12 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "12 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_en-US_Labs.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|en-US|Medications",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Medicines and supplements\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "6 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "6 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 64 → 192 (×3.00)"
+        }
+      },
+      "headingHeight": 192,
+      "screenshot": "text-2x_small-phone_en-US_Medications.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|en-US|Nutrition",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Nutrition\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_en-US_Nutrition.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|en-US|Activity",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Activity\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_en-US_Activity.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|en-US|Conditions",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Conditions and symptoms\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "6 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "6 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 192 (×6.00)"
+        }
+      },
+      "headingHeight": 192,
+      "screenshot": "text-2x_small-phone_en-US_Conditions.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|en-US|Preventive",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Vaccinations, screenings, check-ups\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "6 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "6 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 64 → 192 (×3.00)"
+        }
+      },
+      "headingHeight": 192,
+      "screenshot": "text-2x_small-phone_en-US_Preventive.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|en-US|Documents",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Documents\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "6 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "6 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_en-US_Documents.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|en-US|Settings",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Settings\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "77 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 28 → 168 (×6.00)"
+        }
+      },
+      "headingHeight": 168,
+      "screenshot": "text-2x_small-phone_en-US_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|tr-TR|Today",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Today",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Bugün\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "31 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "31 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_tr-TR_Today.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|tr-TR|Timeline",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Timeline",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Zaman çizelgesi\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "9 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "10 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 128 (×4.00)"
+        }
+      },
+      "headingHeight": 128,
+      "screenshot": "text-2x_small-phone_tr-TR_Timeline.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|tr-TR|Labs",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Labs",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Lab\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "12 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "12 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_tr-TR_Labs.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|tr-TR|Medications",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"İlaçlar ve takviyeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "6 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "6 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 128 (×4.00)"
+        }
+      },
+      "headingHeight": 128,
+      "screenshot": "text-2x_small-phone_tr-TR_Medications.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|tr-TR|Nutrition",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Nutrition",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Beslenme\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "6 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "6 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_tr-TR_Nutrition.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|tr-TR|Activity",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Activity",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aktivite\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_tr-TR_Activity.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|tr-TR|Conditions",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Conditions",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Durumlar ve belirtiler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "6 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "6 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 128 (×4.00)"
+        }
+      },
+      "headingHeight": 128,
+      "screenshot": "text-2x_small-phone_tr-TR_Conditions.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|tr-TR|Preventive",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Preventive",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Aşılar, taramalar, kontroller\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "6 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "6 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 192 (×6.00)"
+        }
+      },
+      "headingHeight": 192,
+      "screenshot": "text-2x_small-phone_tr-TR_Preventive.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|tr-TR|Documents",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Documents",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Belgeler\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "6 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "6 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 32 → 64 (×2.00)"
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "text-2x_small-phone_tr-TR_Documents.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "text-2x|small-phone|tr-TR|Settings",
+      "variant": "text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Settings",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Ayarlar\""
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "28 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "77 targets >= 44x44"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 28 → 112 (×4.00)"
+        }
+      },
+      "headingHeight": 112,
+      "screenshot": "text-2x_small-phone_tr-TR_Settings.png",
+      "smallTargets": [],
+      "status": "PASS"
+    }
+  ]
+}

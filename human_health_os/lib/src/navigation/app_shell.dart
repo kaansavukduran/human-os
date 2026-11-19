@@ -291,7 +291,9 @@ class _RailSettingsItem extends StatelessWidget {
         onTap: () => openSettings(context, config),
         borderRadius: BorderRadius.circular(12),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
+          // At least 48 wide too: a short label ("Learn") in the compact
+          // rail made a 38 dp wide target (Q001 screen matrix).
+          constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
           child: Padding(
             padding: extended
                 ? const EdgeInsets.fromLTRB(30, 10, 16, 10)
@@ -368,7 +370,9 @@ class _PlannedRailItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         // At least 48 dp tall: the touch-target guideline (audit UX-4).
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
+          // And at least 48 wide: a short label ("Learn") in the compact
+          // rail made a 38 dp wide target (Q001 screen matrix).
+          constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
           child: Padding(
             // Left inset 30 centres the 20 dp icon on the primary icons' axis.
             padding: extended

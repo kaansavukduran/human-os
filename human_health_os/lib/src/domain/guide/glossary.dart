@@ -271,3 +271,12 @@ GlossaryEntry? glossaryForKind(String code) {
   }
   return null;
 }
+
+/// The entry with [id], or null when the glossary has none (U031: a term
+/// link is shown only for a word the glossary explains).
+GlossaryEntry? glossaryById(String id) {
+  for (final e in glossary) {
+    if (e.id == id) return e;
+  }
+  return null;
+}

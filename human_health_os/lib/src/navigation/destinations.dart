@@ -35,6 +35,8 @@ class Destination {
     required this.plannedForge,
     required this.principleEn,
     required this.principleTr,
+    required this.canDoEn,
+    required this.canDoTr,
     this.emptyStateEn,
     this.emptyStateTr,
   });
@@ -55,6 +57,10 @@ class Destination {
   final String principleEn;
   final String principleTr;
 
+  /// One concrete sentence: what a person can do in this area (U031).
+  final String canDoEn;
+  final String canDoTr;
+
   /// What the unbuilt view truthfully says instead of "No records yet" when
   /// records of its kind can already exist elsewhere (e.g. Timeline, while
   /// Today saves weights). Null = "No records yet" is true for this area.
@@ -67,6 +73,7 @@ class Destination {
   String purpose(AppLang lang) => lang == AppLang.tr ? purposeTr : purposeEn;
   String principle(AppLang lang) =>
       lang == AppLang.tr ? principleTr : principleEn;
+  String canDo(AppLang lang) => lang == AppLang.tr ? canDoTr : canDoEn;
   String? emptyState(AppLang lang) =>
       lang == AppLang.tr ? emptyStateTr : emptyStateEn;
 }
@@ -93,6 +100,8 @@ const List<Destination> destinations = [
     plannedForge: 'Forge F007 · F011',
     principleEn: 'A mission is a plan. Only a logged completion counts.',
     principleTr: 'Görev bir plandır. Yalnız kaydedilen tamamlanma sayılır.',
+    canDoEn: 'Save your weight, a measurement, last night\'s sleep or how you feel right now.',
+    canDoTr: 'Kilonu, bir ölçümü, dün geceki uykunu ya da şu an nasıl hissettiğini kaydet.',
   ),
   Destination(
     id: DestinationId.timeline,
@@ -108,6 +117,9 @@ const List<Destination> destinations = [
     principleEn: 'A correction adds a new version; the old one stays visible in history.',
     principleTr:
         'Düzeltme yeni bir sürüm ekler; eskisi geçmişte görünür kalır.',
+    canDoEn:
+        'Open any record to see where it came from, correct it or hide it.',
+    canDoTr: 'Bir kaydı aç; nereden geldiğini gör, düzelt ya da gizle.',
   ),
   Destination(
     id: DestinationId.labs,
@@ -122,6 +134,8 @@ const List<Destination> destinations = [
     plannedForge: null,
     principleEn: 'Reference interval ≠ optimal target ≠ decision limit. Out of range ≠ critical.',
     principleTr: 'Referans aralığı ≠ optimal hedef ≠ karar sınırı. Aralık dışı ≠ kritik.',
+    canDoEn: 'Type a result from your lab report, then correct it later if you typed it wrong.',
+    canDoTr: 'Lab raporundaki bir sonucu yaz; yanlış yazdıysan sonra düzelt.',
   ),
   Destination(
     id: DestinationId.medications,
@@ -136,6 +150,8 @@ const List<Destination> destinations = [
     plannedForge: null,
     principleEn: 'A prescription or reminder is not an intake. "No interaction found" is not "safe".',
     principleTr: 'Reçete ya da hatırlatma alım değildir. "Etkileşim bulunamadı", "güvenli" demek değildir.',
+    canDoEn: 'Add a medicine or supplement, write how it is meant to be taken, and note each dose you took or skipped.',
+    canDoTr: 'Bir ilaç ya da takviye ekle, nasıl kullanılacağını yaz ve aldığın ya da atladığın her dozu not et.',
   ),
   Destination(
     id: DestinationId.nutrition,
@@ -150,6 +166,8 @@ const List<Destination> destinations = [
     plannedForge: null,
     principleEn: 'A nutrient the label does not report is missing, not zero.',
     principleTr: 'Etikette yazmayan bir besin öğesi eksiktir, sıfır değil.',
+    canDoEn: 'Write down a meal or a drink in your own words, with label values if you have them.',
+    canDoTr: 'Bir öğünü ya da içeceği kendi sözlerinle yaz; elinde varsa etiket değerleriyle.',
   ),
   Destination(
     id: DestinationId.activity,
@@ -164,6 +182,8 @@ const List<Destination> destinations = [
     principleEn:
         'Two devices counting the same hour are de-duplicated, never summed.',
     principleTr: 'Aynı saati sayan iki cihaz tekilleştirilir, asla toplanmaz.',
+    canDoEn: 'Add a walk or a workout with its minutes and steps, or leave them empty.',
+    canDoTr: 'Bir yürüyüşü ya da antrenmanı dakikası ve adımıyla ekle ya da onları boş bırak.',
   ),
   Destination(
     id: DestinationId.conditions,
@@ -179,6 +199,8 @@ const List<Destination> destinations = [
     plannedForge: null,
     principleEn: 'Self-reported is not a confirmed diagnosis.',
     principleTr: 'Öz bildirim, doğrulanmış tanı değildir.',
+    canDoEn: 'Write down a condition or a symptom in your words, and who told you about it.',
+    canDoTr: 'Bir durumu ya da belirtiyi kendi sözlerinle yaz; sana kimin söylediğini de ekle.',
   ),
   Destination(
     id: DestinationId.preventive,
@@ -194,6 +216,8 @@ const List<Destination> destinations = [
         'Unknown history is not "never done". Screening is not diagnosis.',
     principleTr:
         'Bilinmeyen geçmiş "hiç yapılmadı" değildir. Tarama tanı değildir.',
+    canDoEn: 'Note a vaccination, a screening or a check-up as done, planned or not sure.',
+    canDoTr: 'Bir aşıyı, taramayı ya da kontrolü yapıldı, planlandı ya da emin değilim diye not et.',
   ),
   Destination(
     id: DestinationId.documents,
@@ -208,6 +232,8 @@ const List<Destination> destinations = [
     plannedForge: null,
     principleEn: 'A reference is not the document; Human OS does not read it.',
     principleTr: 'Kayıt belgenin kendisi değildir; Human OS onu okumaz.',
+    canDoEn: 'List a document you keep, such as a report or a vaccination card, and where you keep it.',
+    canDoTr: 'Sakladığın bir belgeyi (bir rapor ya da aşı kartı gibi) ve nerede durduğunu listele.',
   ),
   Destination(
     id: DestinationId.compare,
@@ -221,6 +247,8 @@ const List<Destination> destinations = [
     plannedForge: 'Forge F011',
     principleEn: 'A scenario never changes your real records.',
     principleTr: 'Senaryo gerçek kayıtlarını asla değiştirmez.',
+    canDoEn: 'Nothing yet: this area is planned for a later version.',
+    canDoTr: 'Henüz bir şey yok: bu alan sonraki bir sürüm için planlandı.',
   ),
   Destination(
     id: DestinationId.learn,
@@ -233,6 +261,8 @@ const List<Destination> destinations = [
     plannedForge: 'Forge F011',
     principleEn: 'Reading a lesson is not the same as a health improvement.',
     principleTr: 'Bir dersi okumak sağlıkta iyileşme ile aynı şey değildir.',
+    canDoEn: 'Nothing yet: this area is planned for a later version.',
+    canDoTr: 'Henüz bir şey yok: bu alan sonraki bir sürüm için planlandı.',
   ),
 ];
 

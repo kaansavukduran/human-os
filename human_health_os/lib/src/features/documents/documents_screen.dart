@@ -6,6 +6,9 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/widgets/aion.dart';
 import '../../presentation/widgets/read_failed_note.dart';
+import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/loading_line.dart';
+import '../../navigation/destinations.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 
 /// Documents (F010 slice 1): references to the documents the person keeps,
@@ -69,18 +72,16 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final text = Theme.of(context).textTheme;
     final entries = _entries;
     return ListView(
       key: const ValueKey('screen-documents'),
       padding: const EdgeInsets.all(16),
       children: [
-        Semantics(
-          header: true,
-          child: Text(s.docTitle, style: text.headlineSmall),
+        AreaIntro(
+          area: DestinationId.documents,
+          title: s.docTitle,
+          what: s.docIntro,
         ),
-        const SizedBox(height: 8),
-        Text(s.docIntro, style: text.bodyMedium),
         const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerLeft,
@@ -95,7 +96,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         if (_readFailed)
           ReadFailedNote(id: 'doc', onRetry: _retry)
         else if (entries == null)
-          const Center(child: CircularProgressIndicator())
+          const LoadingLine()
         else if (entries.isEmpty)
           Row(
             children: [

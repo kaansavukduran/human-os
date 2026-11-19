@@ -75,7 +75,25 @@ class AppearanceSettings {
     this.interfacePercent = 100,
     this.discoveryEnabled = true,
     this.discovered = const {},
+    this.explainedAreas = const {},
   });
+
+  /// Areas whose short "what this is" introduction the person closed
+  /// (U031): the introduction stays closed there. Names of areas, never
+  /// anything read or recorded.
+  final Set<String> explainedAreas;
+
+  /// The introduction of [area] closed (true) or open again (false).
+  AppearanceSettings explain(String area, {required bool closed}) =>
+      closed == explainedAreas.contains(area)
+      ? this
+      : copyWith(
+          explainedAreas: {
+            for (final a in explainedAreas)
+              if (a != area) a,
+            if (closed) area,
+          },
+        );
 
   /// Whole-interface scale, independent of text-only and device scaling.
   final int interfacePercent;
@@ -176,6 +194,7 @@ class AppearanceSettings {
     interfacePercent: interfacePercent,
     discoveryEnabled: discoveryEnabled,
     discovered: discovered,
+    explainedAreas: explainedAreas,
     language: language,
     theme: theme,
     accent: accent,
@@ -205,6 +224,7 @@ class AppearanceSettings {
     int? interfacePercent,
     bool? discoveryEnabled,
     Set<DiscoveryStep>? discovered,
+    Set<String>? explainedAreas,
     LanguageChoice? language,
     ThemeChoice? theme,
     AccentChoice? accent,
@@ -231,6 +251,7 @@ class AppearanceSettings {
     interfacePercent: interfacePercent ?? this.interfacePercent,
     discoveryEnabled: discoveryEnabled ?? this.discoveryEnabled,
     discovered: discovered ?? this.discovered,
+    explainedAreas: explainedAreas ?? this.explainedAreas,
     language: language ?? this.language,
     theme: theme ?? this.theme,
     accent: accent ?? this.accent,
@@ -261,6 +282,7 @@ class AppearanceSettings {
     'interfacePercent': interfacePercent,
     'discoveryEnabled': discoveryEnabled,
     'discovered': [for (final step in discovered) step.name]..sort(),
+    'explainedAreas': explainedAreas.toList()..sort(),
     'language': language.name,
     'theme': theme.name,
     'accent': accent.name,
@@ -312,6 +334,7 @@ class AppearanceSettings {
           for (final step in DiscoveryStep.values)
             if (step.name == name) step,
       },
+      explainedAreas: strings(json['explainedAreas']).toSet(),
       language: pick(
         LanguageChoice.values,
         json['language'],
@@ -363,6 +386,7 @@ class AppearanceSettings {
       other.interfacePercent == interfacePercent &&
       other.discoveryEnabled == discoveryEnabled &&
       _sameSet(other.discovered, discovered) &&
+      _sameSet(other.explainedAreas, explainedAreas) &&
       other.language == language &&
       other.theme == theme &&
       other.accent == accent &&
@@ -414,6 +438,7 @@ class AppearanceSettings {
       clock,
       firstRunDone,
       palette,
+      explainedAreas.length,
     ),
   );
 }

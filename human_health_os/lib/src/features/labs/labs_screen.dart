@@ -8,6 +8,9 @@ import '../../domain/ports/health_repository.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
+import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/first_step.dart';
+import '../../presentation/widgets/loading_line.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/status_chip.dart';
@@ -182,29 +185,13 @@ class _LabsScreenState extends State<LabsScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final text = Theme.of(context).textTheme;
-    final d = destinationById(DestinationId.labs);
     return ListView(
       key: const ValueKey('screen-labs'),
       padding: const EdgeInsets.all(16),
       children: [
-        Semantics(
-          header: true,
-          child: Text(d.label(s.lang), style: text.headlineSmall),
-        ),
-        const SizedBox(height: 8),
-        Text(d.purpose(s.lang), style: text.bodyLarge),
-        const SizedBox(height: 8),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.rule,
-              size: 18,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(width: 8),
-            Expanded(child: Text(d.principle(s.lang), style: text.bodyMedium)),
-          ],
+        const AreaIntro(
+          area: DestinationId.labs,
+          terms: ['reference_interval', 'flag', 'unit'],
         ),
         const SizedBox(height: 8),
         Text(
@@ -238,12 +225,17 @@ class _LabsScreenState extends State<LabsScreen> {
         if (_readFailed)
           ReadFailedNote(id: 'labs', onRetry: _retry)
         else if (!_loaded)
-          const Center(child: CircularProgressIndicator())
+          const LoadingLine()
         else if (_entries.isEmpty)
-          Text(
-            s.noRecordsYet,
+          FirstStep(
             key: const ValueKey('labs-empty'),
-            style: text.titleMedium,
+            text: s.labsFirstStep,
+            action: TextButton.icon(
+              key: const ValueKey('labs-empty-add'),
+              onPressed: _open,
+              icon: const Icon(Icons.add),
+              label: Text(s.labAdd),
+            ),
           )
         else
           for (final e in _entries)

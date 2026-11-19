@@ -2390,4 +2390,61 @@ class S {
       ),
     };
   }
+
+  // U031-S3: every area explains itself; words open the glossary; a first
+  // step and a named loading line. No praise, no score, no judgement.
+  String get areaWhatThis => _t('What this is', 'Bu ne?');
+  String get areaCanDo => _t('What you can do here', 'Burada ne yapabilirsin?');
+  String get areaNever =>
+      _t('What the app never does', 'Uygulama asla ne yapmaz?');
+  String get areaClose => _t('Close', 'Kapat');
+  String get areaShow => _t('What is this area?', 'Bu alan ne?');
+  String get termsHere => _t('Words used here', 'Burada geçen sözcükler');
+  String termWhat(String term) => _t('What is $term?', '$term nedir?');
+  String get termOpenGlossary => _t('Open in glossary', 'Sözlükte aç');
+  String get loadingRecords =>
+      _t('Opening your records…', 'Kayıtların açılıyor…');
+  String get labsFirstStep => _t(
+    'Type one result exactly as your report prints it.',
+    'Bir sonucu raporunda yazdığı gibi yaz.',
+  );
+  String get timelineFirstStep => _t(
+    'What you save on Today appears here, newest first.',
+    'Bugün ekranında kaydettiklerin burada görünür, en yenisi üstte.',
+  );
+  String get goToToday => _t('Go to Today', 'Bugün ekranına git');
+  String get showOnTimeline =>
+      _t('Show on Timeline', 'Zaman çizelgesinde göster');
+
+  /// Neutral lines shown beside Aion: where things are kept, how a
+  /// correction works, what stays private. Never a value, a count or praise.
+  List<String> get aionLines => lang == AppLang.tr
+      ? const [
+          'Burada olan her şey, yedek almadıkça bu cihazda kalır.',
+          'Düzeltme yeni bir sürüm ekler; eskisi geçmişte kalır.',
+          'Bir değeri raporda ya da cihazda yazdığı gibi yazabilirsin; uygulama onu yazdığın gibi saklar.',
+          'Boş bıraktığın bir alan boş kalır; uygulama onu kendisi doldurmaz.',
+          'Kayıtların Zaman çizelgesinde, en yenisi üstte durur.',
+          'Ayarlar\'dan Aion\'u gizleyebilirsin; kayıtların olduğu gibi kalır.',
+        ]
+      : const [
+          'Everything here stays on this device unless you make a backup.',
+          'A correction adds a new version; the old one stays in the history.',
+          'You can type a value exactly as a report or a device shows it; the app keeps it as typed.',
+          'A field you leave empty stays empty; the app never fills it in for you.',
+          'Your records are kept on the Timeline, newest first.',
+          'Settings can hide Aion; your records stay as they are.',
+        ];
+
+  /// One of [aionLines], the same all day, chosen by the day of the year.
+  String aionLine(DateTime day) {
+    final start = DateTime(day.year);
+    final dayOfYear = DateTime(
+      day.year,
+      day.month,
+      day.day,
+    ).difference(start).inDays;
+    final lines = aionLines;
+    return lines[dayOfYear % lines.length];
+  }
 }

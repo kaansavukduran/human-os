@@ -7,8 +7,12 @@ import '../../application/heartbeat_service.dart';
 import '../../domain/ports/health_repository.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../navigation/destination_switch.dart';
 import '../../navigation/destinations.dart';
 import '../measurements/measurement_format.dart';
+import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/first_step.dart';
+import '../../presentation/widgets/loading_line.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/status_chip.dart';
 
@@ -63,31 +67,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final text = Theme.of(context).textTheme;
-    final d = destinationById(DestinationId.timeline);
+    final go = DestinationSwitch.maybeOf(context);
     return ListView(
       key: const ValueKey('screen-timeline'),
       padding: const EdgeInsets.all(16),
       children: [
-        Semantics(
-          header: true,
-          child: Text(d.label(s.lang), style: text.headlineSmall),
-        ),
-        const SizedBox(height: 8),
-        Text(d.purpose(s.lang), style: text.bodyLarge),
-        const SizedBox(height: 8),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.rule,
-              size: 18,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(width: 8),
-            Expanded(child: Text(d.principle(s.lang), style: text.bodyMedium)),
-          ],
-        ),
+        const AreaIntro(area: DestinationId.timeline, terms: ['correction']),
         SwitchListTile(
           key: const ValueKey('timeline-show-hidden'),
           contentPadding: EdgeInsets.zero,
@@ -101,17 +86,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
         if (_readFailed)
           ReadFailedNote(id: 'timeline', onRetry: _retry)
         else if (!_loaded)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(child: CircularProgressIndicator()),
-          )
+          const LoadingLine()
         else if (_entries.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Text(
-              s.noRecordsYet,
+            child: FirstStep(
               key: const ValueKey('timeline-empty'),
-              style: text.titleMedium,
+              text: s.timelineFirstStep,
+              action: go == null
+                  ? null
+                  : TextButton.icon(
+                      key: const ValueKey('timeline-go-today'),
+                      onPressed: () => go(DestinationId.today),
+                      icon: const Icon(Icons.wb_sunny_outlined),
+                      label: Text(s.goToToday),
+                    ),
             ),
           ),
         if (!_readFailed)

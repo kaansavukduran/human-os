@@ -8,6 +8,9 @@ import '../../l10n/strings.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/aion.dart';
 import '../../presentation/widgets/read_failed_note.dart';
+import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/loading_line.dart';
+import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
 /// Activity (F007 slice 6): walks, workouts and steps typed by hand. Minutes
@@ -70,19 +73,17 @@ class _ActivityScreenState extends State<ActivityScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
     final entries = _entries;
     return ListView(
       key: const ValueKey('screen-activity'),
       padding: const EdgeInsets.all(16),
       children: [
-        Semantics(
-          header: true,
-          child: Text(s.actTitle, style: text.headlineSmall),
+        AreaIntro(
+          area: DestinationId.activity,
+          title: s.actTitle,
+          what: s.actIntro,
         ),
-        const SizedBox(height: 8),
-        Text(s.actIntro, style: text.bodyMedium),
         const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerLeft,
@@ -97,7 +98,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         if (_readFailed)
           ReadFailedNote(id: 'act', onRetry: _retry)
         else if (entries == null)
-          const Center(child: CircularProgressIndicator())
+          const LoadingLine()
         else if (entries.isEmpty)
           Row(
             children: [

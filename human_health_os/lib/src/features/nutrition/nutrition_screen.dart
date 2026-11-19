@@ -7,6 +7,9 @@ import '../../l10n/strings.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/aion.dart';
 import '../../presentation/widgets/read_failed_note.dart';
+import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/loading_line.dart';
+import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
 /// Nutrition (F007 slice 5): what the person ate or drank, in their words,
@@ -68,19 +71,17 @@ class _NutritionScreenState extends State<NutritionScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
     final entries = _entries;
     return ListView(
       key: const ValueKey('screen-nutrition'),
       padding: const EdgeInsets.all(16),
       children: [
-        Semantics(
-          header: true,
-          child: Text(s.foodTitle, style: text.headlineSmall),
+        AreaIntro(
+          area: DestinationId.nutrition,
+          title: s.foodTitle,
+          what: s.foodIntro,
         ),
-        const SizedBox(height: 8),
-        Text(s.foodIntro, style: text.bodyMedium),
         const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerLeft,
@@ -95,7 +96,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         if (_readFailed)
           ReadFailedNote(id: 'food', onRetry: _retry)
         else if (entries == null)
-          const Center(child: CircularProgressIndicator())
+          const LoadingLine()
         else if (entries.isEmpty)
           Row(
             children: [

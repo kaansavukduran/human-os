@@ -6,6 +6,9 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/widgets/aion.dart';
 import '../../presentation/widgets/read_failed_note.dart';
+import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/loading_line.dart';
+import '../../navigation/destinations.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 
 /// Conditions and symptoms (F009 slice 1): as the person names them, with
@@ -69,18 +72,16 @@ class _ConditionsScreenState extends State<ConditionsScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final text = Theme.of(context).textTheme;
     final entries = _entries;
     return ListView(
       key: const ValueKey('screen-conditions'),
       padding: const EdgeInsets.all(16),
       children: [
-        Semantics(
-          header: true,
-          child: Text(s.condTitle, style: text.headlineSmall),
+        AreaIntro(
+          area: DestinationId.conditions,
+          title: s.condTitle,
+          what: s.condIntro,
         ),
-        const SizedBox(height: 8),
-        Text(s.condIntro, style: text.bodyMedium),
         const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerLeft,
@@ -95,7 +96,7 @@ class _ConditionsScreenState extends State<ConditionsScreen> {
         if (_readFailed)
           ReadFailedNote(id: 'cond', onRetry: _retry)
         else if (entries == null)
-          const Center(child: CircularProgressIndicator())
+          const LoadingLine()
         else if (entries.isEmpty)
           Row(
             children: [

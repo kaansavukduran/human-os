@@ -11,6 +11,8 @@ import '../../application/heartbeat_service.dart';
 import '../../domain/ports/health_repository.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../navigation/destination_switch.dart';
+import '../../navigation/destinations.dart';
 import '../measurements/measurement_format.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
@@ -62,6 +64,9 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
   Future<void> _add(RecordKind kind) async {
     final messenger = ScaffoldMessenger.of(context);
     final s = S.of(context);
+    final go = DestinationSwitch.maybeOf(context);
+    // The colour a snack bar action has on the snack bar's own surface.
+    final actionColor = Theme.of(context).colorScheme.inversePrimary;
     widget.services.checkpointSaved?.value = null;
     final saved = await showModalBottomSheet<bool>(
       context: context,
@@ -92,14 +97,42 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
-        content: Semantics(
-          liveRegion: true,
-          child: Text(
-            checkpoint == null ? s.saved : s.checkpointSaved(checkpoint),
-            key: const ValueKey('measure-saved'),
-          ),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                checkpoint == null ? s.saved : s.checkpointSaved(checkpoint),
+                key: const ValueKey('measure-saved'),
+              ),
+            ),
+            // Under the text, not beside it, so the words wrap at large
+            // text on a narrow phone instead of overflowing.
+            if (go != null)
+              TextButton(
+                key: const ValueKey('measure-show-timeline'),
+                style: TextButton.styleFrom(
+                  foregroundColor: actionColor,
+                  padding: EdgeInsets.zero,
+                ),
+                onPressed: () {
+                  messenger.hideCurrentSnackBar();
+                  go(DestinationId.timeline);
+                },
+                child: Text(s.showOnTimeline),
+              ),
+          ],
         ),
-        duration: Duration(seconds: checkpoint == null ? 3 : 12),
+        // Long enough to reach the action; it closes on its own.
+        duration: Duration(
+          seconds: checkpoint != null
+              ? 12
+              : go != null
+              ? 6
+              : 3,
+        ),
         showCloseIcon: checkpoint != null,
       ),
     );

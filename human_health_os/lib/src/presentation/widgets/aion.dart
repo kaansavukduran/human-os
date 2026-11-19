@@ -36,3 +36,29 @@ class AionFigure extends StatelessWidget {
     );
   }
 }
+
+/// One neutral line beside Aion (U031), the same all day: where things are
+/// kept, how a correction works. It never mentions a value, a count or
+/// praise, and it is hidden with Aion.
+class AionLine extends StatelessWidget {
+  const AionLine({super.key, this.day});
+
+  /// The day that picks the line; today when null.
+  final DateTime? day;
+
+  @override
+  Widget build(BuildContext context) {
+    final show =
+        (AppearanceScope.maybeOf(context)?.value ?? const AppearanceSettings())
+            .showAion;
+    if (!show) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    return Text(
+      S.of(context).aionLine(day ?? DateTime.now()),
+      key: const ValueKey('aion-line'),
+      style: theme.textTheme.bodyMedium?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+}

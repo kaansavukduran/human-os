@@ -25,6 +25,7 @@ import '../features/timeline/timeline_screen.dart';
 import '../features/today/today_screen.dart';
 import '../l10n/strings.dart';
 import '../presentation/widgets/build_profile_banner.dart';
+import 'destination_switch.dart';
 import 'destinations.dart';
 
 const double kRailBreakpoint = 840;
@@ -74,9 +75,9 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final width = MediaQuery.sizeOf(context).width;
-    final body = KeyedSubtree(
-      key: ValueKey(_current),
-      child: _screenFor(_current),
+    final body = DestinationSwitch(
+      go: _go,
+      child: KeyedSubtree(key: ValueKey(_current), child: _screenFor(_current)),
     );
     final wide = width >= kRailBreakpoint;
 

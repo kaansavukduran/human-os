@@ -7,6 +7,9 @@ import '../../l10n/strings.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/aion.dart';
 import '../../presentation/widgets/read_failed_note.dart';
+import '../../presentation/widgets/area_intro.dart';
+import '../../presentation/widgets/loading_line.dart';
+import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
 /// Medicines and supplements (F008): what the person uses, how it is meant
@@ -120,18 +123,16 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final text = Theme.of(context).textTheme;
     final items = _items;
     return ListView(
       key: const ValueKey('screen-medications'),
       padding: const EdgeInsets.all(16),
       children: [
-        Semantics(
-          header: true,
-          child: Text(s.medsTitle, style: text.headlineSmall),
+        AreaIntro(
+          area: DestinationId.medications,
+          title: s.medsTitle,
+          what: s.medsIntro,
         ),
-        const SizedBox(height: 8),
-        Text(s.medsIntro, style: text.bodyMedium),
         const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerLeft,
@@ -146,7 +147,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
         if (_readFailed)
           ReadFailedNote(id: 'meds', onRetry: _retry)
         else if (items == null)
-          const Center(child: CircularProgressIndicator())
+          const LoadingLine()
         else if (items.isEmpty)
           Row(
             children: [

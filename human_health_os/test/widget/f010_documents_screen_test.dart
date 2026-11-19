@@ -232,6 +232,9 @@ void main() {
           )
           .first,
     );
+    // The area's introduction sits above the button now (U031).
+    await tester.ensureVisible(find.byKey(const ValueKey('doc-add')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('doc-add')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('doc-save')), findsOneWidget);

@@ -64,6 +64,8 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
                 alignment: Alignment.centerLeft,
                 child: AionFigure(height: 140),
               ),
+              const SizedBox(height: 8),
+              const AionLine(),
               const SizedBox(height: 12),
             ],
             // Step and title are announced together when the step changes.

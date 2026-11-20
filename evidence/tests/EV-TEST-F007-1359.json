@@ -1,0 +1,55 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-TEST-F007-1359",
+  "kind": "TEST",
+  "forge_id": "U034@v0.32",
+  "source_revision": "18c90af9c5b3ad3dbb6e458ca09becd1eda13262",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "env TZ=UTC flutter test",
+  "argv": [
+    "env",
+    "TZ=UTC",
+    "flutter",
+    "test"
+  ],
+  "cwd": "human_health_os",
+  "started_at": "2026-11-20T07:46:35.963Z",
+  "finished_at": "2026-11-20T07:53:33.014Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.4",
+    "python": "Python 3.13.18"
+  },
+  "host": "Linux 6.18.44-fc-v726 x86_64",
+  "summary": "06:52 +1258 ~1: All tests passed!",
+  "log_sha256": "da46f1c502e9d09a2467796d009f50411dcf731afe467f3a11387cc4efa2a522",
+  "log_lines": 1372,
+  "log_tail": [
+    "06:50 +1247 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds no Add action above the list during the first read, so it never jumps into the first step (R023)",
+    "06:50 +1248 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds Add focused by keyboard in the empty state keeps focus after the first save moves it above the list (R023)",
+    "06:50 +1249 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds a failed read is said in words with Try again; nothing else is shown as empty",
+    "06:50 +1250 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds a failed read is said in words with Try again; nothing else is shown as empty",
+    "06:50 +1251 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds a failed read is said in words with Try again; nothing else is shown as empty",
+    "06:50 +1252 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds a failed read is said in words with Try again; nothing else is shown as empty",
+    "06:50 +1253 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds a failed read is said in words with Try again; nothing else is shown as empty",
+    "06:50 +1254 ~1: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: vault, records, wrong keys, tampering, backups and refused restores print nothing sensitive",
+    "06:51 +1255 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (en)",
+    "06:51 +1256 ~1: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: a failing vault store: the gate and the log show only the error type",
+    "06:51 +1257 ~1: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: a failing vault store: the gate and the log show only the error type",
+    "06:52 +1258 ~1: All tests passed!"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os"
+  ]
+}

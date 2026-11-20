@@ -1,0 +1,72 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-RUNTIME-F007-1267",
+  "kind": "RUNTIME",
+  "forge_id": "R022@v0.32",
+  "source_revision": "e6cc1d7103da25901c5f8d21680670e5838795b6",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "env EXPECT_FLUTTER_VERSION=3.47.6 node tools/flutter_web_smoke.mjs",
+  "argv": [
+    "env",
+    "EXPECT_FLUTTER_VERSION=3.47.6",
+    "node",
+    "tools/flutter_web_smoke.mjs"
+  ],
+  "cwd": ".",
+  "started_at": "2026-11-20T03:24:55.998Z",
+  "finished_at": "2026-11-20T03:29:42.153Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.4",
+    "python": "Python 3.13.18"
+  },
+  "host": "Linux 6.18.44-fc-v726 x86_64",
+  "summary": "PASS  phone-tr: no failed requests",
+  "log_sha256": "c08b2f50d682f6cce66df5268f252dec94b7c3c2084741e69cb193aa7b3c1d3b",
+  "log_lines": 143,
+  "log_tail": [
+    "PASS  phone-tr: opens Durumlar from the more areas",
+    "PASS  phone-tr: Durumlar empty state says nothing recorded",
+    "PASS  phone-tr: opens Koruyucu from the more areas",
+    "PASS  phone-tr: Koruyucu empty state says nothing recorded",
+    "PASS  phone-tr: opens Belgeler from the more areas",
+    "PASS  phone-tr: Belgeler empty state says nothing recorded",
+    "PASS  phone-tr: Today shows the Uyku card",
+    "PASS  phone-tr: Today shows the Nas\u0131l hissediyorsun card",
+    "PASS  phone-tr: no external network requests",
+    "PASS  phone-tr: no page errors",
+    "PASS  phone-tr: no console errors",
+    "PASS  phone-tr: no failed requests"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os",
+    "tools/flutter_web_smoke.mjs"
+  ],
+  "target": "web",
+  "profile": "development",
+  "artifacts": [
+    {
+      "path": "/home/user/claudereponewscience/human_health_os/build/web/main.dart.js",
+      "type": "file",
+      "bytes": 3924416,
+      "sha256": "c33cdde1ef2242a7ac81603d8f59196ad986c1a4d410727916080b227192fd00"
+    },
+    {
+      "path": "/home/user/claudereponewscience/reports/runtime/flutter_web_smoke_e6cc1d7103da.json",
+      "type": "file",
+      "bytes": 18137,
+      "sha256": "7020f4116de02f31304a1b6e6df50ea5f4330e80eb9a3aad6837b17a13e05ee1"
+    }
+  ]
+}

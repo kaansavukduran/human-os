@@ -1,0 +1,48 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-TEST-F007-1210",
+  "kind": "TEST",
+  "forge_id": "L001@v0.32",
+  "source_revision": "d788e29be20037c7fd125c5b66f503d7bccd3118",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "dart format --set-exit-if-changed .",
+  "argv": [
+    "dart",
+    "format",
+    "--set-exit-if-changed",
+    "."
+  ],
+  "cwd": "human_health_os",
+  "started_at": "2026-11-19T23:54:33.138Z",
+  "finished_at": "2026-11-19T23:54:34.255Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.4",
+    "python": "Python 3.13.18"
+  },
+  "host": "Linux 6.18.44-fc-v653 x86_64",
+  "summary": "Formatted 248 files (0 changed) in 1.05 seconds.",
+  "log_sha256": "a6a513e8b823549ed3f496857074580c38e371ec2b135041cfe89fe8c517b8e6",
+  "log_lines": 5,
+  "log_tail": [
+    "   Woah! You appear to be trying to run flutter as root.",
+    "   We strongly recommend running the flutter tool without superuser privileges.",
+    "  /",
+    "\ud83d\udcce",
+    "Formatted 248 files (0 changed) in 1.05 seconds."
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os"
+  ]
+}

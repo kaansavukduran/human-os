@@ -24,7 +24,9 @@ abstract interface class RecordArea {
 /// so (LoadingLine); a failed read is said in words with Try again
 /// (ReadFailedNote); with no entries the first step is the only empty
 /// state: Aion, one sentence and the Add action inside it. With entries the
-/// Add action sits above the list.
+/// Add action sits above the list; it is one element in both places, so it
+/// keeps keyboard focus after the first save. Until the first read is done
+/// there is no Add action.
 ///
 /// Keys, from [id]: `<id>-add`, `<id>-empty`, `<id>-none` (the sentence),
 /// `<id>-read-failed` and `<id>-try-again`. The screen key is [key].
@@ -71,6 +73,10 @@ class _RecordAreaScreenState<T> extends State<RecordAreaScreen<T>>
   List<T>? _entries;
   bool _readFailed = false;
 
+  /// Keeps the one Add element (and its focus) when it moves from the first
+  /// step to above the list after the first save (R023).
+  final _addKey = GlobalKey(debugLabel: 'record-area-add');
+
   @override
   void initState() {
     super.initState();
@@ -116,11 +122,14 @@ class _RecordAreaScreenState<T> extends State<RecordAreaScreen<T>>
     final entries = _entries;
     final shown = _readFailed ? null : entries;
     final empty = !_readFailed && entries != null && entries.isEmpty;
-    final add = FilledButton.icon(
-      key: ValueKey('${w.id}-add'),
-      onPressed: () => openSheet(w.addSheet),
-      icon: const Icon(Icons.add),
-      label: Text(w.addLabel),
+    final add = KeyedSubtree(
+      key: _addKey,
+      child: FilledButton.icon(
+        key: ValueKey('${w.id}-add'),
+        onPressed: () => openSheet(w.addSheet),
+        icon: const Icon(Icons.add),
+        label: Text(w.addLabel),
+      ),
     );
     return EntryList(
       itemCount: shown?.length ?? 0,
@@ -129,8 +138,10 @@ class _RecordAreaScreenState<T> extends State<RecordAreaScreen<T>>
         AreaIntro(area: w.area, title: w.title, what: w.what),
         const SizedBox(height: 16),
         // One Add action on the screen: in the first step when there is
-        // nothing yet, otherwise here, above the list.
-        if (!empty) ...[
+        // nothing yet, otherwise here, above the list. Not shown until the
+        // first read is done, so it never jumps from here into the first
+        // step (R023).
+        if (entries != null && !empty) ...[
           Align(alignment: Alignment.centerLeft, child: add),
           const SizedBox(height: 16),
         ],

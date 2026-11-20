@@ -5,6 +5,7 @@
 // Add moves above the list; a failed read is said in words with Try again;
 // a 320 dp window at twice the text size fits, EN and TR.
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:human_health_os/src/app/app_services.dart';
@@ -187,6 +188,62 @@ void main() {
           lessThan(tester.getTopLeft(find.textContaining('First entry')).dy),
         );
         expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('no Add action above the list during the first read, so '
+          'it never jumps into the first step (R023)', (tester) async {
+        final (s, _) = await boot(tester);
+        await tester.pumpWidget(host(a.build(s)));
+        expect(find.byKey(const ValueKey('loading-line')), findsOneWidget);
+        expect(find.byKey(ValueKey('${a.id}-add')), findsNothing);
+        expect(find.byType(FilledButton), findsNothing);
+        await settle(tester);
+        expect(
+          find.descendant(
+            of: find.byKey(ValueKey('${a.id}-empty')),
+            matching: find.byKey(ValueKey('${a.id}-add')),
+          ),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('Add focused by keyboard in the empty state keeps focus '
+          'after the first save moves it above the list (R023)', (
+        tester,
+      ) async {
+        final (s, _) = await boot(tester);
+        await tester.pumpWidget(host(a.build(s)));
+        await settle(tester);
+        final add = find.byKey(ValueKey('${a.id}-add'));
+        bool addFocused() {
+          final ctx = FocusManager.instance.primaryFocus?.context;
+          if (ctx == null) return false;
+          return find
+              .descendant(
+                of: add,
+                matching: find.byElementPredicate((e) => e == ctx),
+              )
+              .evaluate()
+              .isNotEmpty;
+        }
+
+        for (var i = 0; i < 30 && !addFocused(); i++) {
+          await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+          await tester.pump();
+        }
+        expect(addFocused(), isTrue, reason: 'Tab reaches Add');
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        expect(find.byKey(ValueKey(a.save)), findsOneWidget, reason: 'sheet');
+        await tester.enterText(find.byKey(ValueKey(a.field)), 'Kept focus');
+        await tester.pump();
+        await tapKey(tester, a.save);
+        await settle(tester);
+
+        expect(find.byKey(ValueKey(a.save)), findsNothing, reason: 'closed');
+        expect(find.byKey(ValueKey('${a.id}-empty')), findsNothing);
+        expect(add, findsOneWidget);
+        expect(addFocused(), isTrue, reason: 'Add keeps keyboard focus');
       });
 
       testWidgets('a failed read is said in words with Try again; nothing '

@@ -133,9 +133,10 @@ const List<Destination> destinations = [
     // this purpose; it is planned with the deterministic engines (F011).
     plannedForge: null,
     // Plain words for: reference interval ≠ optimal target ≠ decision limit;
-    // out of range ≠ critical (U033).
-    principleEn: 'A reference range is not a target to aim for, and not a limit for a medical decision. A result outside the range is not an emergency.',
-    principleTr: 'Referans aralığı ulaşılacak bir hedef değildir, tıbbi bir karar sınırı da değildir. Aralığın dışında kalan bir sonuç acil durum demek değildir.',
+    // outside reference ≠ critical: not automatically critical, never "never
+    // an emergency" (a critical value is outside the range too; R023).
+    principleEn: 'A reference range describes a reference group; it is not necessarily the best value for you, and not a limit for a medical decision. A result outside the range is not, by itself, an emergency.',
+    principleTr: 'Referans aralığı bir referans grubunu tanımlar; senin için en iyi değer olmak zorunda değildir, tıbbi bir karar sınırı da değildir. Aralığın dışında kalan bir sonuç tek başına acil durum demek değildir.',
     canDoEn: 'Type a result from your lab report, then correct it later if you typed it wrong.',
     canDoTr:
         'Tahlil raporundaki bir sonucu yaz; yanlış yazdıysan sonra düzelt.',

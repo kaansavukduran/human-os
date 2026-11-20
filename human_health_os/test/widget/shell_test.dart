@@ -92,9 +92,31 @@ void main() {
     expect(find.byKey(const ValueKey('screen-labs')), findsOneWidget);
     expect(find.byKey(const ValueKey('screen-today')), findsNothing);
     expect(
-      find.textContaining('A reference range is not a target to aim for'),
+      find.textContaining('A reference range describes a reference group'),
       findsOneWidget,
     );
+  });
+
+  // R023: outside reference ≠ critical means "not automatically critical";
+  // a critical value is outside the range too, so the promise never says a
+  // result outside the range is never an emergency.
+  test('the Labs promise says outside the range is not, by itself, an '
+      'emergency (EN/TR exact)', () {
+    final labs = destinations.firstWhere((d) => d.id == DestinationId.labs);
+    expect(
+      labs.principleEn,
+      'A reference range describes a reference group; it is not necessarily '
+      'the best value for you, and not a limit for a medical decision. A '
+      'result outside the range is not, by itself, an emergency.',
+    );
+    expect(
+      labs.principleTr,
+      'Referans aralığı bir referans grubunu tanımlar; senin için en iyi '
+      'değer olmak zorunda değildir, tıbbi bir karar sınırı da değildir. '
+      'Aralığın dışında kalan bir sonuç tek başına acil durum demek değildir.',
+    );
+    expect(labs.principleEn, isNot(contains('is not an emergency')));
+    expect(labs.principleTr, contains('tek başına'));
   });
 
   testWidgets('desktop: navigate Today → Labs via rail', (tester) async {
@@ -132,6 +154,18 @@ void main() {
     await visit(tester, 'Labs');
     expect(find.byKey(const ValueKey('screen-labs')), findsOneWidget);
     expect(find.byKey(const ValueKey('screen-timeline')), findsNothing);
+    // The header is lazy (U031-S4); on a phone the longer promise (R023)
+    // can put the note just past the first build.
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('labs-no-interpretation')),
+      100,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('screen-labs')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     expect(
       find.byKey(const ValueKey('labs-no-interpretation')),
       findsOneWidget,

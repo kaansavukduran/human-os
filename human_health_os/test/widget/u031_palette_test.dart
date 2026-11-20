@@ -89,6 +89,7 @@ void main() {
         expect(s.surface, tokens.surface);
         expect(s.onSurface, tokens.ink);
         expect(s.outline, tokens.outline);
+        expect(s.onSurfaceVariant, tokens.outline, reason: 'from the tokens');
         expect(s.outlineVariant, tokens.hairline);
         expect(s.primary, tokens.primary);
         expect(s.error, tokens.error);
@@ -102,6 +103,13 @@ void main() {
           'onSurface/card': ratio(s.onSurface, card),
           'outline/surface': ratio(s.outline, s.surface),
           'outline/card': ratio(s.outline, card),
+          'onSurfaceVariant/surface': ratio(s.onSurfaceVariant, s.surface),
+          'onSurfaceVariant/card': ratio(s.onSurfaceVariant, card),
+          'onSurface/containerHigh': ratio(s.onSurface, s.surfaceContainerHigh),
+          'onSurfaceVariant/containerHigh': ratio(
+            s.onSurfaceVariant,
+            s.surfaceContainerHigh,
+          ),
           'primary/surface': ratio(s.primary, s.surface),
           'onPrimary/primary': ratio(s.onPrimary, s.primary),
           'ink/primaryContainer': ratio(
@@ -127,6 +135,51 @@ void main() {
     // Measured numbers for the report.
     // ignore: avoid_print
     print({for (final e in mins.entries) e.key: e.value.toStringAsFixed(2)});
+  });
+
+  test('Standard light and dark (every accent, normal and high contrast) '
+      'take secondary text from the tokens and meet WCAG AA (A001)', () {
+    for (final b in Brightness.values) {
+      for (final a in AccentChoice.values) {
+        for (final hc in [false, true]) {
+          final theme = buildHumanOsTheme(b, accentChoice: a, highContrast: hc);
+          final s = theme.colorScheme;
+          final card = theme.cardTheme.color!;
+          final tokens = standardTokens(b, a, highContrast: hc);
+          expect(s.onSurfaceVariant, tokens.outline, reason: '$b $a hc=$hc');
+          final text = {
+            'onSurface/surface': ratio(s.onSurface, s.surface),
+            'onSurface/card': ratio(s.onSurface, card),
+            'onSurface/containerHigh': ratio(
+              s.onSurface,
+              s.surfaceContainerHigh,
+            ),
+            'outline/surface': ratio(s.outline, s.surface),
+            'outline/card': ratio(s.outline, card),
+            'onSurfaceVariant/surface': ratio(s.onSurfaceVariant, s.surface),
+            'onSurfaceVariant/card': ratio(s.onSurfaceVariant, card),
+            'onSurfaceVariant/containerHigh': ratio(
+              s.onSurfaceVariant,
+              s.surfaceContainerHigh,
+            ),
+            'primary/surface': ratio(s.primary, s.surface),
+            'primary/card': ratio(s.primary, card),
+            'onPrimary/primary': ratio(s.onPrimary, s.primary),
+            'ink/primaryContainer': ratio(
+              s.onPrimaryContainer,
+              s.primaryContainer,
+            ),
+          };
+          for (final e in text.entries) {
+            expect(
+              e.value,
+              greaterThanOrEqualTo(4.5),
+              reason: '$b $a hc=$hc ${e.key}',
+            );
+          }
+        }
+      }
+    }
   });
 
   testWidgets('Matrix makes the app dark and keeps the saved theme and '

@@ -117,7 +117,7 @@ PaletteTokens standardTokens(
         : (dark ? const Color(0xFFE6EEEE) : const Color(0xFF1B2B2E)),
     outline: highContrast
         ? (dark ? const Color(0xFFD5E0E1) : const Color(0xFF2C3A3C))
-        : (dark ? const Color(0xFF8AA0A3) : const Color(0xFF5E7275)),
+        : (dark ? const Color(0xFF8AA0A3) : const Color(0xFF5A6D70)),
     primary: dark ? tones.$2 : tones.$1,
     onPrimary: dark ? const Color(0xFF06292D) : Colors.white,
     // Field boundaries need 3:1 against the surface (WCAG 1.4.11).
@@ -186,6 +186,9 @@ ThemeData buildHumanOsTheme(
             : const Color(0xFF0E3A40)),
     surface: surface,
     onSurface: ink,
+    // Secondary text (labels, helper lines) comes from the palette's muted
+    // token, never from the seed: at least 4.5:1 on surface and card (A001).
+    onSurfaceVariant: t.outline,
     surfaceContainerLowest: card,
     surfaceContainerLow: card,
     surfaceContainer: card,

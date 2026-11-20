@@ -7,9 +7,9 @@
 Name:           human-health-os
 Version:        @VERSION@
 Release:        1
-Summary:        Human OS personal health timeline (staging preview)
+Summary:        Human OS personal health record
 License:        LicenseRef-proprietary
-URL:            https://github.com/kaansavukduran/claudereponewscience
+URL:            https://github.com/kaansavukduran/human-os
 ExclusiveArch:  x86_64
 # The engine dlopens these through libepoxy, so rpm auto-requires miss them (R-15).
 Requires:       libEGL.so.1()(64bit)
@@ -18,10 +18,12 @@ Requires:       libGL.so.1()(64bit)
 Requires:       hicolor-icon-theme
 
 %description
-Offline-first personal health record built with Flutter. This staging
-preview records body weight by hand and keeps entries only until the app
-closes: the encrypted vault is not built yet, so nothing is written to disk.
-Not for clinical decisions. No network access.
+Offline-first personal health record built with Flutter: measurements,
+labs as printed, medicines, sleep, food, activity and more, each with its
+source and history. Development builds keep a clearly labelled unencrypted
+log in your data folder and must not hold real health data; staging and
+production builds keep everything in an encrypted vault that opens with your
+passphrase. Not for clinical decisions. No network access.
 
 %install
 mkdir -p %{buildroot}

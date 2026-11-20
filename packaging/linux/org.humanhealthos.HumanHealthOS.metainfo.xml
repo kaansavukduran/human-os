@@ -8,23 +8,23 @@
   <summary xml:lang="tr">Çevrimdışı çalışan kişisel sağlık zaman çizelgesi</summary>
   <description>
     <p>
-      Human OS keeps health records on one timeline with their source. This is a
-      staging preview: it records body weight by hand, keeps entries only until the
-      app closes (the encrypted vault is not built yet) and is not for clinical decisions.
+      Human OS keeps health records on one timeline with their source. Development builds keep a
+      labelled unencrypted log and must not hold real health data; staging and production
+      builds keep everything in an encrypted vault. It is not for clinical decisions.
     </p>
     <p>
       It never sends data over the network and never stores a missing value as zero.
     </p>
     <p xml:lang="tr">
       Human OS sağlık kayıtlarını kaynaklarıyla birlikte tek bir zaman çizelgesinde tutar.
-      Bu bir test önizlemesidir: vücut ağırlığını elle kaydeder, kayıtları yalnız uygulama
-      kapanana kadar tutar (şifreli kasa henüz yok) ve klinik karar için değildir.
+      Geliştirme sürümleri etiketli, şifresiz bir kayıt dosyası tutar ve gerçek sağlık verisi
+      için değildir; test ve yayın sürümleri her şeyi şifreli bir kasada tutar. Klinik karar için değildir.
     </p>
     <p xml:lang="tr">
       Verileri asla ağ üzerinden göndermez ve eksik bir değeri asla sıfır olarak saklamaz.
     </p>
   </description>
-  <url type="homepage">https://github.com/kaansavukduran/claudereponewscience</url>
+  <url type="homepage">https://github.com/kaansavukduran/human-os</url>
   <launchable type="desktop-id">org.humanhealthos.HumanHealthOS.desktop</launchable>
   <developer id="org.humanhealthos">
     <name>Human OS project</name>

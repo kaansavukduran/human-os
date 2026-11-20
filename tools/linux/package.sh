@@ -50,7 +50,7 @@ if command -v dpkg-deb >/dev/null; then
   install_desktop_files "$R" /usr
   install -m644 "$P/deb/copyright" "$R/usr/share/doc/human-health-os/copyright"
   # Native package: the changelog is changelog.gz (lintian).
-  printf 'human-health-os (%s) unstable; urgency=low\n\n  * Staging preview from %s.\n\n -- Human OS project <noreply@humanhealthos.invalid>  %s\n' \
+  printf 'human-health-os (%s) unstable; urgency=low\n\n  * Build from %s.\n\n -- Human OS project <noreply@humanhealthos.invalid>  %s\n' \
     "$VERSION" "${REV:0:12}" "$(date -u -R -d "@$EPOCH")" | gzip -9n > "$R/usr/share/doc/human-health-os/changelog.gz"
   SIZE=$(du -sk --exclude=DEBIAN "$R" | cut -f1)
   sed -e "s/@VERSION@/$VERSION/" -e "s/@INSTALLED_SIZE@/$SIZE/" "$P/deb/control.in" > "$R/DEBIAN/control"

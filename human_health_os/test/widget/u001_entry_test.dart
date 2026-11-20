@@ -56,16 +56,33 @@ void main() {
   testWidgets('time chips fill When; "Now" empties it; the stored time is '
       'the chosen one', (tester) async {
     await launch(tester);
-    await openSheet(tester, RecordKind.height);
-    await tapKey(tester, 'measure-more');
     String two(int n) => n.toString().padLeft(2, '0');
     String stamp(DateTime d) =>
         '${d.year}-${two(d.month)}-${two(d.day)} ${two(d.hour)}:${two(d.minute)}';
-    // The clock may pass a minute while the chip is tapped: either minute.
-    final before = stamp(DateTime.now().subtract(const Duration(hours: 1)));
+    // The chips work out their times when the sheet is built, so the window
+    // starts before the sheet opens: on a busy machine the clock can pass a
+    // minute between building the sheet and tapping the chip.
+    final hourAgo = DateTime.now().subtract(const Duration(hours: 1));
+    final before = DateTime(
+      hourAgo.year,
+      hourAgo.month,
+      hourAgo.day,
+      hourAgo.hour,
+      hourAgo.minute,
+    );
+    await openSheet(tester, RecordKind.height);
+    await tapKey(tester, 'measure-more');
     await tapKey(tester, 'measure-preset-1 hour ago');
-    final after = stamp(DateTime.now().subtract(const Duration(hours: 1)));
-    expect([before, after], contains(whenText(tester)));
+    final after = DateTime.now().subtract(const Duration(hours: 1));
+    final allowed = <String>{
+      for (
+        var m = before;
+        !m.isAfter(after);
+        m = m.add(const Duration(minutes: 1))
+      )
+        stamp(m),
+    };
+    expect(allowed, contains(whenText(tester)));
     await tapKey(tester, 'measure-preset-Now');
     expect(whenText(tester), '');
     await tapKey(tester, 'measure-preset-Yesterday 20:00');

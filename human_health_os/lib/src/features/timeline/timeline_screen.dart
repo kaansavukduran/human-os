@@ -16,6 +16,7 @@ import '../../presentation/widgets/entry_list.dart';
 import '../../presentation/widgets/first_step.dart';
 import '../../presentation/widgets/loading_line.dart';
 import '../../presentation/widgets/read_failed_note.dart';
+import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/status_chip.dart';
 
 /// Timeline (ladder F003): every fact once, newest first, with its versions.
@@ -193,6 +194,15 @@ String recordTitle(S s, HealthRecord r) =>
 String fmtWhen(DateTime utc) =>
     formatWhenShown(utc.toLocal(), displayDateOrder, displayClock);
 
+/// "time corrected from … to …" when [v] is a measurement correction whose
+/// time differs from the version it corrects (G-48); null otherwise.
+String? timeCorrectedLine(S s, HealthRecord v, Map<String, HealthRecord> byId) {
+  if (!v.kind.isMeasurement || isAmendMarker(v)) return null;
+  final prev = byId[v.supersedesId];
+  if (prev == null || prev.observedAt == v.observedAt) return null;
+  return s.timeCorrected(fmtWhen(prev.observedAt), fmtWhen(v.observedAt));
+}
+
 class _EntryTile extends StatelessWidget {
   const _EntryTile({super.key, required this.entry, required this.onTap});
 
@@ -303,6 +313,7 @@ class _EntryDetailState extends State<_EntryDetail> {
   final _systolic = TextEditingController();
   final _diastolic = TextEditingController();
   final _context = TextEditingController();
+  final _when = TextEditingController();
   String? _correcting;
   String? _errorCode;
   String? _errorField;
@@ -314,6 +325,7 @@ class _EntryDetailState extends State<_EntryDetail> {
     _systolic.dispose();
     _diastolic.dispose();
     _context.dispose();
+    _when.dispose();
     super.dispose();
   }
 
@@ -327,6 +339,21 @@ class _EntryDetailState extends State<_EntryDetail> {
     // The note belongs to the observation; a correction keeps it unless
     // the person changes it.
     _context.text = head.context ?? '';
+    if (head.kind.isMeasurement) {
+      // A measurement opens as stored (G-48): its value as typed and its
+      // time, so a wrong time alone can be put right. The same text saved
+      // back keeps the stored instant; "not measured" opens empty.
+      _when.text = typedLocal(head.observedAt);
+      final d = head.details;
+      if (head.valueStatus == ValueStatus.present) {
+        if (d is BloodPressureDetails) {
+          _systolic.text = d.systolicText ?? fmtMeasured(d.systolic, null);
+          _diastolic.text = d.diastolicText ?? fmtMeasured(d.diastolic, null);
+        } else if (head.quantity case final q?) {
+          _controller.text = head.originalText ?? fmtMeasured(q.value, null);
+        }
+      }
+    }
   });
 
   /// An error without a field of its own shows on the form's first field.
@@ -377,8 +404,36 @@ class _EntryDetailState extends State<_EntryDetail> {
     ),
   );
 
+  /// When the measurement was taken (G-48): quick picks and the field,
+  /// opened with the stored time.
+  List<Widget> _whenFields(S s, HealthRecord head) {
+    final now = DateTime.now();
+    return [
+      TimePicks(
+        keyPrefix: 'correct-when',
+        controller: _when,
+        picks: [
+          (s.presetKeepTime, typedLocal(head.observedAt), true),
+          // "Now" as a time: an empty field keeps the stored time here.
+          (s.presetNow, typedWall(now), true),
+          ...TimePicks.recent(s, now: now).skip(1),
+        ],
+      ),
+      _correctField(
+        s,
+        _when,
+        s.correctWhenField,
+        'correct-input-when',
+        'when',
+        number: false,
+        helper: s.correctWhenHint,
+      ),
+    ];
+  }
+
   /// The correction form of [head]'s kind: one number for body weight and
-  /// scalar measurements, two for blood pressure, plus the note.
+  /// scalar measurements, two for blood pressure, plus the note and, for a
+  /// measurement, its time.
   List<Widget> _correctionFields(S s, HealthRecord head) {
     final helper = s.amendExplain(AmendReason.correction);
     if (head.kind == RecordKind.bloodPressure) {
@@ -407,6 +462,7 @@ class _EntryDetailState extends State<_EntryDetail> {
           'context',
           number: false,
         ),
+        ..._whenFields(s, head),
       ];
     }
     return [
@@ -419,7 +475,7 @@ class _EntryDetailState extends State<_EntryDetail> {
         autofocus: true,
         helper: helper,
       ),
-      if (head.kind.isMeasurement)
+      if (head.kind.isMeasurement) ...[
         _correctField(
           s,
           _context,
@@ -428,6 +484,8 @@ class _EntryDetailState extends State<_EntryDetail> {
           'context',
           number: false,
         ),
+        ..._whenFields(s, head),
+      ],
     ];
   }
 
@@ -441,6 +499,7 @@ class _EntryDetailState extends State<_EntryDetail> {
               systolic: _systolic.text,
               diastolic: _diastolic.text,
               context: _context.text,
+              when: _when.text,
             ),
           )
         : widget.svc.correctWeightKg(
@@ -511,6 +570,7 @@ class _EntryDetailState extends State<_EntryDetail> {
     final text = Theme.of(context).textTheme;
     final e = widget.entry;
     final headIds = {for (final h in e.heads) h.id};
+    final byId = {for (final v in e.versions) v.id: v};
     return SafeArea(
       child: SingleChildScrollView(
         key: const ValueKey('timeline-detail'),
@@ -546,6 +606,9 @@ class _EntryDetailState extends State<_EntryDetail> {
                     if (v.kind.isMeasurement &&
                         savedWhenDifferent(v, fmtWhen) != null)
                       s.measuredAtLabel(fmtWhen(v.observedAt)),
+                    // A correction that moved the time says from what to
+                    // what (G-48); the earlier version keeps its own time.
+                    ?timeCorrectedLine(s, v, byId),
                     '${s.enteredOn} ${fmtWhen(v.recordedAt)}',
                     s.provenanceKind(v.provenance.kind),
                     if (v.kind.isMeasurement) ...[

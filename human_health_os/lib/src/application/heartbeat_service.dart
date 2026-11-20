@@ -105,6 +105,7 @@ class MeasurementInput {
     this.diastolic = '',
     this.context = '',
     this.when = '',
+    this.notMeasured = false,
   });
 
   final String value;
@@ -112,9 +113,26 @@ class MeasurementInput {
   final String diastolic;
   final String context;
 
-  /// The time typed in the "When" field; blank means the save time.
+  /// The time typed in the "When" field. Blank means the save time for a
+  /// new entry and the unchanged time for a correction (G-48, D-047).
   final String when;
+
+  /// "I did not measure this" (D-047): saved as `notMeasured` with no
+  /// number, never as zero. Only for [notMeasuredKinds], never a correction.
+  final bool notMeasured;
 }
+
+/// The kinds for which "I did not measure this" is offered (D-047): the
+/// vital signs a person checks on a routine (a daily blood pressure), where
+/// a missed reading is itself worth keeping. Waist and height are measured
+/// now and then, so a "not measured" entry for them would say nothing.
+const Set<RecordKind> notMeasuredKinds = {
+  RecordKind.bloodPressure,
+  RecordKind.restingHeartRate,
+  RecordKind.bodyTemperature,
+  RecordKind.oxygenSaturation,
+  RecordKind.respiratoryRate,
+};
 
 /// Like [parseDecimal], but refuses a value whose separator could be a
 /// thousands separator ("150,000", "7.500", "250.000"): guessing would store
@@ -708,11 +726,31 @@ class HeartbeatService {
     return v;
   }
 
+  /// The observation time of a correction of [target] (G-48, D-047). The
+  /// field opens with the stored time as typed; blank or that same text
+  /// keeps the stored instant exactly (also one inside a repeated
+  /// clock-change hour, or with seconds from a save time). Any other text
+  /// is a new time under the usual entry rules: a future, skipped or
+  /// repeated time is refused on the `when` field and nothing is written.
+  DateTime _correctedTime(
+    HealthRecord target,
+    String raw,
+    DateTime now,
+    LocalZone zone,
+  ) {
+    final text = raw.trim();
+    if (text.isEmpty || text == typedInZone(target.observedAt, zone)) {
+      return target.observedAt;
+    }
+    return parseMeasuredAt(text, nowUtc: now, zone: zone)!;
+  }
+
   HealthRecord _measurementRecord(
     String profileId,
     RecordKind kind,
     MeasurementInput input, {
     HealthRecord? target,
+    LocalZone zone = const SystemLocalZone(),
   }) {
     if (!kind.isMeasurement) throw ArgumentError.value(kind, 'kind');
     final context = input.context.trim();
@@ -722,7 +760,23 @@ class HeartbeatService {
     Quantity? quantity;
     String? originalText;
     BloodPressureDetails? details;
-    if (kind.isStructured) {
+    if (input.notMeasured) {
+      // Missing ≠ zero: a "not measured" entry holds no number at all.
+      // A correction says what the value was; withdrawing a reading is
+      // "entered in error", never a "not measured" version.
+      if (target != null || !notMeasuredKinds.contains(kind)) {
+        throw const InputError('NOT_MEASURED_NOT_OFFERED');
+      }
+      final typed = kind.isStructured
+          ? [input.systolic, input.diastolic]
+          : [input.value];
+      if (typed.any((t) => t.trim().isNotEmpty)) {
+        throw InputError(
+          'NOT_MEASURED_WITH_VALUE',
+          kind.isStructured ? 'systolic' : 'value',
+        );
+      }
+    } else if (kind.isStructured) {
       final systolic = _measurementNumber(input.systolic, 'systolic');
       final diastolic = _measurementNumber(input.diastolic, 'diastolic');
       // Checked at entry only: the upper number is larger by definition, so
@@ -746,18 +800,31 @@ class HeartbeatService {
       originalText = input.value.trim();
     }
     final now = clock.nowUtc();
-    // A correction is the same observation and keeps its time (a time typed
-    // for it is not read); a new entry takes the typed time, or the save
-    // time. Resolved once, before the record is built.
+    // A correction keeps the stored time unless a different one is typed
+    // (G-48); a new entry takes the typed time, or the save time. Resolved
+    // once, before the record is built.
     final observedAt = target != null
-        ? target.observedAt
-        : parseMeasuredAt(input.when, nowUtc: now) ?? now;
+        ? _correctedTime(target, input.when, now, zone)
+        : parseMeasuredAt(input.when, nowUtc: now, zone: zone) ?? now;
+    final ctx = context.isEmpty ? null : context;
+    // A correction that changes nothing would only add an empty version.
+    if (target != null &&
+        target.valueStatus == ValueStatus.present &&
+        target.quantity == quantity &&
+        target.originalText == originalText &&
+        target.details == details &&
+        target.context == ctx &&
+        target.observedAt == observedAt) {
+      throw const InputError('NO_CHANGE');
+    }
     return HealthRecord(
       id: _ids.newId(),
       profileId: profileId,
       kind: kind,
       state: RecordState.observed,
-      valueStatus: ValueStatus.present,
+      valueStatus: input.notMeasured
+          ? ValueStatus.notMeasured
+          : ValueStatus.present,
       quantity: quantity,
       originalText: originalText,
       provenance: const Provenance.manual(),
@@ -765,30 +832,35 @@ class HeartbeatService {
       recordedAt: now,
       supersedesId: target?.id,
       amendReason: target == null ? null : AmendReason.correction,
-      context: context.isEmpty ? null : context,
+      context: ctx,
       details: details,
       schemaVersion: HealthRecord.writeSchemaFor(kind),
     );
   }
 
   /// Records a measurement typed by hand as an OBSERVED, manual fact at the
-  /// moment it is saved. Nothing is derived, averaged or judged.
+  /// typed time or the moment it is saved, or "not measured" with no
+  /// number (D-047). Nothing is derived, averaged or judged.
   Future<HealthRecord> recordMeasurement({
     required String profileId,
     required RecordKind kind,
     required MeasurementInput input,
+    LocalZone zone = const SystemLocalZone(),
   }) async {
-    final record = _measurementRecord(profileId, kind, input);
+    final record = _measurementRecord(profileId, kind, input, zone: zone);
     await repository.appendRecord(record);
     return record;
   }
 
-  /// A better value for the same measurement (new version, same kind and
-  /// time). Another kind's record is refused.
+  /// A better value, note or time for the same measurement: a new version
+  /// of the same kind whose `supersedes_id` names the version it corrects;
+  /// that version stays in history byte for byte. The time stays unless a
+  /// different one is typed (G-48, D-047). Another kind's record is refused.
   Future<HealthRecord> correctMeasurement({
     required String profileId,
     required String targetId,
     required MeasurementInput input,
+    LocalZone zone = const SystemLocalZone(),
   }) async {
     final target = await _currentTarget(profileId, targetId);
     if (!target.kind.isMeasurement) {
@@ -799,6 +871,7 @@ class HeartbeatService {
       target.kind,
       input,
       target: target,
+      zone: zone,
     );
     await repository.appendRecord(record);
     return record;

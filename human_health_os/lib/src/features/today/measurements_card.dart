@@ -243,6 +243,16 @@ class _Tile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final entry = latestWithValue(entries);
     final conflict = entry?.status == EntryStatus.conflict;
+    // A newer "I did not measure this" (D-047) is said in words under the
+    // latest value, never as a number and never as zero.
+    final newest = entries.firstOrNull;
+    final missed =
+        newest != null &&
+            newest != entry &&
+            newest.status == EntryStatus.current &&
+            newest.shown.valueStatus == ValueStatus.notMeasured
+        ? s.notMeasuredOn(fmtWhen(newest.shown.observedAt))
+        : null;
     final latest = conflict ? null : entry?.heads.first;
     final code = kind.code;
     final String value;
@@ -267,7 +277,7 @@ class _Tile extends StatelessWidget {
     }
     return Semantics(
       key: ValueKey('measure-latest-$code'),
-      label: '$spoken. ${s.addMeasurement}',
+      label: [spoken, ?missed, s.addMeasurement].join('. '),
       button: true,
       excludeSemantics: true,
       onTap: onAdd,
@@ -316,6 +326,14 @@ class _Tile extends StatelessWidget {
                     style: text.bodyMedium?.copyWith(color: scheme.outline),
                   ),
                 ],
+                if (missed != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    missed,
+                    key: ValueKey('measure-not-measured-$code'),
+                    style: text.bodyMedium?.copyWith(color: scheme.outline),
+                  ),
+                ],
               ],
             ),
           ),
@@ -353,6 +371,10 @@ class _EntrySheetState extends State<_EntrySheet> {
   String? _errorCode;
   String? _errorField;
   bool _busy = false;
+
+  /// "I did not measure this" (D-047): the value fields are hidden (what
+  /// was typed comes back on unticking) and nothing numeric is sent.
+  bool _notMeasured = false;
 
   /// Notes the person typed on earlier measurements, newest first.
   List<String> _notes = const [];
@@ -392,11 +414,12 @@ class _EntrySheetState extends State<_EntrySheet> {
         profileId: widget.services.self.id,
         kind: widget.kind,
         input: MeasurementInput(
-          value: _value.text,
-          systolic: _systolic.text,
-          diastolic: _diastolic.text,
+          value: _notMeasured ? '' : _value.text,
+          systolic: _notMeasured ? '' : _systolic.text,
+          diastolic: _notMeasured ? '' : _diastolic.text,
           context: _context.text,
           when: _when.text,
+          notMeasured: _notMeasured,
         ),
       );
       if (mounted) Navigator.of(context).pop(true);
@@ -546,7 +569,25 @@ class _EntrySheetState extends State<_EntrySheet> {
                   ),
                 ),
               ),
-            if (kind.isStructured) ...[
+            if (notMeasuredKinds.contains(kind))
+              CheckboxListTile(
+                key: const ValueKey('measure-not-measured'),
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                value: _notMeasured,
+                onChanged: _busy
+                    ? null
+                    : (v) => setState(() {
+                        _notMeasured = v ?? false;
+                        _errorCode = null;
+                        _errorField = null;
+                      }),
+                title: Text(s.notMeasuredToggle),
+                subtitle: _notMeasured ? Text(s.notMeasuredHelp) : null,
+              ),
+            if (_notMeasured)
+              const SizedBox.shrink()
+            else if (kind.isStructured) ...[
               _field(
                 s,
                 _systolic,
@@ -573,15 +614,16 @@ class _EntrySheetState extends State<_EntrySheet> {
                 hint: hint,
                 autofocus: true,
               ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                key: const ValueKey('measure-pad-toggle'),
-                onPressed: () => setState(() => _padChoice = !_pad),
-                child: Text(_pad ? s.numberPadHide : s.numberPadShow),
+            if (!_notMeasured)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  key: const ValueKey('measure-pad-toggle'),
+                  onPressed: () => setState(() => _padChoice = !_pad),
+                  child: Text(_pad ? s.numberPadHide : s.numberPadShow),
+                ),
               ),
-            ),
-            if (_pad)
+            if (_pad && !_notMeasured)
               Padding(
                 key: const ValueKey('measure-pad'),
                 padding: const EdgeInsets.only(top: 8),

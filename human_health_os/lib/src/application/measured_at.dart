@@ -101,6 +101,16 @@ class OffsetRuleZone implements LocalZone {
   }
 }
 
+/// [utc] as it would be typed in the "When" field in [zone]:
+/// `YYYY-MM-DD HH:MM` (G-48: a correction opens with this text, and the
+/// same text back keeps the stored instant).
+String typedInZone(DateTime utc, LocalZone zone) {
+  final l = zone.toLocal(utc);
+  String two(int v) => v.toString().padLeft(2, '0');
+  return '${l.year.toString().padLeft(4, '0')}-${two(l.month)}-'
+      '${two(l.day)} ${two(l.hour)}:${two(l.minute)}';
+}
+
 /// How far ahead of the clock a time may be (a clock that runs a little
 /// fast): the same rule as for body weight.
 const Duration futureTolerance = Duration(minutes: 5);

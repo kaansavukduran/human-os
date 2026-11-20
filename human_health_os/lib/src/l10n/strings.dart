@@ -197,6 +197,14 @@ class S {
       'Yatmadan uyanmaya 24 saatten az olmalı; başka bir gündeyse yatma saatine tarih ekle.',
     ),
     'NO_CHANGE' => _t('Nothing to change.', 'Değişecek bir şey yok.'),
+    'NOT_MEASURED_WITH_VALUE' => _t(
+      'Leave the value empty for "not measured", or untick it to save the value.',
+      '"Ölçülmedi" için değeri boş bırak ya da değeri kaydetmek için işareti kaldır.',
+    ),
+    'NOT_MEASURED_NOT_OFFERED' => _t(
+      '"Not measured" cannot be saved here. To take back a reading, use "Entered in error".',
+      '"Ölçülmedi" burada kaydedilemez. Bir ölçümü geri almak için onu "Yanlışlıkla girildi" olarak işaretle.',
+    ),
     'TEXT_TOO_LONG' => _t(
       'This text is too long (at most 300 characters).',
       'Bu metin çok uzun (en çok 300 karakter).',
@@ -1063,6 +1071,26 @@ class S {
     'YYYY-AA-GG SS:DD ya da SS:DD, cihazının saati. Boş = şimdi.',
   );
   String measuredAtLabel(String when) => _t('measured $when', 'ölçüm: $when');
+
+  /// A version whose measured time differs from the version it corrects
+  /// (G-48).
+  String timeCorrected(String from, String to) => _t(
+    'time corrected from $from to $to',
+    'ölçüm zamanı $from yerine $to olarak düzeltildi',
+  );
+  String get correctWhenField => _t('When it was measured', 'Ölçüm zamanı');
+  String get correctWhenHint => _t(
+    'YYYY-MM-DD HH:MM, your device\'s time. Change it only if the reading was taken at another time; the earlier version is kept.',
+    'YYYY-AA-GG SS:DD, cihazının saati. Yalnızca ölçüm başka bir zamanda yapıldıysa değiştir; önceki sürüm saklanır.',
+  );
+  String notMeasuredOn(String when) =>
+      _t('Not measured $when', 'Ölçülmedi: $when');
+  String get presetKeepTime => _t('Keep this time', 'Bu zamanı koru');
+  String get notMeasuredToggle => _t('I did not measure this', 'Bunu ölçmedim');
+  String get notMeasuredHelp => _t(
+    'Saved as "Not measured" at the time under More details (now if empty). It is not a value and never counts as zero.',
+    '"Ölçülmedi" olarak, Daha fazla ayrıntı altındaki zamanla (boşsa şimdi) kaydedilir. Bir değer değildir, asla sıfır sayılmaz.',
+  );
   String savedAtLabel(String when) => _t('saved $when', 'kayıt: $when');
   String get contextField => _t(
     'Note (optional), e.g. sitting, left arm',

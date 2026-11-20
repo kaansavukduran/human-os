@@ -1075,8 +1075,8 @@ void main() {
     });
 
     test(
-      'blank means the save time; a correction keeps the observation and '
-      'ignores a time typed for it; a marker sorts with its target',
+      'blank means the save time; a correction with a different time moves '
+      'the observation there (G-48); a marker sorts with its target',
       () async {
         final (_, _, svc, me) = await fresh();
         final r = await svc.recordMeasurement(
@@ -1098,7 +1098,8 @@ void main() {
             when: '2026-10-08 06:00Z',
           ),
         );
-        expect(fixed.observedAt, DateTime.utc(2026, 10, 1, 6));
+        expect(fixed.observedAt, DateTime.utc(2026, 10, 8, 6));
+        expect(old.observedAt, DateTime.utc(2026, 10, 1, 6));
         final gone = await svc.amend(
           profileId: me,
           targetId: fixed.id,

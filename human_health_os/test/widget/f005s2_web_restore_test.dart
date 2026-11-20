@@ -454,14 +454,16 @@ void main() {
             .first,
       );
       final shown = tester.getRect(find.byKey(const ValueKey('data-message')));
+      // A millionth of a pixel of room for floating-point sums (the one-line
+      // banner above the list has a fractional height: U035).
       expect(
         shown.top,
-        greaterThanOrEqualTo(list.top),
+        greaterThanOrEqualTo(list.top - 1e-6),
         reason: '$shown in $list',
       );
       expect(
         shown.bottom,
-        lessThanOrEqualTo(list.bottom),
+        lessThanOrEqualTo(list.bottom + 1e-6),
         reason: '$shown in $list',
       );
     });

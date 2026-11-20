@@ -96,12 +96,12 @@ class _AppShellState extends State<AppShell> {
           ),
         ],
       ),
-      // The profile banner sits above the content and takes the height its
-      // text needs, so no clause is cut at large text sizes (audit UX-1).
-      // With the on-screen keyboard open the body can be shorter than the
-      // banner needs (320x640, 2x text, Turkish: Q002): the banner then takes
-      // at most 40% of it and scrolls, its full text still read out by its
-      // label, instead of the column overflowing.
+      // The profile banner sits above the content on one line; its whole
+      // sentence is its spoken label, and a tap shows it (audit UX-1, U035).
+      // When it is expanded with the on-screen keyboard open, the body can be
+      // shorter than the banner needs (320x640, 2x text, Turkish: Q002): the
+      // banner then takes at most 40% of it and scrolls, its full text still
+      // read out by its label, instead of the column overflowing.
       body: LayoutBuilder(
         builder: (context, box) {
           final banner = BuildProfileBanner(config: widget.services.config);
@@ -525,7 +525,10 @@ class _CompactBar extends StatelessWidget {
     // does not fit in its share at the person's text size, the labels are
     // scaled down just enough for it to fit. Every label stays whole and
     // visible (no ellipsis, no hidden unselected labels), and the screen
-    // reader name is unchanged (R016).
+    // reader name is unchanged (R016). Labels are not shrunk further only
+    // to keep a two-word label on one line: on a 390 dp phone "Zaman
+    // çizelgesi" would need every label drawn below the person's text size
+    // although each word fits, so it wraps between its words (U035).
     return LayoutBuilder(
       builder: (context, constraints) {
         final media = MediaQuery.of(context);

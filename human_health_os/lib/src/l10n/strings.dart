@@ -121,8 +121,8 @@ class S {
   String get recordSchema => _t('Record schema', 'Kayıt şeması');
   String get capabilities =>
       _t('Capabilities on this device', 'Bu cihazda neler çalışıyor');
-  // The clinical disclaimer comes first so a narrow or large-text banner
-  // that ellipsizes never cuts it.
+  // The clinical disclaimer comes first: it is what a screen reader says
+  // first.
   String get devBanner => _t(
     'Not for clinical decisions · DEVELOPMENT BUILD · test use only',
     'Klinik karar için değildir · GELİŞTİRME SÜRÜMÜ · yalnızca deneme amaçlı',
@@ -131,6 +131,18 @@ class S {
     'Not for clinical decisions · STAGING BUILD · test use only',
     'Klinik karar için değildir · TEST SÜRÜMÜ · yalnızca deneme amaçlı',
   );
+  // Shorter one-line forms for a narrow or large-text banner (U035); the
+  // whole sentence above stays its spoken label and its tooltip.
+  String get devBannerMedium => _t(
+    'DEVELOPMENT BUILD · not for clinical decisions',
+    'GELİŞTİRME SÜRÜMÜ · klinik karar için değildir',
+  );
+  String get stagingBannerMedium => _t(
+    'STAGING BUILD · not for clinical decisions',
+    'TEST SÜRÜMÜ · klinik karar için değildir',
+  );
+  String get devBannerShort => _t('DEVELOPMENT BUILD', 'GELİŞTİRME SÜRÜMÜ');
+  String get stagingBannerShort => _t('STAGING BUILD', 'TEST SÜRÜMÜ');
   String get yourData => _t('Your data', 'Verilerin');
   String get available => _t('Available', 'Kullanılabilir');
   String get notImplemented => _t('Not built yet', 'Henüz yok');
@@ -1543,8 +1555,6 @@ class S {
   String get firstShowAgain =>
       _t('Show the introduction again', 'Tanıtımı yeniden göster');
   String get settingsTitle => _t('Settings', 'Ayarlar');
-  String get settingsAccessibility =>
-      _t('Appearance and accessibility', 'Görünüm ve erişilebilirlik');
   String get settingsDeviceScope => _t(
     'These choices apply on this device, not across an account.',
     'Bu tercihler bu cihazda geçerlidir, hesabın tamamına uygulanmaz.',
@@ -1584,7 +1594,7 @@ class S {
   String get discoveryHide =>
       _t('Turn off discovery progress', 'Keşif ilerlemesini kapat');
   String get settingsLanguage => _t('Language', 'Dil');
-  String get settingsTheme => _t('Appearance', 'Görünüm');
+  String get settingsTheme => _t('Light or dark', 'Açık veya koyu');
   String get settingsAccent => _t('Colour', 'Renk');
   String get settingsTextSize => _t('Text size', 'Yazı boyutu');
   String get settingsSystem => _t('Same as this device', 'Bu cihazla aynı');

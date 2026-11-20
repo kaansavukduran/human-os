@@ -283,6 +283,7 @@ void main() {
   testWidgets('staging build shows its banner with the clinical disclaimer', (
     tester,
   ) async {
+    final handle = tester.ensureSemantics();
     await pumpApp(
       tester,
       size: phone,
@@ -293,7 +294,16 @@ void main() {
       ),
     );
     expect(find.textContaining('STAGING BUILD'), findsOneWidget);
+    // The whole sentence is the banner's spoken label at every width, and
+    // on screen after a tap (U035).
+    expect(
+      find.bySemanticsLabel(RegExp('^Not for clinical decisions')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const ValueKey('build-profile-banner')));
+    await tester.pumpAndSettle();
     expect(find.textContaining('Not for clinical decisions'), findsOneWidget);
+    handle.dispose();
   });
 
   testWidgets('About: the This build card shows the source revision', (

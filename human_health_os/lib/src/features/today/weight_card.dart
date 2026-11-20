@@ -1,9 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../presentation/widgets/aion.dart';
 import '../../app/appearance_scope.dart';
 import '../../presentation/widgets/number_pad.dart';
 import '../../presentation/widgets/read_failed_note.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 import '../trends/trend_screen.dart';
 
@@ -229,11 +232,15 @@ class _WeightCardState extends State<WeightCard> {
                 ],
               ),
             const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: TextField(
+            // The field and Save share a row only when the field keeps its
+            // whole label at the person's text size; otherwise the field
+            // takes the full width and Save sits under it, so the label is
+            // never cut ("Ağırlı" at 320 dp, 2× text, Turkish: U035).
+            LayoutBuilder(
+              builder: (context, box) {
+                final field = WholeLabelField(
+                  label: s.weightField,
+                  field: (labelText) => TextField(
                     key: const ValueKey('weight-input'),
                     controller: _controller,
                     keyboardType: const TextInputType.numberWithOptions(
@@ -242,7 +249,7 @@ class _WeightCardState extends State<WeightCard> {
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _busy ? null : _save(),
                     decoration: InputDecoration(
-                      labelText: s.weightField,
+                      labelText: labelText,
                       border: const OutlineInputBorder(),
                       errorText: _errorCode == null
                           ? null
@@ -250,17 +257,35 @@ class _WeightCardState extends State<WeightCard> {
                       errorMaxLines: 3,
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: FilledButton(
-                    key: const ValueKey('weight-save'),
-                    onPressed: _busy ? null : _save,
-                    child: Text(s.save),
-                  ),
-                ),
-              ],
+                );
+                final save = FilledButton(
+                  key: const ValueKey('weight-save'),
+                  onPressed: _busy ? null : _save,
+                  child: Text(s.save),
+                );
+                if (!fieldAndButtonFit(
+                  context,
+                  label: s.weightField,
+                  button: s.save,
+                  width: box.maxWidth,
+                )) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [field, const SizedBox(height: 8), save],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: field),
+                    const SizedBox(width: 12),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: save,
+                    ),
+                  ],
+                );
+              },
             ),
             Align(
               alignment: Alignment.centerLeft,
@@ -373,4 +398,23 @@ class _WeightCardState extends State<WeightCard> {
       ),
     );
   }
+}
+
+/// Whether a text field labelled [label] and a filled button reading
+/// [button] fit side by side in [width] with the field's whole label
+/// showing at the current text size (the button's text plus Material's
+/// widest padding beside a field that passes [labelFitsField]).
+bool fieldAndButtonFit(
+  BuildContext context, {
+  required String label,
+  required String button,
+  required double width,
+}) {
+  // 24 dp of padding on each side of a filled button at 1× text; at least
+  // 64 dp wide.
+  final buttonNeeds = math.max(
+    64.0,
+    oneLineWidth(context, button, Theme.of(context).textTheme.labelLarge) + 48,
+  );
+  return labelFitsField(context, label, width - 12 - buttonNeeds);
 }

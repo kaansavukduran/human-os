@@ -215,22 +215,33 @@ void main() {
     );
   });
 
-  testWidgets('the banner shows the clinical disclaimer first and the whole '
-      'text at large sizes (EN and TR)', (tester) async {
-    for (final (locale, lead) in [
-      (const Locale('en'), 'Not for clinical decisions'),
-      (const Locale('tr'), 'Klinik karar için değil'),
+  testWidgets('the banner says the clinical disclaimer first and the whole '
+      'text at large sizes (EN and TR): spoken always, shown on tap', (
+    tester,
+  ) async {
+    for (final (locale, lead, name) in [
+      (const Locale('en'), 'Not for clinical decisions', 'DEVELOPMENT BUILD'),
+      (const Locale('tr'), 'Klinik karar için değil', 'GELİŞTİRME SÜRÜMÜ'),
     ]) {
+      final handle = tester.ensureSemantics();
       await boot(tester, size: phone, textScale: 2.0, locale: locale);
       final banner = find.byKey(const ValueKey('build-profile-banner'));
-      final text = tester.widget<Text>(
+      final label = tester.getSemantics(banner).getSemanticsData().label;
+      expect(label, startsWith(lead), reason: locale.languageCode);
+      expect(label, contains(name));
+      Text shown() => tester.widget<Text>(
         find.descendant(of: banner, matching: find.byType(Text)),
       );
-      expect(text.data, startsWith(lead), reason: locale.languageCode);
-      // No line limit or ellipsis: the profile name is never cut (UX-1).
-      expect(text.maxLines, isNull);
-      expect(text.overflow, isNot(TextOverflow.ellipsis));
+      // One line that names the build, never cut with an ellipsis (U035).
+      expect(shown().data, contains(name));
+      expect(shown().overflow, isNot(TextOverflow.ellipsis));
+      // A tap shows the whole sentence.
+      await tester.tap(banner);
+      await tester.pumpAndSettle();
+      expect(shown().data, label);
+      expect(shown().maxLines, isNull);
       expect(tester.takeException(), isNull);
+      handle.dispose();
     }
   });
 

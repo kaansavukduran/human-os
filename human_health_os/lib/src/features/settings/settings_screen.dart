@@ -10,6 +10,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../today/measurements_card.dart';
 import '../../presentation/theme/human_os_theme.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../onboarding/first_run_screen.dart';
 import 'about_screen.dart';
 
@@ -76,7 +77,15 @@ class SettingsScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.settingsTitle)),
+      // Drawn smaller rather than ellipsized when the top bar is too narrow
+      // for the word at the person's text size (U035).
+      appBar: AppBar(
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(s.settingsTitle),
+        ),
+      ),
       body: ListView(
         key: const ValueKey('screen-settings'),
         padding: const EdgeInsets.all(16),
@@ -92,12 +101,9 @@ class SettingsScreen extends StatelessWidget {
             key: const ValueKey('settings-persistence'),
             style: text.bodySmall,
           ),
+          // One heading level (U035): each section's title is the only
+          // heading in it; the controls' own names are plain labels.
           const SizedBox(height: 24),
-          Semantics(
-            header: true,
-            child: Text(s.settingsAccessibility, style: text.titleLarge),
-          ),
-          const SizedBox(height: 16),
           section(
             s.settingsInterfaceScale,
             _ScaleControl(
@@ -541,7 +547,8 @@ class _ScaleControlState extends State<_ScaleControl> {
         Text(
           s.interfacePercent(widget.percent),
           key: const ValueKey('interface-scale-value'),
-          style: Theme.of(context).textTheme.titleMedium,
+          // A value, not a heading under the section's title (U035).
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
         Text(s.interfaceScaleNote),
         Slider(
@@ -573,19 +580,25 @@ class _ScaleControlState extends State<_ScaleControl> {
         // Its own node (container): otherwise the field becomes the node the
         // section's plain texts merge into, so it is announced as "100%, the
         // note, Exact scale" and its box covers the presets above it (C001).
+        // Its label is drawn above the field when it would not fit in it
+        // (320 dp, 2× text: U035).
         Semantics(
           container: true,
-          child: TextField(
-            key: const ValueKey('set-interface-input'),
-            controller: _input,
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.done,
-            decoration: InputDecoration(
-              labelText: s.interfaceExact,
-              suffixText: '%',
-              errorText: _invalid ? s.interfaceInvalid : null,
+          child: WholeLabelField(
+            label: s.interfaceExact,
+            reserve: 24,
+            field: (labelText) => TextField(
+              key: const ValueKey('set-interface-input'),
+              controller: _input,
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(
+                labelText: labelText,
+                suffixText: '%',
+                errorText: _invalid ? s.interfaceInvalid : null,
+              ),
+              onSubmitted: (_) => _apply(),
             ),
-            onSubmitted: (_) => _apply(),
           ),
         ),
         const SizedBox(height: 8),

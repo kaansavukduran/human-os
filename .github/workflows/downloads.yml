@@ -1,26 +1,38 @@
 name: downloads
 
-# Builds each platform on its own host and preserves every pre-release.
-# A unique tag per run keeps old downloads and tags intact.
-# Windows is in windows-exe.yml. Development builds for testing, not signed
-# for any store; iOS needs an Apple developer signing identity (not built).
+# One pre-release page per build of main with every platform's files
+# (docs/RELEASE_STRATEGY.md). Each platform job builds on its own host and
+# uploads a workflow artifact named Human-OS-<platform>; the final `release`
+# job collects whatever exists, writes SHA256SUMS and an EN/TR "Which file is
+# mine?" note, and creates one pre-release. A failed platform job does not
+# stop the others: the release names what is missing and never lists a file
+# that is not attached. A unique tag per run keeps old releases and tags
+# intact; nothing is ever deleted. Development builds for testing, not signed
+# for any store; iOS needs an Apple signing identity (not built).
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - "human_health_os/**"
+      - "packaging/**"
+      - "tools/linux/package.sh"
+      - "tools/package_web_local.sh"
+      - "tools/release/**"
       - ".github/workflows/downloads.yml"
+      - ".github/workflows/windows-exe.yml"
 
 env:
   FLUTTER_VERSION: "3.47.6"
   # One increasing version per build of main (never reused), so every
   # pre-release keeps its own name and older downloads stay as they were.
   RELEASE_VERSION: "0.1.0-dev.${{ github.run_number }}"
-  DEFINES: --dart-define=APP_ENV=development --dart-define=APP_VERSION=0.1.0-dev.${{ github.run_number }}
+  # Debian and RPM order 0.1.0~dev.N before a future 0.1.0.
+  PACKAGE_VERSION: "0.1.0~dev.${{ github.run_number }}"
 
+# Platform jobs only read; the release job alone gets contents: write.
 permissions:
-  contents: write
+  contents: read
 
 # Serialize publishing on each branch. Previous releases are never deleted.
 concurrency:
@@ -37,30 +49,48 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
-      - run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev ninja-build clang cmake pkg-config
+      - run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev ninja-build clang cmake pkg-config fakeroot zstd librsvg2-bin rpm xvfb
       - name: Build
         working-directory: human_health_os
         run: |
           flutter pub get --enforce-lockfile
-          flutter build linux --release $DEFINES --dart-define=SOURCE_REVISION=${{ github.sha }}
-      - name: Pack
-        run: |
-          mkdir -p dist/Human-OS
-          cp -r human_health_os/build/linux/x64/release/bundle/. dist/Human-OS/
-          printf 'Run ./human_health_os in this folder (or double-click it in your file manager).\nDevelopment build for testing: data is stored unencrypted under ~/.local/share/human-health-os.\n' > dist/Human-OS/README.txt
-          tar -C dist -czf dist/Human-OS-${{ env.RELEASE_VERSION }}-linux-x64.tar.gz Human-OS
+          flutter build linux --release --dart-define=APP_ENV=development --dart-define=APP_VERSION="$RELEASE_VERSION" --dart-define=SOURCE_REVISION=${{ github.sha }}
       - name: Check the binary starts
         run: |
-          sudo apt-get install -y xvfb
-          xvfb-run -a timeout 10 dist/Human-OS/human_health_os; code=$?; [ $code -eq 124 ] || { echo "exited early with $code"; exit 1; }
+          xvfb-run -a timeout 10 human_health_os/build/linux/x64/release/bundle/human_health_os; code=$?; [ $code -eq 124 ] || { echo "exited early with $code"; exit 1; }
         shell: bash {0}
-      - name: Publish
-        env:
-          GH_TOKEN: ${{ github.token }}
+      # Without appimagetool, package.sh records the AppImage as NOT_RUN and
+      # the release lists it as missing; the other Linux files still ship.
+      - name: Fetch appimagetool
+        continue-on-error: true
         run: |
-          gh release create "preview-${RELEASE_VERSION}-linux-${{ github.run_id }}-${{ github.run_attempt }}" dist/Human-OS-${{ env.RELEASE_VERSION }}-linux-x64.tar.gz --prerelease --target "${{ github.sha }}" \
-            --title "Human OS for Linux (development build)" \
-            --notes "Built from ${{ github.sha }} on Ubuntu 22.04. Extract (tar -xzf), then run ./Human-OS/human_health_os. Needs GTK 3. Development build for testing: data is stored unencrypted; do not keep real health data you cannot lose."
+          curl -fsSL -o "$RUNNER_TEMP/appimagetool" https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
+          chmod +x "$RUNNER_TEMP/appimagetool"
+          sha256sum "$RUNNER_TEMP/appimagetool"
+          echo "APPIMAGETOOL=$RUNNER_TEMP/appimagetool" >> "$GITHUB_ENV"
+      - name: Package (.deb, .rpm, AppImage, portable tar.zst)
+        id: package
+        run: tools/linux/package.sh human_health_os/build/linux/x64/release/bundle pkg "$PACKAGE_VERSION" "${{ github.sha }}"
+      # Plain names without "~"; runs even if one format failed above, so
+      # the formats that were made are still published.
+      - name: Name the files
+        if: ${{ !cancelled() && steps.package.outcome != 'skipped' }}
+        run: |
+          mkdir -p dist
+          cat pkg/package-status.txt || true
+          v="$RELEASE_VERSION"
+          take() { for f in pkg/*."$1"; do if [ -e "$f" ]; then mv "$f" "dist/Human-OS-$v-$2"; fi; done; }
+          take deb linux-amd64.deb
+          take rpm linux-x86_64.rpm
+          take AppImage linux-x86_64.AppImage
+          take tar.zst linux-x86_64-portable.tar.zst
+          ls -la dist
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() && steps.package.outcome != 'skipped' }}
+        with:
+          name: Human-OS-linux
+          path: dist/
+          if-no-files-found: warn
 
   android:
     runs-on: ubuntu-latest
@@ -78,15 +108,16 @@ jobs:
         working-directory: human_health_os
         run: |
           flutter pub get --enforce-lockfile
-          flutter build apk --release $DEFINES --dart-define=SOURCE_REVISION=${{ github.sha }}
-          mkdir -p ../dist && cp build/app/outputs/flutter-apk/app-release.apk ../dist/Human-OS-${{ env.RELEASE_VERSION }}-android.apk
-      - name: Publish
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "preview-${RELEASE_VERSION}-android-${{ github.run_id }}-${{ github.run_attempt }}" dist/Human-OS-${{ env.RELEASE_VERSION }}-android.apk --prerelease --target "${{ github.sha }}" \
-            --title "Human OS for Android (development build)" \
-            --notes "Built from ${{ github.sha }}. Open this page on the phone, tap Human-OS-${{ env.RELEASE_VERSION }}-android.apk, then allow installing from this source when Android asks. Signed with a development key that changes with every build, not from Google Play: to install a newer build, remove the old one first (its data on the phone is removed with it). Development build for testing: do not keep real health data you cannot lose. Not run on a phone by the build."
+          flutter build apk --release --dart-define=APP_ENV=development --dart-define=APP_VERSION="$RELEASE_VERSION" --dart-define=SOURCE_REVISION=${{ github.sha }}
+          flutter build appbundle --release --dart-define=APP_ENV=development --dart-define=APP_VERSION="$RELEASE_VERSION" --dart-define=SOURCE_REVISION=${{ github.sha }}
+          mkdir -p ../dist
+          cp build/app/outputs/flutter-apk/app-release.apk "../dist/Human-OS-$RELEASE_VERSION-android.apk"
+          cp build/app/outputs/bundle/release/app-release.aab "../dist/Human-OS-$RELEASE_VERSION-android.aab"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Human-OS-android
+          path: dist/
+          if-no-files-found: error
 
   macos:
     runs-on: macos-latest
@@ -100,19 +131,76 @@ jobs:
         working-directory: human_health_os
         run: |
           flutter pub get --enforce-lockfile
-          flutter build macos --release $DEFINES --dart-define=SOURCE_REVISION=${{ github.sha }}
+          flutter build macos --release --dart-define=APP_ENV=development --dart-define=APP_VERSION="$RELEASE_VERSION" --dart-define=SOURCE_REVISION=${{ github.sha }}
           mkdir -p ../dist
-          ditto -c -k --keepParent "build/macos/Build/Products/Release/human_health_os.app" ../dist/Human-OS-${{ env.RELEASE_VERSION }}-macos.zip
+          ditto -c -k --keepParent "build/macos/Build/Products/Release/human_health_os.app" "../dist/Human-OS-$RELEASE_VERSION-macos.zip"
       - name: Check the app starts
         run: |
           app="human_health_os/build/macos/Build/Products/Release/human_health_os.app/Contents/MacOS/human_health_os"
           "$app" & pid=$!; sleep 10
           kill -0 $pid || { echo "exited early"; exit 1; }
           kill $pid
-      - name: Publish
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Human-OS-macos
+          path: dist/
+          if-no-files-found: error
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+      - name: Build and pack (app plus the local launcher files)
+        env:
+          OUT_DIR: dist
+          ZIP_NAME: Human-OS-${{ env.RELEASE_VERSION }}-web.zip
+          APP_VERSION: ${{ env.RELEASE_VERSION }}
+        run: |
+          (cd human_health_os && flutter pub get --enforce-lockfile)
+          tools/package_web_local.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Human-OS-web
+          path: dist/Human-OS-${{ env.RELEASE_VERSION }}-web.zip
+          if-no-files-found: error
+
+  windows:
+    uses: ./.github/workflows/windows-exe.yml
+    with:
+      release_version: "0.1.0-dev.${{ github.run_number }}"
+
+  release:
+    needs: [linux, android, macos, web, windows]
+    # Publish what exists even when a platform failed; not after a cancel.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: Human-OS-*
+          path: release
+          merge-multiple: true
+      - name: Checksums and the release note
+        run: |
+          mkdir -p release
+          python3 tools/release/release_notes.py --dir release --out notes.md \
+            --version "$RELEASE_VERSION" --revision "${{ github.sha }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --results "linux=${{ needs.linux.result }},android=${{ needs.android.result }},macos=${{ needs.macos.result }},web=${{ needs.web.result }},windows=${{ needs.windows.result }}"
+          cat notes.md
+      - name: Publish one pre-release with every file
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "preview-${RELEASE_VERSION}-macos-${{ github.run_id }}-${{ github.run_attempt }}" dist/Human-OS-${{ env.RELEASE_VERSION }}-macos.zip --prerelease --target "${{ github.sha }}" \
-            --title "Human OS for macOS (development build)" \
-            --notes "Built from ${{ github.sha }}. Unzip, move human_health_os.app to Applications, then right-click it and choose Open (the app is not signed or notarized, so macOS asks once). Development build for testing: do not keep real health data you cannot lose."
+          gh release create "preview-${RELEASE_VERSION}-${{ github.run_id }}-${{ github.run_attempt }}" release/* \
+            --prerelease --target "${{ github.sha }}" \
+            --title "Human OS ${RELEASE_VERSION} (development build, all platforms)" \
+            --notes-file notes.md

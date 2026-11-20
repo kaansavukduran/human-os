@@ -17,3 +17,6 @@ __pycache__/
 
 # Raw gate logs (receipts keep only their SHA-256 and a tail)
 evidence/logs/
+
+# Local try-out zips (tools/package_web_local.sh); downloads are on the releases page
+downloads/

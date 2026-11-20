@@ -1,31 +1,28 @@
 name: windows-exe
 
-# Builds the Windows app on a Windows host and publishes two downloads as
-# workflow artifacts: a portable ZIP (unzip, double-click human_health_os.exe)
-# and a Setup.exe installer. Development build: for testing, not for real
-# health data (see docs/PLATFORM_MATRIX.md). Not signed.
+# Builds the Windows app on a Windows host as two workflow artifacts: a
+# portable ZIP (unzip, double-click human_health_os.exe) and a Setup.exe
+# installer. Development build: for testing, not for real health data (see
+# docs/PLATFORM_MATRIX.md). Not signed. It publishes nothing itself:
+# downloads.yml calls it on every push to main and puts both files on the one
+# release page of that build (docs/RELEASE_STRATEGY.md). Run by hand, it only
+# leaves the workflow artifact.
 on:
+  workflow_call:
+    inputs:
+      release_version:
+        description: Version written into the app and the file names
+        type: string
+        required: true
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "human_health_os/**"
-      - "packaging/windows/**"
-      - ".github/workflows/windows-exe.yml"
 
 env:
   FLUTTER_VERSION: "3.47.6"
-  # One increasing version per build of main (never reused), so every
-  # pre-release keeps its own name and older downloads stay as they were.
-  RELEASE_VERSION: "0.1.0-dev.${{ github.run_number }}"
+  # downloads.yml passes its version so all files of one build share it.
+  RELEASE_VERSION: ${{ inputs.release_version || format('0.1.0-dev.{0}', github.run_number) }}
 
 permissions:
-  contents: write
-
-# Serialize publishing on each branch; retain every prior release and tag.
-concurrency:
-  group: windows-exe-${{ github.ref }}
-  cancel-in-progress: false
+  contents: read
 
 jobs:
   windows:
@@ -69,12 +66,3 @@ jobs:
             dist/Human-OS-${{ env.RELEASE_VERSION }}-windows-x64-portable.zip
             dist/Human-OS-${{ env.RELEASE_VERSION }}-windows-x64-Setup.exe
           if-no-files-found: error
-      # A new versioned pre-release for every run; never replace old installers.
-      - name: Publish the download
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "preview-${RELEASE_VERSION}-windows-${{ github.run_id }}-${{ github.run_attempt }}" dist/Human-OS-${{ env.RELEASE_VERSION }}-windows-x64-Setup.exe dist/Human-OS-${{ env.RELEASE_VERSION }}-windows-x64-portable.zip \
-            --prerelease --target "${{ github.sha }}" --title "Human OS for Windows (development build)" \
-            --notes "Built from ${{ github.sha }}. Human-OS-Setup.exe installs the app (Start menu and an optional desktop shortcut); the portable ZIP runs after unzipping (double-click human_health_os.exe). Development build for testing: data is stored unencrypted under %LOCALAPPDATA%; do not keep real health data you cannot lose. Not signed: Windows SmartScreen may ask you to confirm (More info, Run anyway)."

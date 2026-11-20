@@ -1,0 +1,55 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-TEST-F007-1394",
+  "kind": "TEST",
+  "forge_id": "F004-S4@v0.32",
+  "source_revision": "a89080f8e41f91df099c3ea6acf79c53f9d8a254",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "env TZ=America/New_York flutter test",
+  "argv": [
+    "env",
+    "TZ=America/New_York",
+    "flutter",
+    "test"
+  ],
+  "cwd": "human_health_os",
+  "started_at": "2026-11-20T10:07:42.596Z",
+  "finished_at": "2026-11-20T10:15:05.725Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.4",
+    "python": "Python 3.13.18"
+  },
+  "host": "Linux 6.18.44-fc-v726 x86_64",
+  "summary": "07:19 +1285: All tests passed!",
+  "log_sha256": "603c92ed177190dc8a6f7aa16f9325727fa8f21f7f74a92926440b1e42d2e344",
+  "log_lines": 1395,
+  "log_tail": [
+    "07:15 +1274: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (tr)",
+    "07:16 +1275: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (tr)",
+    "07:16 +1276: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (tr)",
+    "07:16 +1277: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (tr)",
+    "07:16 +1278: /home/user/claudereponewscience/human_health_os/test/domain/g006_clinvar_yield_test.dart: a timer set before reading fires while a burst is read",
+    "07:17 +1279: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: only core/redact.dart writes to the console",
+    "07:17 +1280: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: an error is shown as its type and code, never its message",
+    "07:17 +1281: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: log events keep safe fields only",
+    "07:17 +1282: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: framework and uncaught errors are reported redacted",
+    "07:17 +1283: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: vault, records, wrong keys, tampering, backups and refused restores print nothing sensitive",
+    "07:17 +1284: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: a failing vault store: the gate and the log show only the error type",
+    "07:19 +1285: All tests passed!"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os"
+  ]
+}

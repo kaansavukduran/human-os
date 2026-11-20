@@ -148,11 +148,11 @@
     }
   ],
   "next_recommended_forge": {
-    "forge_id": "A002",
+    "forge_id": "C001",
     "contract": "v0.32",
-    "run_id": "A002@v0.32",
-    "slice": "Whole-app audit against AIONIA and the YKSmania interface logic after U030–Q002; ranked next Forges",
-    "why": "Many slices landed; pick the next work from evidence, not habit.",
+    "run_id": "C001@v0.32",
+    "slice": "CI green: the appearance smoke reaches the interface scale again; the smoke joins the local gates",
+    "why": "A002 audit: ci red on main since Q002.",
     "depends_on": [
       "Q002"
     ]

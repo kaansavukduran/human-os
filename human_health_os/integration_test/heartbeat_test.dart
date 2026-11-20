@@ -827,9 +827,28 @@ void main() {
     await tester.pumpAndSettle();
     await fillKey(tester, 'measure-value', '57');
     await tapKey(tester, 'measure-save');
-    await waitFor(tester, find.byKey(const ValueKey('measure-saved')));
+    // The blood-pressure snack bar can still be up with the same key; the
+    // exact message (no backup sentence) proves one checkpoint only.
+    await waitFor(
+      tester,
+      find.byWidgetPredicate(
+        (w) =>
+            w is Text &&
+            w.key == const ValueKey('measure-saved') &&
+            (w.data ?? '').startsWith('Saved: 57 bpm'),
+      ),
+    );
     expect(
-      tester.widget<Text>(find.byKey(const ValueKey('measure-saved'))).data,
+      tester
+          .widget<Text>(
+            find.byWidgetPredicate(
+              (w) =>
+                  w is Text &&
+                  w.key == const ValueKey('measure-saved') &&
+                  (w.data ?? '').startsWith('Saved: 57 bpm'),
+            ),
+          )
+          .data,
       'Saved: 57 bpm',
       reason: 'one checkpoint, before the first measurement only',
     );
@@ -859,9 +878,28 @@ void main() {
     await tester.pumpAndSettle();
     await fillKey(tester, 'measure-when', '2026-10-01 08:00Z');
     await tapKey(tester, 'measure-save');
-    await waitFor(tester, find.byKey(const ValueKey('measure-saved')));
+    // The heart-rate snack bar ("Saved: 57 bpm") can still be on screen
+    // with the same key on a busy machine: wait for this save's own message.
+    await waitFor(
+      tester,
+      find.byWidgetPredicate(
+        (w) =>
+            w is Text &&
+            w.key == const ValueKey('measure-saved') &&
+            (w.data ?? '').startsWith('Saved: 172.5 cm.'),
+      ),
+    );
     expect(
-      tester.widget<Text>(find.byKey(const ValueKey('measure-saved'))).data,
+      tester
+          .widget<Text>(
+            find.byWidgetPredicate(
+              (w) =>
+                  w is Text &&
+                  w.key == const ValueKey('measure-saved') &&
+                  (w.data ?? '').startsWith('Saved: 172.5 cm.'),
+            ),
+          )
+          .data,
       startsWith('Saved: 172.5 cm. Before saving this entry'),
     );
     final backups = await s1.dataFiles!.backups();

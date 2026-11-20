@@ -3,9 +3,47 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "R021",
+    "contract": "v0.32",
+    "run_id": "R021@v0.32",
+    "slice": "F007-S7 review fixes: a not-measured entry can move to its true time; misses never push readings out of the doctor summary",
+    "goal": "F007-S7 review fixes: a not-measured entry can move to its true time; misses never push readings out of the doctor summary",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "a303f33",
+    "app_revision": null,
+    "started_at": "2026-11-20T01:07:43Z",
+    "finished_at": null,
+    "scope": [
+      "human_health_os/lib",
+      "human_health_os/test"
+    ],
+    "acceptance_criteria": [
+      "AC-1 each fix has a regression test",
+      "AC-2 full suites, web smoke, Linux build and runtime pass"
+    ],
+    "completed_steps": [
+      "fixes 0c210d3"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox, Safari, real screen readers NOT TESTED"
+    ],
+    "depends_on": [
+      "F007-S7"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

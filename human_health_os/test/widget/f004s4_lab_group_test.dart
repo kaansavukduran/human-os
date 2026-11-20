@@ -133,8 +133,9 @@ void main() {
     expect(find.text('Same test over time'), findsOneWidget);
     expect(
       find.text(
-        'Grouped only by the same test name, unit and specimen as typed. '
-        'Human OS does not guess that two different names are the same test.',
+        'Grouped only by the same test name, unit and specimen as typed; a '
+        'unit spelled differently (mg/dL, mg/dl) stays apart. Human OS does '
+        'not guess that two different names are the same test.',
       ),
       findsOneWidget,
     );
@@ -359,4 +360,85 @@ void main() {
       }
     });
   }
+
+  for (final (locale, labs, name) in [
+    (const Locale('en'), 'Labs', 'Name as typed: '),
+    (const Locale('tr'), 'Tahliller', 'Yazılan ad: '),
+  ]) {
+    testWidgets('a long name is said in full in the body at 320 dp with 2x '
+        'text, and same-day results are noted ($locale)', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final s = await start(tester, locale: locale, size: const Size(320, 640));
+      const long = 'Glikozile hemoglobin A1c (HbA1c, IFCC standardize)';
+      late HealthRecord newest;
+      await tester.runAsync(() async {
+        await s.heartbeat.recordLab(
+          profileId: s.self.id,
+          input: _lab(long, '5,4', date: '2026-10-03'),
+        );
+        newest = await s.heartbeat.recordLab(
+          profileId: s.self.id,
+          input: _lab(long, '5,5', date: '2026-10-03', laboratory: 'Lab B'),
+        );
+      });
+      await tester.pumpWidget(HumanOsApp(services: s));
+      await settle(tester);
+      await tester.tap(find.text(labs).last);
+      await settle(tester);
+      final open = _group(newest);
+      await reveal(tester, open);
+      await tester.tap(open);
+      await settle(tester);
+      expect(tester.takeException(), isNull);
+      final shown = find.byKey(const ValueKey('lab-group-name'));
+      expect(shown, findsOneWidget);
+      expect(tester.widget<Text>(shown).data, '$name$long');
+      final list = find.descendant(
+        of: find.byKey(const ValueKey('screen-lab-group')),
+        matching: find.byType(Scrollable),
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('lab-group-same-day')),
+        150,
+        scrollable: list.first,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('one result in two competing versions is not offered as a '
+      'group', (tester) async {
+    final s = await start(tester);
+    await tester.runAsync(() async {
+      final a = await s.heartbeat.recordLab(
+        profileId: s.self.id,
+        input: _lab('LDL', '901', unit: 'mg/dL', date: '2026-10-03'),
+      );
+      for (final (id, v) in [('c1', 91.0), ('c2', 92.0)]) {
+        await s.heartbeat.repository.appendRecord(
+          HealthRecord(
+            id: id,
+            profileId: s.self.id,
+            kind: RecordKind.labResult,
+            state: RecordState.reported,
+            valueStatus: ValueStatus.present,
+            quantity: Quantity(v, 'mg/dL'),
+            originalText: '${v.round()}',
+            provenance: const Provenance.manual(),
+            observedAt: a.observedAt,
+            recordedAt: a.recordedAt.add(const Duration(minutes: 1)),
+            supersedesId: a.id,
+            amendReason: AmendReason.correction,
+            lab: a.lab,
+            schemaVersion: a.schemaVersion,
+          ),
+        );
+      }
+    });
+    await go(tester, s, 'Labs');
+    expect(find.text('91 mg/dL'), findsOneWidget);
+    expect(find.text('92 mg/dL'), findsOneWidget);
+    expect(find.text('Same test over time'), findsNothing);
+  });
 }

@@ -2206,8 +2206,8 @@ class S {
   String get labGroupsTitle =>
       _t('Same test over time', 'Aynı test, zaman içinde');
   String get labGroupsRule => _t(
-    'Grouped only by the same test name, unit and specimen as typed. Human OS does not guess that two different names are the same test.',
-    'Yalnızca aynı yazılmış test adı, birim ve numune türüyle gruplanır. Human OS farklı iki adın aynı test olduğunu tahmin etmez.',
+    'Grouped only by the same test name, unit and specimen as typed; a unit spelled differently (mg/dL, mg/dl) stays apart. Human OS does not guess that two different names are the same test.',
+    'Yalnızca aynı yazılmış test adı, birim ve numune türüyle gruplanır; farklı yazılmış bir birim (mg/dL, mg/dl) ayrı kalır. Human OS farklı iki adın aynı test olduğunu tahmin etmez.',
   );
   String labGroupLine(String label, String? unit, String? specimen, int n) =>
       '${[label, unit ?? unitNotGiven, ?specimen].join(' · ')}: '
@@ -2256,6 +2256,10 @@ class S {
       'Değer yok ($n): listelenir, çizilmez; eksik değer sıfır değildir.',
     ),
   };
+  String get labGroupSameDay => _t(
+    'Results on the same day overlap.',
+    'Aynı günün sonuçları üst üste görünür.',
+  );
   String get labGroupEvery =>
       _t('Every result, newest first', 'Tüm sonuçlar, yeniden eskiye');
   String labGroupLaboratory(String l) =>

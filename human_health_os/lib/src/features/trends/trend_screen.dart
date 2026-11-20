@@ -243,7 +243,13 @@ class TrendPainter extends CustomPainter {
     required this.textStyle,
     this.join = true,
     this.dayLabel,
+    this.decimalsFromSpan = false,
   });
+
+  /// Whether the reading-line labels take as many decimals as the axis
+  /// span needs ([axisDecimals]; labs). Off: the measurement charts' own
+  /// labels, unchanged.
+  final bool decimalsFromSpan;
 
   final List<TrendPoint> points;
 
@@ -275,6 +281,7 @@ class TrendPainter extends CustomPainter {
     final gridPaint = Paint()
       ..color = grid
       ..strokeWidth = 1;
+    final decimals = decimalsFromSpan ? axisDecimals(range) : null;
     for (final v in readingLines(range)) {
       canvas.drawLine(
         Offset(_left, y(v)),
@@ -283,7 +290,7 @@ class TrendPainter extends CustomPainter {
       );
       final tp = TextPainter(
         text: TextSpan(
-          text: axisLabel(v, decimal),
+          text: axisLabel(v, decimal, decimals),
           style: textStyle.copyWith(color: label),
         ),
         textDirection: TextDirection.ltr,

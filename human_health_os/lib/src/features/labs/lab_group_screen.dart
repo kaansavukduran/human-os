@@ -43,6 +43,12 @@ class LabGroupScreen extends StatelessWidget {
         key: const ValueKey('screen-lab-group'),
         padding: const EdgeInsets.all(16),
         children: [
+          // The full name, which the app bar may cut short at 320 dp.
+          Text(
+            s.labGroupNameAsTyped(group.label),
+            key: const ValueKey('lab-group-name'),
+            style: text.bodyMedium,
+          ),
           Text(s.labGroupUnit(unit), style: text.bodyMedium),
           if (group.specimen case final sp?)
             Text(s.labGroupSpecimen(sp), style: text.bodyMedium),
@@ -94,6 +100,7 @@ class LabGroupScreen extends StatelessWidget {
                       textStyle: text.labelSmall ?? const TextStyle(),
                       join: false,
                       dayLabel: labDay,
+                      decimalsFromSpan: true,
                     ),
                   ),
                 ),
@@ -101,6 +108,12 @@ class LabGroupScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(s.labGroupLegend, style: muted),
+            if (group.sameDayDrawn)
+              Text(
+                s.labGroupSameDay,
+                key: const ValueKey('lab-group-same-day'),
+                style: muted,
+              ),
           ],
           for (final MapEntry(key: reason, value: n) in group.notDrawn.entries)
             Padding(

@@ -60,9 +60,10 @@ class LabGroupKey {
   int get hashCode => Object.hash(name, unit, specimen);
 }
 
-/// One shown lab result and whether it competes with another version of
-/// the same entry (a conflict: both are listed, neither is chosen).
-typedef LabRow = ({HealthRecord record, bool conflict});
+/// One shown lab result, the entry it belongs to (its root id), and whether
+/// it competes with another version of the same entry (a conflict: both
+/// are listed, neither is chosen).
+typedef LabRow = ({HealthRecord record, String entryId, bool conflict});
 
 /// Current results of one test, newest first, as the Labs list shows them.
 class LabGroup {
@@ -76,7 +77,18 @@ class LabGroup {
   String? get unit => labUnitOf(rows.first.record);
   String? get specimen => _specimenOf(rows.first.record);
 
-  int get length => rows.length;
+  /// How many results: distinct entries, so the two competing versions of
+  /// one conflicting entry count once.
+  int get length => {for (final r in rows) r.entryId}.length;
+
+  /// Whether two drawn results share a sample date (their dots overlap).
+  bool get sameDayDrawn {
+    final days = <DateTime>{};
+    for (final p in chartPoints) {
+      if (!days.add(p.at)) return true;
+    }
+    return false;
+  }
 
   /// Results drawn on the chart, oldest first: present plain numbers
   /// ([labNumberFor] usable) that compete with no other version. The unit

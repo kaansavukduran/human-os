@@ -253,7 +253,11 @@ class _LabsScreenState extends State<LabsScreen> {
           _rows = [
             for (final x in e)
               for (final r in x.heads)
-                (record: r, conflict: x.status == EntryStatus.conflict),
+                (
+                  record: r,
+                  entryId: x.rootId,
+                  conflict: x.status == EntryStatus.conflict,
+                ),
           ];
           _groups = [
             for (final g in labGroups(_rows))

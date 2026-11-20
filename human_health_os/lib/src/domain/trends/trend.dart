@@ -2,6 +2,8 @@
 /// what was saved: nothing is interpolated, averaged, smoothed or judged.
 library;
 
+import 'dart:math' as math;
+
 import '../records/health_record.dart';
 
 /// One saved reading: its time and its value(s) (blood pressure has two).
@@ -128,9 +130,21 @@ List<double> readingLines(({double lo, double hi, double pad}) r) => [
   r.hi - r.pad,
 ];
 
-/// A reading-line label with the person's decimal separator.
-String axisLabel(double v, String decimal) =>
-    v.toStringAsFixed(v.abs() >= 100 ? 0 : 1).replaceAll('.', decimal);
+/// A reading-line label with the person's decimal separator. Without
+/// [decimals]: none from 100 up, else one (the measurement charts).
+String axisLabel(double v, String decimal, [int? decimals]) => v
+    .toStringAsFixed(decimals ?? (v.abs() >= 100 ? 0 : 1))
+    .replaceAll('.', decimal);
+
+/// Decimals enough for the reading lines of [r] to read differently: the
+/// step between two lines sets the last digit shown (F004-S4: troponin
+/// 0.01 to 0.03 ng/mL is not labelled "0.0" three times). At most 6.
+int axisDecimals(({double lo, double hi, double pad}) r) {
+  final step = (r.hi - r.lo - 2 * r.pad) / 2;
+  if (!(step > 0) || !step.isFinite) return 1;
+  final d = -(math.log(step) / math.ln10).floor();
+  return d.clamp(0, 6);
+}
 
 /// Horizontal positions of [points] between [left] and [right], by time;
 /// a single point sits in the middle.

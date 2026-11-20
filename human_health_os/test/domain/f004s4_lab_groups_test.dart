@@ -12,6 +12,7 @@ import 'package:human_health_os/src/core/capabilities.dart';
 import 'package:human_health_os/src/data/local/log_repository.dart';
 import 'package:human_health_os/src/domain/labs/lab_groups.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
+import 'package:human_health_os/src/domain/trends/trend.dart';
 
 const dev = AppConfig(
   profile: BuildProfile.development,
@@ -52,7 +53,11 @@ Future<List<LabGroup>> groupsOf(AppServices s) async {
   return labGroups([
     for (final e in entries)
       for (final r in e.heads)
-        (record: r, conflict: e.status == EntryStatus.conflict),
+        (
+          record: r,
+          entryId: e.rootId,
+          conflict: e.status == EntryStatus.conflict,
+        ),
   ]);
 }
 
@@ -217,5 +222,69 @@ void main() {
     expect(g.length, 3);
     expect(g.chartPoints.single.values.single, 3);
     expect(g.notDrawn, {'LAB_VALUE_CENSORED': 1, 'LAB_VALUE_TEXT': 1});
+  });
+
+  test('two competing versions of one entry count as one result', () async {
+    final s = await services();
+    final me = s.self.id;
+    final a = await s.heartbeat.recordLab(
+      profileId: me,
+      input: lab('LDL', '901', unit: 'mg/dL', date: '2026-10-03'),
+    );
+    HealthRecord fix(String id, double v) => HealthRecord(
+      id: id,
+      profileId: me,
+      kind: RecordKind.labResult,
+      state: RecordState.reported,
+      valueStatus: ValueStatus.present,
+      quantity: Quantity(v, 'mg/dL'),
+      originalText: '$v',
+      provenance: const Provenance.manual(),
+      observedAt: a.observedAt,
+      recordedAt: a.recordedAt.add(const Duration(minutes: 1)),
+      supersedesId: a.id,
+      amendReason: AmendReason.correction,
+      lab: a.lab,
+      schemaVersion: a.schemaVersion,
+    );
+    await s.heartbeat.repository.appendRecord(fix('c1', 91));
+    await s.heartbeat.repository.appendRecord(fix('c2', 92));
+    var g = (await groupsOf(s)).single;
+    expect(g.rows, hasLength(2), reason: 'both versions are listed');
+    expect(g.length, 1, reason: 'one entry, so not a group of two');
+    expect(g.chartPoints, isEmpty, reason: 'a conflict is not drawn');
+    await s.heartbeat.recordLab(
+      profileId: me,
+      input: lab('LDL', '110', unit: 'mg/dL', date: '2026-01-01'),
+    );
+    g = (await groupsOf(s)).single;
+    expect(g.length, 2);
+  });
+
+  test('results drawn on the same sample date are noticed', () async {
+    final s = await services();
+    final me = s.self.id;
+    await s.heartbeat.recordLab(profileId: me, input: lab('K', '4,1'));
+    expect((await groupsOf(s)).single.sameDayDrawn, isFalse);
+    await s.heartbeat.recordLab(profileId: me, input: lab('K', '4,3'));
+    expect((await groupsOf(s)).single.sameDayDrawn, isTrue);
+  });
+
+  test('axis labels: lab charts take the decimals the span needs; the '
+      'measurement labels are unchanged', () {
+    // Troponin 0.01 to 0.03 ng/mL: one decimal would read "0.0" thrice.
+    final r = axisRange([0.01, 0.02, 0.03], 0.006);
+    final lines = readingLines(r);
+    expect({for (final v in lines) axisLabel(v, '.')}, {'0.0'});
+    final d = axisDecimals(r);
+    final labels = [for (final v in lines) axisLabel(v, '.', d)];
+    expect(labels.toSet(), hasLength(3), reason: '$labels');
+    expect(labels, ['0.01', '0.02', '0.03']);
+    expect(axisLabel(0.02, ',', d), '0,02');
+    // Measurement charts keep their output: one decimal under 100.
+    expect(axisLabel(72.44, '.'), '72.4');
+    expect(axisLabel(120.4, '.'), '120');
+    expect(axisDecimals(axisRange([70, 72], 5)), 0);
+    expect(axisDecimals(axisRange([5.4, 5.8], 1)), 1);
   });
 }

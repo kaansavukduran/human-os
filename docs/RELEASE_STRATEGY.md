@@ -1,28 +1,36 @@
 # Release strategy
 
-Status: channels below are **SPECIFIED**; only unsigned development pre-releases are built (next section, D001). See `project_state/CURRENT_STATE.json`.
+Status: channels below are **SPECIFIED**; only unsigned preview pre-releases are built (next section, D001), each in a development and an encrypted flavour (D-049). See `project_state/CURRENT_STATE.json`.
 
-## Development downloads: one release page per build (D001)
+## Preview downloads: one release page per build (D001, D-049)
 
 Stable link for people: **https://github.com/kaansavukduran/human-os/releases** (Settings links there too). Each push to `main` that touches the app, packaging or these workflows runs `.github/workflows/downloads.yml`, which ends in **one** pre-release holding every platform's files:
 
 ```
-linux (ubuntu-22.04) ─┐  flutter build linux → start check → tools/linux/package.sh → .deb .rpm .AppImage portable .tar.zst
-android ──────────────┤  release APK + AAB (development signing key)
-macos ────────────────┤  .app zipped with ditto → start check
-web ──────────────────┤  tools/package_web_local.sh → web zip with the localhost launcher
-windows ──────────────┤  reusable windows-exe.yml → portable zip + Inno Setup .exe → start check
+linux (ubuntu-22.04) ─┐  development: flutter build linux → start check → package.sh → .deb .rpm .AppImage
+                      │  encrypted:   APP_ENV=staging build → no-write start check → FLAVOR=encrypted package.sh
+                      │               → .deb .rpm .AppImage portable .tar.zst
+android ──────────────┤  development APK + AAB; encrypted (staging) APK (development signing key)
+macos ────────────────┤  development .app zipped → start check; encrypted "Human OS encrypted.app" → no-write start check
+web ──────────────────┤  tools/package_web_local.sh → web zip with the localhost launcher (development only)
+windows ──────────────┤  reusable windows-exe.yml → development portable zip + Setup.exe → start check;
+                      │  encrypted portable zip (portable_mode.json) + Setup.exe → no-write start check
                       └→ release (needs all, runs unless cancelled):
                          download artifacts Human-OS-* → tools/release/release_notes.py
                          → SHA256SUMS + EN/TR note → gh release create (one tag)
 ```
 
-- **Files:** `Human-OS-<version>-windows-x64-Setup.exe`, `…-windows-x64-portable.zip`, `…-macos.zip`, `…-android.apk`, `…-android.aab`, `…-linux-amd64.deb`, `…-linux-x86_64.rpm`, `…-linux-x86_64.AppImage`, `…-linux-x86_64-portable.tar.zst`, `…-web.zip`, plus `SHA256SUMS`. iOS is not built (needs an Apple signing identity); the note says so.
-- **Note:** "Which file is mine?" / "Hangi dosya benim?" lists only the files really attached, a "missing" section names every expected file that is absent and every platform job that did not succeed, and a warning (EN and TR) says these are development builds that mostly keep data unencrypted and must not hold real health data. The generator refuses an empty set (exit 1) and any file it cannot classify (exit 2), so it never claims a file that is not there. Dry run: see the docstring of `tools/release/release_notes.py`.
-- **Failure handling:** platform jobs are independent; the release job runs with `if: !cancelled()` and publishes what exists. On Linux, a failed AppImage step (appimagetool 1.9.0 is downloaded from its GitHub release, not checksum-pinned) still lets the .deb, .rpm and tar.zst ship.
+- **Two flavours (D-049).** *Development* (`APP_ENV=development`): for trying the app; entries are kept unencrypted and the app says it is a development build. *Encrypted* (`APP_ENV=staging`): for a person's own records; entries are kept only in the encrypted vault (F006, D-016), nothing is written before the vault is created or unlocked, and a staging build does not open a development vault. The flavour is in the file name: the encrypted files carry `-encrypted-` right after the version, the development files keep their earlier names.
+- **Files, development:** `Human-OS-<version>-windows-x64-Setup.exe`, `…-windows-x64-portable.zip`, `…-macos.zip`, `…-android.apk`, `…-android.aab`, `…-linux-amd64.deb`, `…-linux-x86_64.rpm`, `…-linux-x86_64.AppImage`, `…-web.zip`.
+- **Files, encrypted:** `Human-OS-<version>-encrypted-windows-x64-Setup.exe`, `…-encrypted-windows-x64-portable.zip`, `…-encrypted-macos.zip`, `…-encrypted-android.apk`, `…-encrypted-linux-amd64.deb`, `…-encrypted-linux-x86_64.rpm`, `…-encrypted-linux-x86_64.AppImage`, `…-encrypted-linux-x86_64-portable.tar.zst`; plus `SHA256SUMS`. iOS is not built (needs an Apple signing identity); the note says so.
+- **Side by side.** The encrypted Windows installer (own AppId, "Human OS (encrypted)", `Human OS encrypted` folder), the Linux packages (`human-health-os-encrypted`, command `human-health-os-encrypted`, desktop id `org.humanhealthos.HumanHealthOS.Encrypted`) and the Mac bundle (`Human OS encrypted.app`) install beside the development app and never replace it. Android cannot: both APKs share one application id, so a phone holds one of them; the note says so. The Windows encrypted portable zip carries `portable_mode.json` (vault in `UserData\` beside the exe). The Linux portable tar.zst always carries `portable_mode.json`, which makes even a development bundle keep an encrypted vault, so it is published only as the encrypted build.
+- **Web: development only.** A web build other than development is memory-only (G-32): it would keep nothing after the tab closes, so an "encrypted" web zip could not keep records. The note says so.
+- **Start checks.** Development builds: alive after 10 s (Linux, Windows, macOS). Encrypted builds, started without unlocking: alive after 10 s **and nothing written**. Linux: `tools/linux/no_write_start_check.sh` under Xvfb with a fresh `XDG_DATA_HOME`, listed with checksums before and after (any new file or folder fails). Windows: the encrypted portable folder (`UserData\` must not appear) and the Release exe as the installer ships it with `HHOS_DATA_DIR` set to a fresh path (it must not appear). macOS: the sandbox container's and the plain `Application Support/HumanHealthOS` folders, listed with checksums before and after. Android: no start check (no device or emulator). These checks prove "starts and writes nothing before unlock"; they do not see the screen, install the Setup.exe/.deb/.rpm/.app on a real machine, or unlock a vault.
+- **Note:** "Which file should I choose?" / "Hangi dosyayı seçmeliyim?" explains in plain words: the development build to try the app (not encrypted); the encrypted build for real records (a passphrase and a recovery key; if both are lost nobody can recover the data); the encrypted build does not open or import development entries (keep a backup or export of them); the web zip is development only; unsigned previews (SmartScreen/Gatekeeper warnings); not for clinical decisions. It lists only the files really attached, grouped by flavour, and a "missing" section names every expected file that is absent (with its flavour) and every platform job that did not succeed. The generator refuses an empty set (exit 1) and any file it cannot classify (exit 2), so it never claims a file that is not there. Dry run: see the docstring of `tools/release/release_notes.py`.
+- **Failure handling:** platform jobs are independent; the release job runs with `if: !cancelled()` and publishes what exists. Inside a platform job the encrypted steps run after the development ones (they build into the same folder) but also when a development step failed, and the upload runs unless cancelled, so each flavour ships on its own. On Linux, a failed AppImage step (appimagetool 1.9.0 is downloaded from its GitHub release, not checksum-pinned) still lets the other formats ship.
 - **Uniqueness and retention:** version `0.1.1-dev.<run_number>` (packages: `0.1.1~dev.<run_number>`; 0.1.1 starts the single all-platform release, so it never repeats an older per-platform `0.1.0-dev.N` page), tag `preview-<version>-<run_id>-<run_attempt>`; releases and tags are never deleted or replaced; publishing is serialized per branch.
 - **Permissions:** platform jobs `contents: read`; only the release job gets `contents: write` through the built-in `GITHUB_TOKEN`. No other secret is used.
-- **Evidence level:** the workflows are statically checked (actionlint with shellcheck) and the note generator is dry-run locally on fake files. The real artifacts, their start checks and the published page are verified only by a run on GitHub; until then they are NOT_RUN. Installing a release .deb is covered separately by `linux-deb-install-smoke` in `ci.yml`.
+- **Evidence level:** the workflows are statically checked (actionlint with shellcheck; the PowerShell steps are not linted here), `package.sh` is run locally for both flavours on a stand-in bundle, `no_write_start_check.sh` is exercised locally with stand-in commands, and the note generator is dry-run on fake files of both flavours. The real artifacts, their start checks and the published page are verified only by a run on GitHub; until then they are NOT_RUN. Installing a release .deb is covered separately by `linux-deb-install-smoke` in `ci.yml` (development flavour).
 - `tools/package_web_local.sh` still makes a local try-out zip under `downloads/`, which is ignored by git: zips are not committed.
 
 ## Channels

@@ -1,4 +1,4 @@
-Package: human-health-os
+Package: @PACKAGE@
 Version: @VERSION@
 Architecture: amd64
 Maintainer: Human OS project <noreply@humanhealthos.invalid>

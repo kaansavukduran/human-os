@@ -1,12 +1,17 @@
 name: windows-exe
 
-# Builds the Windows app on a Windows host as two workflow artifacts: a
-# portable ZIP (unzip, double-click human_health_os.exe) and a Setup.exe
-# installer. Development build: for testing, not for real health data (see
-# docs/PLATFORM_MATRIX.md). Not signed. It publishes nothing itself:
-# downloads.yml calls it on every push to main and puts both files on the one
-# release page of that build (docs/RELEASE_STRATEGY.md). Run by hand, it only
-# leaves the workflow artifact.
+# Builds the Windows app on a Windows host in two flavours (D-049), each as a
+# portable ZIP and a Setup.exe installer:
+# - development (APP_ENV=development): for trying the app; it keeps entries
+#   unencrypted in %LOCALAPPDATA% and is labelled as a development build.
+# - encrypted (APP_ENV=staging): for a person's own records; it keeps them
+#   only in the encrypted vault (F006, D-016). Its portable ZIP carries
+#   portable_mode.json, so the vault sits in UserData\ beside the app; its
+#   installer is a separate app, "Human OS (encrypted)".
+# File names carry "encrypted" for the second flavour. Not signed. It
+# publishes nothing itself: downloads.yml calls it on every push to main and
+# puts all four files on the one release page of that build
+# (docs/RELEASE_STRATEGY.md). Run by hand, it only leaves the workflow artifact.
 on:
   workflow_call:
     inputs:
@@ -33,36 +38,102 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
-      - name: Build
+      - name: Build (development)
         working-directory: human_health_os
         shell: bash
         run: |
           flutter pub get --enforce-lockfile
           flutter build windows --release --dart-define=APP_ENV=development --dart-define=APP_VERSION=${{ env.RELEASE_VERSION }} --dart-define=SOURCE_REVISION=${{ github.sha }}
-      - name: Portable ZIP
+      - name: Portable ZIP (development)
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
           Copy-Item human_health_os/build/windows/x64/runner/Release dist/Human-OS -Recurse
-          Set-Content dist/Human-OS/README.txt "Double-click human_health_os.exe. Development build for testing: do not store real health data you cannot lose."
+          Set-Content dist/Human-OS/README.txt "Double-click human_health_os.exe. Development build for trying out: what you enter is kept without encryption, so do not keep your real records here. For your own records use the file with 'encrypted' in its name."
           Compress-Archive -Path dist/Human-OS -DestinationPath dist/Human-OS-${{ env.RELEASE_VERSION }}-windows-x64-portable.zip
-      - name: Installer
+      - name: Installer (development)
         shell: pwsh
         run: |
           choco install innosetup -y --no-progress
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DAppVersion=${{ env.RELEASE_VERSION }} packaging/windows/human_os.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DAppVersion=${{ env.RELEASE_VERSION }} /DFlavor=development packaging/windows/human_os.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with $LASTEXITCODE" }
           Move-Item dist/Human-OS-Setup.exe dist/Human-OS-${{ env.RELEASE_VERSION }}-windows-x64-Setup.exe
-      - name: Check the executable starts
+      - name: Check the executable starts (development)
         shell: pwsh
         run: |
           $p = Start-Process -FilePath "human_health_os/build/windows/x64/runner/Release/human_health_os.exe" -PassThru
           Start-Sleep -Seconds 10
           if ($p.HasExited) { throw "human_health_os.exe exited early with code $($p.ExitCode)" }
           Stop-Process -Id $p.Id -Force
+      # The encrypted flavour builds into the same Release folder, so it runs
+      # only after the development files above are packed. It still runs
+      # when a development step failed: each flavour ships on its own.
+      - name: Build (encrypted, APP_ENV=staging)
+        id: build_encrypted
+        if: ${{ !cancelled() }}
+        working-directory: human_health_os
+        shell: bash
+        run: |
+          flutter pub get --enforce-lockfile
+          flutter build windows --release --dart-define=APP_ENV=staging --dart-define=APP_VERSION=${{ env.RELEASE_VERSION }} --dart-define=SOURCE_REVISION=${{ github.sha }}
+      - name: Portable ZIP (encrypted)
+        id: zip_encrypted
+        if: ${{ !cancelled() && steps.build_encrypted.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item human_health_os/build/windows/x64/runner/Release dist/Human-OS-encrypted -Recurse
+          Copy-Item packaging/windows/portable/portable_mode.json, packaging/windows/portable/README.txt dist/Human-OS-encrypted/
+          Compress-Archive -Path dist/Human-OS-encrypted -DestinationPath dist/Human-OS-${{ env.RELEASE_VERSION }}-encrypted-windows-x64-portable.zip
+      - name: Installer (encrypted)
+        if: ${{ !cancelled() && steps.build_encrypted.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DAppVersion=${{ env.RELEASE_VERSION }} /DFlavor=encrypted packaging/windows/human_os.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with $LASTEXITCODE" }
+          Move-Item dist/Human-OS-encrypted-Setup.exe dist/Human-OS-${{ env.RELEASE_VERSION }}-encrypted-windows-x64-Setup.exe
+      # Starts the encrypted build twice without unlocking: from the portable
+      # folder (vault in UserData\ beside the exe) and as the installer ships
+      # it (data folder given by HHOS_DATA_DIR, a fresh path). After 10 s it
+      # must still run and neither data folder may exist: nothing is written
+      # before the vault is created or unlocked. This proves "alive and wrote
+      # nothing", not what was on screen, and not an install of Setup.exe.
+      - name: Check the encrypted executable starts and writes nothing before unlock
+        if: ${{ !cancelled() && steps.zip_encrypted.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          $failed = $false
+          function Check-NoWrite($label, $exe, $dataDir) {
+            if (Test-Path $dataDir) { throw "$label data folder exists before start: $dataDir" }
+            $p = Start-Process -FilePath $exe -PassThru
+            Start-Sleep -Seconds 10
+            $alive = -not $p.HasExited
+            if ($alive) { Stop-Process -Id $p.Id -Force; Start-Sleep -Seconds 2 }
+            Write-Host "# ${label}: alive after 10 s without unlocking: $alive"
+            if (Test-Path $dataDir) {
+              Write-Host "# ${label}: FAIL, written before any unlock:"
+              Get-ChildItem -Force -Recurse $dataDir | ForEach-Object { Write-Host "  $($_.FullName)" }
+              return $false
+            }
+            Write-Host "# ${label}: data folder still absent: $dataDir"
+            if (-not $alive) { Write-Host "# ${label}: FAIL, exited early with code $($p.ExitCode)"; return $false }
+            return $true
+          }
+          $portable = Resolve-Path dist/Human-OS-encrypted
+          if (-not (Check-NoWrite "portable" "$portable\human_health_os.exe" "$portable\UserData")) { $failed = $true }
+          $env:HHOS_DATA_DIR = Join-Path $env:RUNNER_TEMP "hhos-encrypted-data"
+          $installed = Resolve-Path human_health_os/build/windows/x64/runner/Release/human_health_os.exe
+          if (-not (Check-NoWrite "installed layout" "$installed" $env:HHOS_DATA_DIR)) { $failed = $true }
+          if ($failed) { throw "encrypted start check failed" }
+          Write-Host "# result: PASS"
       - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
           name: Human-OS-windows
           path: |
             dist/Human-OS-${{ env.RELEASE_VERSION }}-windows-x64-portable.zip
             dist/Human-OS-${{ env.RELEASE_VERSION }}-windows-x64-Setup.exe
+            dist/Human-OS-${{ env.RELEASE_VERSION }}-encrypted-windows-x64-portable.zip
+            dist/Human-OS-${{ env.RELEASE_VERSION }}-encrypted-windows-x64-Setup.exe
           if-no-files-found: error

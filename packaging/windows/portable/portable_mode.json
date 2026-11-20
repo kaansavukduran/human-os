@@ -1,0 +1,5 @@
+{
+  "schema": 1,
+  "mode": "portable",
+  "storage": "encrypted vault in UserData/ beside the executable (F006, D-016); nothing is written before it is created or unlocked, never plain text."
+}

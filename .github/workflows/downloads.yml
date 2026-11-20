@@ -3,12 +3,17 @@ name: downloads
 # One pre-release page per build of main with every platform's files
 # (docs/RELEASE_STRATEGY.md). Each platform job builds on its own host and
 # uploads a workflow artifact named Human-OS-<platform>; the final `release`
-# job collects whatever exists, writes SHA256SUMS and an EN/TR "Which file is
-# mine?" note, and creates one pre-release. A failed platform job does not
+# job collects whatever exists, writes SHA256SUMS and an EN/TR "Which file
+# should I choose?" note, and creates one pre-release. A failed platform job does not
 # stop the others: the release names what is missing and never lists a file
 # that is not attached. A unique tag per run keeps old releases and tags
-# intact; nothing is ever deleted. Development builds for testing, not signed
-# for any store; iOS needs an Apple signing identity (not built).
+# intact; nothing is ever deleted. Two flavours of every desktop build and
+# the Android APK (D-049): development (APP_ENV=development, for trying the
+# app, entries kept unencrypted) and encrypted (APP_ENV=staging, entries kept
+# only in the encrypted vault, file names carry "encrypted"). The web zip is
+# development only: a web build other than development keeps nothing after
+# the tab closes (G-32). Nothing is signed for any store; iOS needs an Apple
+# signing identity (not built).
 on:
   workflow_dispatch:
   push:
@@ -17,6 +22,7 @@ on:
       - "human_health_os/**"
       - "packaging/**"
       - "tools/linux/package.sh"
+      - "tools/linux/no_write_start_check.sh"
       - "tools/package_web_local.sh"
       - "tools/release/**"
       - ".github/workflows/downloads.yml"
@@ -50,12 +56,12 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
       - run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev ninja-build clang cmake pkg-config fakeroot zstd librsvg2-bin rpm xvfb desktop-file-utils
-      - name: Build
+      - name: Build (development)
         working-directory: human_health_os
         run: |
           flutter pub get --enforce-lockfile
           flutter build linux --release --dart-define=APP_ENV=development --dart-define=APP_VERSION="$RELEASE_VERSION" --dart-define=SOURCE_REVISION=${{ github.sha }}
-      - name: Check the binary starts
+      - name: Check the binary starts (development)
         run: |
           xvfb-run -a timeout 10 human_health_os/build/linux/x64/release/bundle/human_health_os; code=$?; [ $code -eq 124 ] || { echo "exited early with $code"; exit 1; }
         shell: bash {0}
@@ -68,12 +74,14 @@ jobs:
           chmod +x "$RUNNER_TEMP/appimagetool"
           sha256sum "$RUNNER_TEMP/appimagetool"
           echo "APPIMAGETOOL=$RUNNER_TEMP/appimagetool" >> "$GITHUB_ENV"
-      - name: Package (.deb, .rpm, AppImage, portable tar.zst)
+      - name: Package (development .deb, .rpm, AppImage)
         id: package
         run: tools/linux/package.sh human_health_os/build/linux/x64/release/bundle pkg "$PACKAGE_VERSION" "${{ github.sha }}"
       # Plain names without "~"; runs even if one format failed above, so
-      # the formats that were made are still published.
-      - name: Name the files
+      # the formats that were made are still published. The portable
+      # tar.zst always keeps an encrypted vault (portable_mode.json), so it
+      # is published only as the encrypted build below (D-049).
+      - name: Name the development files
         if: ${{ !cancelled() && steps.package.outcome != 'skipped' }}
         run: |
           mkdir -p dist
@@ -83,10 +91,42 @@ jobs:
           take deb linux-amd64.deb
           take rpm linux-x86_64.rpm
           take AppImage linux-x86_64.AppImage
+          ls -la dist
+      # The encrypted flavour builds into the same bundle folder, so it runs
+      # after the development files are packed; it still runs when a
+      # development step failed, so each flavour ships on its own.
+      - name: Build (encrypted, APP_ENV=staging)
+        id: build_encrypted
+        if: ${{ !cancelled() }}
+        working-directory: human_health_os
+        run: |
+          flutter pub get --enforce-lockfile
+          flutter build linux --release --dart-define=APP_ENV=staging --dart-define=APP_VERSION="$RELEASE_VERSION" --dart-define=SOURCE_REVISION=${{ github.sha }}
+      # Alive after 10 s without unlocking, and the XDG data folder (a fresh
+      # temporary one) is listed before and after: it must be unchanged.
+      - name: Check the encrypted binary starts and writes nothing before unlock
+        if: ${{ !cancelled() && steps.build_encrypted.outcome == 'success' }}
+        run: xvfb-run -a tools/linux/no_write_start_check.sh 10 -- human_health_os/build/linux/x64/release/bundle/human_health_os
+      - name: Package (encrypted .deb, .rpm, AppImage, portable tar.zst)
+        id: package_encrypted
+        if: ${{ !cancelled() && steps.build_encrypted.outcome == 'success' }}
+        env:
+          FLAVOR: encrypted
+        run: tools/linux/package.sh human_health_os/build/linux/x64/release/bundle pkg-encrypted "$PACKAGE_VERSION" "${{ github.sha }}"
+      - name: Name the encrypted files
+        if: ${{ !cancelled() && steps.package_encrypted.outcome != 'skipped' }}
+        run: |
+          mkdir -p dist
+          cat pkg-encrypted/package-status.txt || true
+          v="$RELEASE_VERSION"
+          take() { for f in pkg-encrypted/*."$1"; do if [ -e "$f" ]; then mv "$f" "dist/Human-OS-$v-encrypted-$2"; fi; done; }
+          take deb linux-amd64.deb
+          take rpm linux-x86_64.rpm
+          take AppImage linux-x86_64.AppImage
           take tar.zst linux-x86_64-portable.tar.zst
           ls -la dist
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() && steps.package.outcome != 'skipped' }}
+        if: ${{ !cancelled() }}
         with:
           name: Human-OS-linux
           path: dist/
@@ -104,7 +144,7 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
-      - name: Build
+      - name: Build (development)
         working-directory: human_health_os
         run: |
           flutter pub get --enforce-lockfile
@@ -113,7 +153,18 @@ jobs:
           mkdir -p ../dist
           cp build/app/outputs/flutter-apk/app-release.apk "../dist/Human-OS-$RELEASE_VERSION-android.apk"
           cp build/app/outputs/bundle/release/app-release.aab "../dist/Human-OS-$RELEASE_VERSION-android.aab"
+      # Same application id as the development APK: a phone holds one of
+      # the two (the note says so). No start check: no device or emulator.
+      - name: Build (encrypted APK, APP_ENV=staging)
+        if: ${{ !cancelled() }}
+        working-directory: human_health_os
+        run: |
+          flutter pub get --enforce-lockfile
+          flutter build apk --release --dart-define=APP_ENV=staging --dart-define=APP_VERSION="$RELEASE_VERSION" --dart-define=SOURCE_REVISION=${{ github.sha }}
+          mkdir -p ../dist
+          cp build/app/outputs/flutter-apk/app-release.apk "../dist/Human-OS-$RELEASE_VERSION-encrypted-android.apk"
       - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
           name: Human-OS-android
           path: dist/
@@ -127,20 +178,71 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
-      - name: Build
+      - name: Build (development)
         working-directory: human_health_os
         run: |
           flutter pub get --enforce-lockfile
           flutter build macos --release --dart-define=APP_ENV=development --dart-define=APP_VERSION="$RELEASE_VERSION" --dart-define=SOURCE_REVISION=${{ github.sha }}
           mkdir -p ../dist
           ditto -c -k --keepParent "build/macos/Build/Products/Release/human_health_os.app" "../dist/Human-OS-$RELEASE_VERSION-macos.zip"
-      - name: Check the app starts
+      - name: Check the app starts (development)
         run: |
           app="human_health_os/build/macos/Build/Products/Release/human_health_os.app/Contents/MacOS/human_health_os"
           "$app" & pid=$!; sleep 10
           kill -0 $pid || { echo "exited early"; exit 1; }
           kill $pid
+      # Builds into the same Release folder, so after the development zip.
+      # The bundle is renamed "Human OS encrypted.app" so it does not
+      # replace the development app in Applications (same bundle id, so the
+      # same sandbox container; the vault file names differ by profile).
+      - name: Build (encrypted, APP_ENV=staging)
+        id: build_encrypted
+        if: ${{ !cancelled() }}
+        working-directory: human_health_os
+        run: |
+          flutter pub get --enforce-lockfile
+          flutter build macos --release --dart-define=APP_ENV=staging --dart-define=APP_VERSION="$RELEASE_VERSION" --dart-define=SOURCE_REVISION=${{ github.sha }}
+          mkdir -p ../dist ../encrypted
+          ditto "build/macos/Build/Products/Release/human_health_os.app" "../encrypted/Human OS encrypted.app"
+          ditto -c -k --keepParent "../encrypted/Human OS encrypted.app" "../dist/Human-OS-$RELEASE_VERSION-encrypted-macos.zip"
+      # Alive after 10 s without unlocking, and the app's data folders (the
+      # sandbox container's and, should the sandbox be off, the plain
+      # Application Support one) are listed with checksums before and after:
+      # they must be unchanged. Files the development check left there must
+      # stay untouched too.
+      - name: Check the encrypted app starts and writes nothing before unlock
+        if: ${{ !cancelled() && steps.build_encrypted.outcome == 'success' }}
+        shell: bash
+        run: |
+          app="encrypted/Human OS encrypted.app/Contents/MacOS/human_health_os"
+          dirs=("$HOME/Library/Containers/org.humanhealthos.humanHealthOs/Data/Library/Application Support/HumanHealthOS" "$HOME/Library/Application Support/HumanHealthOS")
+          listing() {
+            for d in "${dirs[@]}"; do
+              if [ -d "$d" ]; then
+                find "$d" -mindepth 1 -type d | sed 's/^/dir /'
+                find "$d" -type f -exec shasum -a 256 {} +
+              fi
+            done | LC_ALL=C sort
+          }
+          before=$(listing)
+          echo "# before start: ${before:-<empty>}"
+          "$app" & pid=$!
+          sleep 10
+          rc=0
+          if kill -0 "$pid"; then
+            echo "# alive after 10 s without unlocking"; kill "$pid"; wait "$pid" || true
+          else
+            echo "# FAIL: exited early"; rc=1
+          fi
+          after=$(listing)
+          echo "# after stop: ${after:-<empty>}"
+          if [ "$before" != "$after" ]; then
+            echo "# FAIL: written before any unlock:"; diff <(echo "$before") <(echo "$after") || true; rc=1
+          fi
+          echo "# result: $([ "$rc" = 0 ] && echo PASS || echo FAIL)"
+          exit "$rc"
       - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
           name: Human-OS-macos
           path: dist/
@@ -202,5 +304,5 @@ jobs:
         run: |
           gh release create "preview-${RELEASE_VERSION}-${{ github.run_id }}-${{ github.run_attempt }}" release/* \
             --prerelease --target "${{ github.sha }}" \
-            --title "Human OS ${RELEASE_VERSION} (development build, all platforms)" \
+            --title "Human OS ${RELEASE_VERSION} (preview: try-out and encrypted builds, all platforms)" \
             --notes-file notes.md

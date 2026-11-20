@@ -1,10 +1,10 @@
 # Repackages a prebuilt Flutter release bundle; nothing is compiled here.
 %global debug_package %{nil}
 %global __os_install_post %{nil}
-%global __provides_exclude_from ^/usr/lib64/human-health-os/.*$
+%global __provides_exclude_from ^/usr/lib64/@PACKAGE@/.*$
 %global __requires_exclude ^(libflutter_linux_gtk\\.so|libapp\\.so).*$
 
-Name:           human-health-os
+Name:           @PACKAGE@
 Version:        @VERSION@
 Release:        1
 Summary:        Human OS personal health record
@@ -30,12 +30,12 @@ mkdir -p %{buildroot}
 cp -a @STAGE@/. %{buildroot}/
 
 %files
-/usr/bin/human-health-os
-/usr/lib64/human-health-os
-/usr/share/applications/org.humanhealthos.HumanHealthOS.desktop
-/usr/share/metainfo/org.humanhealthos.HumanHealthOS.metainfo.xml
-/usr/share/icons/hicolor/scalable/apps/org.humanhealthos.HumanHealthOS.svg
-/usr/share/icons/hicolor/256x256/apps/org.humanhealthos.HumanHealthOS.png
+/usr/bin/@PACKAGE@
+/usr/lib64/@PACKAGE@
+/usr/share/applications/@APPID@.desktop
+/usr/share/metainfo/@APPID@.metainfo.xml
+/usr/share/icons/hicolor/scalable/apps/@APPID@.svg
+/usr/share/icons/hicolor/256x256/apps/@APPID@.png
 
 %changelog
 * Tue Oct 06 2026 Human OS project <noreply@humanhealthos.invalid> - @VERSION@-1

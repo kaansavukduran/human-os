@@ -45,6 +45,12 @@ const RUNS = [
   { label: 'phone-tr', viewport: { width: 390, height: 844 }, locale: 'tr-TR', today: 'Bugün', timeline: 'Zaman çizelgesi', timelineText: /Düzeltme yeni bir sürüm ekler/, labs: 'Tahliller', labsText: /Referans aralığı ≠ optimal hedef/, banner: /GELİŞTİRME SÜRÜMÜ/ },
 ];
 const expectFlutter = process.env.EXPECT_FLUTTER_VERSION;
+// F016-S1 (G-24): the loading view is in the served HTML itself.
+const servedHtml = await (await fetch(base)).text();
+const loadingTag = servedHtml.match(/<div[^>]*id="hos-loading"[^>]*>/)?.[0] ?? '';
+check('served HTML: loading view present', loadingTag !== '');
+check('served HTML: loading view is role="status" aria-live="polite"', /role="status"/.test(loadingTag) && /aria-live="polite"/.test(loadingTag), loadingTag);
+const LOADING_TEXT = { 'en-US': 'Opening Human OS…', 'tr-TR': 'Human OS açılıyor…' };
 for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel, timelineText, labs: labsLabel, labsText, banner } of RUNS) {
   const page = await browser.newPage({ viewport, locale });
   const external = [];
@@ -57,6 +63,20 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
   page.on('requestfailed', (r) => failedRequests.push(`${r.url()} (${r.failure()?.errorText ?? 'failed'})`));
   page.on('response', (r) => { if (r.status() >= 400) failedRequests.push(`${r.url()} (HTTP ${r.status()})`); });
+  // F016-S1: record the loading view as the page reaches DOMContentLoaded
+  // (before Flutter's first frame can be drawn).
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const v = document.getElementById('hos-loading');
+      window.__hosLoading = v && {
+        role: v.getAttribute('role'),
+        live: v.getAttribute('aria-live'),
+        lang: v.getAttribute('lang'),
+        line: v.querySelector('.hos-line')?.textContent ?? '',
+        animation: getComputedStyle(v.querySelector('.hos-bar'), '::after').animationName,
+      };
+    });
+  });
   await page.goto(base, { waitUntil: 'load' });
   await page.waitForSelector('flutter-view', { state: 'attached', timeout: 60_000 });
   // Turn on the Flutter semantics tree so text is queryable (same path a screen reader uses).
@@ -85,6 +105,17 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
     (await page.getByRole('button', { name: /^(Skip|Atla)$/ }).count()) === 0,
   );
   check(`${label}: app starts and shows ${todayLabel}`, await today.isVisible().catch(() => false));
+  if (label === 'desktop-en' || label === 'phone-tr') {
+    const seen = await page.evaluate(() => window.__hosLoading ?? null);
+    const want = LOADING_TEXT[locale];
+    check(
+      `${label}: loading view shown before the first frame with role=status and "${want}"`,
+      seen?.role === 'status' && seen?.live === 'polite' && seen?.line === want && seen?.lang === locale.slice(0, 2),
+      JSON.stringify(seen),
+    );
+    check(`${label}: loading indicator moves when motion is allowed`, !!seen && seen.animation !== 'none', seen?.animation ?? '');
+  }
+  check(`${label}: loading view gone once ${todayLabel} shows`, (await page.locator('#hos-loading').count()) === 0);
   check(`${label}: development profile banner visible`, await page.getByText(banner).first().isVisible().catch(() => false));
   if (locale === 'en-US') {
     const flutterRow = page.getByText('Flutter', { exact: true }).first();
@@ -554,6 +585,29 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
   check(`${label}: no page errors`, errors.length === 0, errors.slice(0, 3).join(' | '));
   check(`${label}: no console errors`, consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
   check(`${label}: no failed requests`, failedRequests.length === 0, failedRequests.slice(0, 3).join(' | '));
+  await page.close();
+}
+// F016-S1: reduced motion and a slow load. main.dart.js is held back, so the
+// loading view stays; the page clock moves past 15 s for the second line.
+{
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'en-US' });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.clock.install();
+  await page.route('**/main.dart.js', () => {}); // never answered
+  await page.goto(base, { waitUntil: 'domcontentloaded' });
+  const view = page.locator('#hos-loading');
+  check('reduced motion: loading view visible', await view.isVisible().catch(() => false));
+  const anim = await page.evaluate(() => {
+    const cs = getComputedStyle(document.querySelector('#hos-loading .hos-bar'), '::after');
+    return { name: cs.animationName, duration: cs.animationDuration };
+  }).catch((e) => ({ name: `error: ${e.message}` }));
+  check('reduced motion: loading indicator has no animation', anim.name === 'none', JSON.stringify(anim));
+  const slowLine = 'Still opening. This can take a moment on a slow device.';
+  check('slow load: no second line before 15 s', !(await page.getByText(slowLine).isVisible().catch(() => false)));
+  await page.clock.fastForward(16_000);
+  check('slow load: second plain line after 15 s', await page.getByText(slowLine).isVisible().catch(() => false));
+  check('slow load: no progress percentage', !/\d\s*%/.test((await view.textContent().catch(() => '')) ?? ''));
+  await page.unrouteAll({ behavior: 'ignoreErrors' }).catch(() => {});
   await page.close();
 }
 await browser.close();

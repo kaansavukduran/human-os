@@ -31,9 +31,94 @@
 
   <title>Human OS</title>
   <link rel="manifest" href="manifest.json">
+  <!--
+    F016-S1 (G-24): the loading view shown before Flutter's first frame.
+    Inline only: no external request (the build uses --no-web-resources-cdn).
+    Colours are the Standard dark tokens (lib/src/presentation/theme/
+    human_os_theme.dart, accent teal): surface #101819, ink (onSurface)
+    #E6EEEE, outline #8AA0A3, primary #7FC4CB, outlineVariant #2B3A3D.
+    Contrast (WCAG 2.x, checked): ink on surface 15.3:1 and outline on
+    surface 6.6:1 (AA text, 4.5:1); primary indicator on surface 9.1:1 and
+    on its track 6.0:1 (AA non-text, 3:1).
+    Dark only, on purpose: the app's first run is dark whatever the system
+    says (AppearanceSettings.theme defaults to ThemeChoice.dark; AIONIA
+    Standard §19), so a light loading view under prefers-color-scheme: light
+    would flash light and then switch to dark when Flutter takes over.
+    No layout shift: the view is fixed over the page, out of flow, on the
+    same surface colour Flutter paints first, and is removed only after the
+    first frame is on screen.
+  -->
+  <style>
+    html, body { margin: 0; background: #101819; color-scheme: dark; }
+    #hos-loading {
+      position: fixed; inset: 0; z-index: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; padding: 24px; box-sizing: border-box; text-align: center;
+      background: #101819; color: #E6EEEE;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px; line-height: 1.5;
+    }
+    #hos-loading .hos-name { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 0; }
+    #hos-loading p { margin: 0; }
+    #hos-loading .hos-slow { color: #8AA0A3; max-width: 32em; }
+    #hos-loading .hos-slow:empty { display: none; }
+    #hos-loading .hos-bar {
+      position: relative; overflow: hidden; width: 128px; height: 3px;
+      margin-top: 8px; border-radius: 2px; background: #2B3A3D;
+    }
+    #hos-loading .hos-bar::after {
+      content: ""; position: absolute; top: 0; left: 0; width: 40%; height: 100%;
+      border-radius: 2px; background: #7FC4CB;
+      animation: hos-slide 1.8s ease-in-out infinite;
+    }
+    @keyframes hos-slide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(250%); }
+    }
+    /* Reduced motion: the indicator stands still in the middle of its track. */
+    @media (prefers-reduced-motion: reduce) {
+      #hos-loading .hos-bar::after { animation: none; left: 30%; }
+    }
+  </style>
 </head>
 <body>
   <noscript>Human OS needs JavaScript to run in a browser. / Human OS tarayıcıda çalışmak için JavaScript gerektirir.</noscript>
+  <!--
+    F016-S1 (G-24): announced once (role="status", polite) in the browser's
+    language, never a progress percentage. It holds nothing focusable, so
+    focus is never taken from the Flutter view. Removed on the engine's
+    "flutter-first-frame" window event (sent after the first frame of
+    whatever main() runs, the startup-error screen included, so that screen
+    still replaces this view on failure). A load still running after 15 s
+    adds one plain line.
+  -->
+  <div id="hos-loading" role="status" aria-live="polite" aria-atomic="true">
+    <p class="hos-name">Human OS</p>
+    <p class="hos-line"></p>
+    <p class="hos-slow"></p>
+    <div class="hos-bar" aria-hidden="true"></div>
+  </div>
+  <script>
+    (function () {
+      var view = document.getElementById('hos-loading');
+      if (!view) return;
+      var lang = ((navigator.languages && navigator.languages[0]) || navigator.language || 'en').toLowerCase();
+      var tr = lang === 'tr' || lang.indexOf('tr-') === 0;
+      var text = tr
+        ? { line: 'Human OS açılıyor…', slow: 'Hâlâ açılıyor. Yavaş bir cihazda bu biraz sürebilir.' }
+        : { line: 'Opening Human OS…', slow: 'Still opening. This can take a moment on a slow device.' };
+      view.setAttribute('lang', tr ? 'tr' : 'en');
+      // Filled by script so the live region announces it.
+      view.querySelector('.hos-line').textContent = text.line;
+      var slow = setTimeout(function () {
+        view.querySelector('.hos-slow').textContent = text.slow;
+      }, 15000);
+      window.addEventListener('flutter-first-frame', function () {
+        clearTimeout(slow);
+        if (view.parentNode) view.parentNode.removeChild(view);
+      }, { once: true });
+    })();
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

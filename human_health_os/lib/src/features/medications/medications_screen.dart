@@ -4,12 +4,8 @@ import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
-import '../../presentation/widgets/aion.dart';
-import '../../presentation/widgets/read_failed_note.dart';
-import '../../presentation/widgets/area_intro.dart';
-import '../../presentation/widgets/entry_list.dart';
-import '../../presentation/widgets/loading_line.dart';
 import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
@@ -26,43 +22,19 @@ class MedicationsScreen extends StatefulWidget {
 }
 
 class _MedicationsScreenState extends State<MedicationsScreen> {
-  List<MedicationView>? _items;
-  bool _readFailed = false;
-
   HeartbeatService get _svc => widget.services.heartbeat;
   String get _me => widget.services.self.id;
-
-  @override
-  void initState() {
-    super.initState();
-    _reload();
-  }
-
-  Future<void> _reload() async {
-    try {
-      final items = await _svc.medications(_me);
-      if (mounted) {
-        setState(() {
-          _items = items;
-          _readFailed = false;
-        });
-      }
-    } on Object {
-      // Said in words with Try again, never a spinner forever (AIONIA v1.2).
-      if (mounted) setState(() => _readFailed = true);
-    }
-  }
-
-  void _retry() {
-    setState(() => _readFailed = false);
-    _reload();
-  }
 
   bool _busy = false;
 
   /// One change at a time; a refused change (a double tap on an older view,
   /// an item gone) is said in words, and the list is read again either way.
-  Future<void> _setState(String itemRootId, PlanState state) async {
+  Future<void> _setState(
+    BuildContext context,
+    RecordArea area,
+    String itemRootId,
+    PlanState state,
+  ) async {
     if (_busy) return;
     final s = S.of(context);
     // Stopping is asked once more (it can be undone by Resume, but it
@@ -87,7 +59,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
           ],
         ),
       );
-      if (sure != true || !mounted) return;
+      if (sure != true || !context.mounted) return;
     }
     _busy = true;
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -106,74 +78,33 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
       );
     } finally {
       _busy = false;
-      await _reload();
+      await area.reload();
     }
-  }
-
-  Future<void> _sheet(Widget Function(BuildContext) builder) async {
-    final saved = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      useSafeArea: true,
-      builder: builder,
-    );
-    if (saved == true) await _reload();
   }
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final items = _items;
-    final shown = _readFailed ? null : items;
-    return EntryList(
+    return RecordAreaScreen<MedicationView>(
       key: const ValueKey('screen-medications'),
-      itemCount: shown?.length ?? 0,
-      itemBuilder: (_, i) {
-        final m = shown![i];
-        return _ItemCard(
-          view: m,
-          onPlan: () => _sheet(
-            (_) => _PlanSheet(svc: _svc, me: _me, itemRootId: m.rootId),
-          ),
-          onDose: () => _sheet(
-            (_) => _DoseSheet(svc: _svc, me: _me, itemRootId: m.rootId),
-          ),
-          onState: (state) => _setState(m.rootId, state),
-        );
-      },
-      header: [
-        AreaIntro(
-          area: DestinationId.medications,
-          title: s.medsTitle,
-          what: s.medsIntro,
+      area: DestinationId.medications,
+      id: 'meds',
+      title: s.medsTitle,
+      what: s.medsIntro,
+      addLabel: s.medsAdd,
+      emptyText: s.medsNone,
+      load: () => _svc.medications(_me),
+      addSheet: (_) => _AddItemSheet(svc: _svc, me: _me),
+      rowBuilder: (context, m, area) => _ItemCard(
+        view: m,
+        onPlan: () => area.openSheet(
+          (_) => _PlanSheet(svc: _svc, me: _me, itemRootId: m.rootId),
         ),
-        const SizedBox(height: 16),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            key: const ValueKey('meds-add'),
-            onPressed: () => _sheet((_) => _AddItemSheet(svc: _svc, me: _me)),
-            icon: const Icon(Icons.add),
-            label: Text(s.medsAdd),
-          ),
+        onDose: () => area.openSheet(
+          (_) => _DoseSheet(svc: _svc, me: _me, itemRootId: m.rootId),
         ),
-        const SizedBox(height: 16),
-        if (_readFailed)
-          ReadFailedNote(id: 'meds', onRetry: _retry)
-        else if (items == null)
-          const LoadingLine()
-        else if (items.isEmpty)
-          Row(
-            children: [
-              const AionFigure(height: 64),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(s.medsNone, key: const ValueKey('meds-none')),
-              ),
-            ],
-          ),
-      ],
+        onState: (state) => _setState(context, area, m.rootId, state),
+      ),
     );
   }
 }

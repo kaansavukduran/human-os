@@ -4,131 +4,42 @@ import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
-import '../../presentation/widgets/aion.dart';
-import '../../presentation/widgets/read_failed_note.dart';
-import '../../presentation/widgets/area_intro.dart';
-import '../../presentation/widgets/entry_list.dart';
-import '../../presentation/widgets/loading_line.dart';
 import '../../navigation/destinations.dart';
+import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 
 /// Preventive items (F009 slice 2): vaccinations, screenings and check-ups
 /// as the person names them, done, planned or unsure, with who they come
 /// from. Planned is never done; no screening result is kept (screening is
 /// not diagnosis); nothing is recommended, scheduled, due or reminded.
-class PreventiveScreen extends StatefulWidget {
+class PreventiveScreen extends StatelessWidget {
   const PreventiveScreen({super.key, required this.services});
 
   final AppServices services;
 
   @override
-  State<PreventiveScreen> createState() => _PreventiveScreenState();
-}
-
-class _PreventiveScreenState extends State<PreventiveScreen> {
-  List<HealthRecord>? _entries;
-  bool _readFailed = false;
-
-  HeartbeatService get _svc => widget.services.heartbeat;
-  String get _me => widget.services.self.id;
-
-  @override
-  void initState() {
-    super.initState();
-    _reload();
-  }
-
-  Future<void> _reload() async {
-    try {
-      final entries = await _svc.preventives(_me);
-      if (mounted) {
-        setState(() {
-          _entries = entries;
-          _readFailed = false;
-        });
-      }
-    } on Object {
-      // Said in words with Try again, never a spinner forever (AIONIA v1.2).
-      if (mounted) setState(() => _readFailed = true);
-    }
-  }
-
-  void _retry() {
-    setState(() => _readFailed = false);
-    _reload();
-  }
-
-  Future<void> _open({HealthRecord? correcting}) async {
-    final saved = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      useSafeArea: true,
-      builder: (_) =>
-          _PreventiveSheet(svc: _svc, me: _me, correcting: correcting),
-    );
-    if (saved == true) await _reload();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final entries = _entries;
-    final shown = _readFailed ? null : entries;
-    return EntryList(
+    final svc = services.heartbeat;
+    final me = services.self.id;
+    return RecordAreaScreen<HealthRecord>(
       key: const ValueKey('screen-preventive'),
-      itemCount: shown?.length ?? 0,
-      itemBuilder: (_, i) {
-        final r = shown![i];
-        return Card(
-          key: ValueKey('prev-entry-${r.id}'),
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            title: Text(s.prevLine(r.details! as PreventiveEntryDetails)),
-            // Under the text, so a narrow window never squeezes it.
-            subtitle: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                key: ValueKey('prev-correct-${r.id}'),
-                onPressed: () => _open(correcting: r),
-                child: Text(s.amendAction(AmendReason.correction)),
-              ),
-            ),
-          ),
-        );
-      },
-      header: [
-        AreaIntro(
-          area: DestinationId.preventive,
-          title: s.prevTitle,
-          what: s.prevIntro,
+      area: DestinationId.preventive,
+      id: 'prev',
+      title: s.prevTitle,
+      what: s.prevIntro,
+      addLabel: s.prevAdd,
+      emptyText: s.prevNone,
+      load: () => svc.preventives(me),
+      addSheet: (_) => _PreventiveSheet(svc: svc, me: me),
+      rowBuilder: (context, r, area) => RecordEntryRow(
+        id: 'prev',
+        entryId: r.id,
+        line: s.prevLine(r.details! as PreventiveEntryDetails),
+        onCorrect: () => area.openSheet(
+          (_) => _PreventiveSheet(svc: svc, me: me, correcting: r),
         ),
-        const SizedBox(height: 16),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            key: const ValueKey('prev-add'),
-            onPressed: _open,
-            icon: const Icon(Icons.add),
-            label: Text(s.prevAdd),
-          ),
-        ),
-        const SizedBox(height: 16),
-        if (_readFailed)
-          ReadFailedNote(id: 'prev', onRetry: _retry)
-        else if (entries == null)
-          const LoadingLine()
-        else if (entries.isEmpty)
-          Row(
-            children: [
-              const AionFigure(height: 64),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(s.prevNone, key: const ValueKey('prev-none')),
-              ),
-            ],
-          ),
-      ],
+      ),
     );
   }
 }

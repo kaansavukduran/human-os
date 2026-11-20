@@ -4,138 +4,42 @@ import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
-import '../../presentation/widgets/aion.dart';
-import '../../presentation/widgets/read_failed_note.dart';
-import '../../presentation/widgets/area_intro.dart';
-import '../../presentation/widgets/entry_list.dart';
-import '../../presentation/widgets/loading_line.dart';
 import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
 /// Nutrition (F007 slice 5): what the person ate or drank, in their words,
 /// with nutrients only as copied from a label. A nutrient not given is not
 /// known, never zero; nothing is added up, rated or advised; no database.
-class NutritionScreen extends StatefulWidget {
+class NutritionScreen extends StatelessWidget {
   const NutritionScreen({super.key, required this.services});
 
   final AppServices services;
 
   @override
-  State<NutritionScreen> createState() => _NutritionScreenState();
-}
-
-class _NutritionScreenState extends State<NutritionScreen> {
-  List<HealthRecord>? _entries;
-  bool _readFailed = false;
-
-  HeartbeatService get _svc => widget.services.heartbeat;
-  String get _me => widget.services.self.id;
-
-  @override
-  void initState() {
-    super.initState();
-    _reload();
-  }
-
-  Future<void> _reload() async {
-    try {
-      final entries = await _svc.foods(_me);
-      if (mounted) {
-        setState(() {
-          _entries = entries;
-          _readFailed = false;
-        });
-      }
-    } on Object {
-      // Said in words with Try again, never a spinner forever (AIONIA v1.2).
-      if (mounted) setState(() => _readFailed = true);
-    }
-  }
-
-  void _retry() {
-    setState(() => _readFailed = false);
-    _reload();
-  }
-
-  Future<void> _add({HealthRecord? correcting}) async {
-    final saved = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      useSafeArea: true,
-      builder: (_) => _FoodSheet(svc: _svc, me: _me, correcting: correcting),
-    );
-    if (saved == true) await _reload();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final scheme = Theme.of(context).colorScheme;
-    final entries = _entries;
-    final shown = _readFailed ? null : entries;
-    return EntryList(
+    final svc = services.heartbeat;
+    final me = services.self.id;
+    return RecordAreaScreen<HealthRecord>(
       key: const ValueKey('screen-nutrition'),
-      itemCount: shown?.length ?? 0,
-      itemBuilder: (_, i) {
-        final r = shown![i];
-        return Card(
-          key: ValueKey('food-entry-${r.id}'),
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            title: Text(s.foodLine(r.details! as FoodEntryDetails)),
-            // The button sits under the text, so a narrow window or large
-            // text never squeezes the entry into a thin column.
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  fmtWhen(r.observedAt),
-                  style: TextStyle(color: scheme.onSurfaceVariant),
-                ),
-                TextButton(
-                  key: ValueKey('food-correct-${r.id}'),
-                  onPressed: () => _add(correcting: r),
-                  child: Text(s.amendAction(AmendReason.correction)),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-      header: [
-        AreaIntro(
-          area: DestinationId.nutrition,
-          title: s.foodTitle,
-          what: s.foodIntro,
-        ),
-        const SizedBox(height: 16),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            key: const ValueKey('food-add'),
-            onPressed: _add,
-            icon: const Icon(Icons.add),
-            label: Text(s.foodAdd),
-          ),
-        ),
-        const SizedBox(height: 16),
-        if (_readFailed)
-          ReadFailedNote(id: 'food', onRetry: _retry)
-        else if (entries == null)
-          const LoadingLine()
-        else if (entries.isEmpty)
-          Row(
-            children: [
-              const AionFigure(height: 64),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(s.foodNone, key: const ValueKey('food-none')),
-              ),
-            ],
-          ),
-      ],
+      area: DestinationId.nutrition,
+      id: 'food',
+      title: s.foodTitle,
+      what: s.foodIntro,
+      addLabel: s.foodAdd,
+      emptyText: s.foodNone,
+      load: () => svc.foods(me),
+      addSheet: (_) => _FoodSheet(svc: svc, me: me),
+      rowBuilder: (context, r, area) => RecordEntryRow(
+        id: 'food',
+        entryId: r.id,
+        line: s.foodLine(r.details! as FoodEntryDetails),
+        when: fmtWhen(r.observedAt),
+        onCorrect: () =>
+            area.openSheet((_) => _FoodSheet(svc: svc, me: me, correcting: r)),
+      ),
     );
   }
 }

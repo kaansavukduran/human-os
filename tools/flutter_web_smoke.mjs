@@ -40,9 +40,9 @@ const browserVersion = browser.version();
 // Explicit BCP-47 locales: a POSIX-locale container makes headless Chromium report
 // 'en-US@posix', which Flutter web rejects at startup (see project_state/RISKS.md R-11).
 const RUNS = [
-  { label: 'desktop-en', viewport: { width: 1440, height: 900 }, locale: 'en-US', today: 'Today', timeline: 'Timeline', timelineText: /A correction adds a new version/, labs: 'Labs', labsText: /Reference interval ≠ optimal target/, banner: /DEVELOPMENT BUILD/ },
-  { label: 'phone-en', viewport: { width: 390, height: 844 }, locale: 'en-US', today: 'Today', timeline: 'Timeline', timelineText: /A correction adds a new version/, labs: 'Labs', labsText: /Reference interval ≠ optimal target/, banner: /DEVELOPMENT BUILD/ },
-  { label: 'phone-tr', viewport: { width: 390, height: 844 }, locale: 'tr-TR', today: 'Bugün', timeline: 'Zaman çizelgesi', timelineText: /Düzeltme yeni bir sürüm ekler/, labs: 'Tahliller', labsText: /Referans aralığı ≠ optimal hedef/, banner: /GELİŞTİRME SÜRÜMÜ/ },
+  { label: 'desktop-en', viewport: { width: 1440, height: 900 }, locale: 'en-US', today: 'Today', timeline: 'Timeline', timelineText: /A correction adds a new version/, labs: 'Labs', labsText: /A reference range is not a target to aim for/, banner: /DEVELOPMENT BUILD/ },
+  { label: 'phone-en', viewport: { width: 390, height: 844 }, locale: 'en-US', today: 'Today', timeline: 'Timeline', timelineText: /A correction adds a new version/, labs: 'Labs', labsText: /A reference range is not a target to aim for/, banner: /DEVELOPMENT BUILD/ },
+  { label: 'phone-tr', viewport: { width: 390, height: 844 }, locale: 'tr-TR', today: 'Bugün', timeline: 'Zaman çizelgesi', timelineText: /Düzeltme yeni bir sürüm ekler/, labs: 'Tahliller', labsText: /Referans aralığı ulaşılacak bir hedef değildir/, banner: /GELİŞTİRME SÜRÜMÜ/ },
 ];
 const expectFlutter = process.env.EXPECT_FLUTTER_VERSION;
 // F016-S1 (G-24): the loading view is in the served HTML itself.

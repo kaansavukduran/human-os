@@ -4,129 +4,42 @@ import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
-import '../../presentation/widgets/aion.dart';
-import '../../presentation/widgets/read_failed_note.dart';
-import '../../presentation/widgets/area_intro.dart';
-import '../../presentation/widgets/entry_list.dart';
-import '../../presentation/widgets/loading_line.dart';
 import '../../navigation/destinations.dart';
+import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 
 /// Documents (F010 slice 1): references to the documents the person keeps,
 /// each field as typed: a title, what kind of document it is, its own date,
 /// who issued it and where it is kept. A reference is not the document: the
 /// app never reads, opens, uploads or stores it, and extracts nothing.
-class DocumentsScreen extends StatefulWidget {
+class DocumentsScreen extends StatelessWidget {
   const DocumentsScreen({super.key, required this.services});
 
   final AppServices services;
 
   @override
-  State<DocumentsScreen> createState() => _DocumentsScreenState();
-}
-
-class _DocumentsScreenState extends State<DocumentsScreen> {
-  List<HealthRecord>? _entries;
-  bool _readFailed = false;
-
-  HeartbeatService get _svc => widget.services.heartbeat;
-  String get _me => widget.services.self.id;
-
-  @override
-  void initState() {
-    super.initState();
-    _reload();
-  }
-
-  Future<void> _reload() async {
-    try {
-      final entries = await _svc.documents(_me);
-      if (mounted) {
-        setState(() {
-          _entries = entries;
-          _readFailed = false;
-        });
-      }
-    } on Object {
-      // Said in words with Try again, never a spinner forever (AIONIA v1.2).
-      if (mounted) setState(() => _readFailed = true);
-    }
-  }
-
-  void _retry() {
-    setState(() => _readFailed = false);
-    _reload();
-  }
-
-  Future<void> _open({HealthRecord? correcting}) async {
-    final saved = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      useSafeArea: true,
-      builder: (_) =>
-          _DocumentSheet(svc: _svc, me: _me, correcting: correcting),
-    );
-    if (saved == true) await _reload();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final entries = _entries;
-    final shown = _readFailed ? null : entries;
-    return EntryList(
+    final svc = services.heartbeat;
+    final me = services.self.id;
+    return RecordAreaScreen<HealthRecord>(
       key: const ValueKey('screen-documents'),
-      itemCount: shown?.length ?? 0,
-      itemBuilder: (_, i) {
-        final r = shown![i];
-        return Card(
-          key: ValueKey('doc-entry-${r.id}'),
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            title: Text(s.docLine(r.details! as DocumentReferenceDetails)),
-            // Under the text, so a narrow window never squeezes it.
-            subtitle: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                key: ValueKey('doc-correct-${r.id}'),
-                onPressed: () => _open(correcting: r),
-                child: Text(s.amendAction(AmendReason.correction)),
-              ),
-            ),
-          ),
-        );
-      },
-      header: [
-        AreaIntro(
-          area: DestinationId.documents,
-          title: s.docTitle,
-          what: s.docIntro,
+      area: DestinationId.documents,
+      id: 'doc',
+      title: s.docTitle,
+      what: s.docIntro,
+      addLabel: s.docAdd,
+      emptyText: s.docNone,
+      load: () => svc.documents(me),
+      addSheet: (_) => _DocumentSheet(svc: svc, me: me),
+      rowBuilder: (context, r, area) => RecordEntryRow(
+        id: 'doc',
+        entryId: r.id,
+        line: s.docLine(r.details! as DocumentReferenceDetails),
+        onCorrect: () => area.openSheet(
+          (_) => _DocumentSheet(svc: svc, me: me, correcting: r),
         ),
-        const SizedBox(height: 16),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            key: const ValueKey('doc-add'),
-            onPressed: _open,
-            icon: const Icon(Icons.add),
-            label: Text(s.docAdd),
-          ),
-        ),
-        const SizedBox(height: 16),
-        if (_readFailed)
-          ReadFailedNote(id: 'doc', onRetry: _retry)
-        else if (entries == null)
-          const LoadingLine()
-        else if (entries.isEmpty)
-          Row(
-            children: [
-              const AionFigure(height: 64),
-              const SizedBox(width: 12),
-              Expanded(child: Text(s.docNone, key: const ValueKey('doc-none'))),
-            ],
-          ),
-      ],
+      ),
     );
   }
 }

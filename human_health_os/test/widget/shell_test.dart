@@ -92,7 +92,7 @@ void main() {
     expect(find.byKey(const ValueKey('screen-labs')), findsOneWidget);
     expect(find.byKey(const ValueKey('screen-today')), findsNothing);
     expect(
-      find.textContaining('Reference interval ≠ optimal target'),
+      find.textContaining('A reference range is not a target to aim for'),
       findsOneWidget,
     );
   });

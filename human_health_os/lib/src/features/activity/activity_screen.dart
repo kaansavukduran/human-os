@@ -5,137 +5,43 @@ import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
-import '../../presentation/widgets/aion.dart';
-import '../../presentation/widgets/read_failed_note.dart';
-import '../../presentation/widgets/area_intro.dart';
-import '../../presentation/widgets/entry_list.dart';
-import '../../presentation/widgets/loading_line.dart';
 import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
 /// Activity (F007 slice 6): walks, workouts and steps typed by hand. Minutes
 /// and steps are whole numbers or not given; nothing is estimated (no
 /// calories), added up, rated or merged with device data.
-class ActivityScreen extends StatefulWidget {
+class ActivityScreen extends StatelessWidget {
   const ActivityScreen({super.key, required this.services});
 
   final AppServices services;
 
   @override
-  State<ActivityScreen> createState() => _ActivityScreenState();
-}
-
-class _ActivityScreenState extends State<ActivityScreen> {
-  List<HealthRecord>? _entries;
-  bool _readFailed = false;
-
-  HeartbeatService get _svc => widget.services.heartbeat;
-  String get _me => widget.services.self.id;
-
-  @override
-  void initState() {
-    super.initState();
-    _reload();
-  }
-
-  Future<void> _reload() async {
-    try {
-      final entries = await _svc.activities(_me);
-      if (mounted) {
-        setState(() {
-          _entries = entries;
-          _readFailed = false;
-        });
-      }
-    } on Object {
-      // Said in words with Try again, never a spinner forever (AIONIA v1.2).
-      if (mounted) setState(() => _readFailed = true);
-    }
-  }
-
-  void _retry() {
-    setState(() => _readFailed = false);
-    _reload();
-  }
-
-  Future<void> _open({HealthRecord? correcting}) async {
-    final saved = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      useSafeArea: true,
-      builder: (_) =>
-          _ActivitySheet(svc: _svc, me: _me, correcting: correcting),
-    );
-    if (saved == true) await _reload();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final scheme = Theme.of(context).colorScheme;
-    final entries = _entries;
-    final shown = _readFailed ? null : entries;
-    return EntryList(
+    final svc = services.heartbeat;
+    final me = services.self.id;
+    return RecordAreaScreen<HealthRecord>(
       key: const ValueKey('screen-activity'),
-      itemCount: shown?.length ?? 0,
-      itemBuilder: (_, i) {
-        final r = shown![i];
-        return Card(
-          key: ValueKey('act-entry-${r.id}'),
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            title: Text(s.actLine(r.details! as ActivityEntryDetails)),
-            // The button sits under the text, so a narrow window or large
-            // text never squeezes the entry into a thin column.
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  fmtWhen(r.observedAt),
-                  style: TextStyle(color: scheme.onSurfaceVariant),
-                ),
-                TextButton(
-                  key: ValueKey('act-correct-${r.id}'),
-                  onPressed: () => _open(correcting: r),
-                  child: Text(s.amendAction(AmendReason.correction)),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-      header: [
-        AreaIntro(
-          area: DestinationId.activity,
-          title: s.actTitle,
-          what: s.actIntro,
+      area: DestinationId.activity,
+      id: 'act',
+      title: s.actTitle,
+      what: s.actIntro,
+      addLabel: s.actAdd,
+      emptyText: s.actNone,
+      load: () => svc.activities(me),
+      addSheet: (_) => _ActivitySheet(svc: svc, me: me),
+      rowBuilder: (context, r, area) => RecordEntryRow(
+        id: 'act',
+        entryId: r.id,
+        line: s.actLine(r.details! as ActivityEntryDetails),
+        when: fmtWhen(r.observedAt),
+        onCorrect: () => area.openSheet(
+          (_) => _ActivitySheet(svc: svc, me: me, correcting: r),
         ),
-        const SizedBox(height: 16),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            key: const ValueKey('act-add'),
-            onPressed: _open,
-            icon: const Icon(Icons.add),
-            label: Text(s.actAdd),
-          ),
-        ),
-        const SizedBox(height: 16),
-        if (_readFailed)
-          ReadFailedNote(id: 'act', onRetry: _retry)
-        else if (entries == null)
-          const LoadingLine()
-        else if (entries.isEmpty)
-          Row(
-            children: [
-              const AionFigure(height: 64),
-              const SizedBox(width: 12),
-              Expanded(child: Text(s.actNone, key: const ValueKey('act-none'))),
-            ],
-          ),
-      ],
+      ),
     );
   }
 }

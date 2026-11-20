@@ -4,131 +4,42 @@ import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
-import '../../presentation/widgets/aion.dart';
-import '../../presentation/widgets/read_failed_note.dart';
-import '../../presentation/widgets/area_intro.dart';
-import '../../presentation/widgets/entry_list.dart';
-import '../../presentation/widgets/loading_line.dart';
 import '../../navigation/destinations.dart';
+import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 
 /// Conditions and symptoms (F009 slice 1): as the person names them, with
 /// whether they are current, past or unsure and who they come from. A
 /// self-report is not a confirmed diagnosis; nothing is coded, inferred,
 /// confirmed or suggested.
-class ConditionsScreen extends StatefulWidget {
+class ConditionsScreen extends StatelessWidget {
   const ConditionsScreen({super.key, required this.services});
 
   final AppServices services;
 
   @override
-  State<ConditionsScreen> createState() => _ConditionsScreenState();
-}
-
-class _ConditionsScreenState extends State<ConditionsScreen> {
-  List<HealthRecord>? _entries;
-  bool _readFailed = false;
-
-  HeartbeatService get _svc => widget.services.heartbeat;
-  String get _me => widget.services.self.id;
-
-  @override
-  void initState() {
-    super.initState();
-    _reload();
-  }
-
-  Future<void> _reload() async {
-    try {
-      final entries = await _svc.conditions(_me);
-      if (mounted) {
-        setState(() {
-          _entries = entries;
-          _readFailed = false;
-        });
-      }
-    } on Object {
-      // Said in words with Try again, never a spinner forever (AIONIA v1.2).
-      if (mounted) setState(() => _readFailed = true);
-    }
-  }
-
-  void _retry() {
-    setState(() => _readFailed = false);
-    _reload();
-  }
-
-  Future<void> _open({HealthRecord? correcting}) async {
-    final saved = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      useSafeArea: true,
-      builder: (_) =>
-          _ConditionSheet(svc: _svc, me: _me, correcting: correcting),
-    );
-    if (saved == true) await _reload();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final entries = _entries;
-    final shown = _readFailed ? null : entries;
-    return EntryList(
+    final svc = services.heartbeat;
+    final me = services.self.id;
+    return RecordAreaScreen<HealthRecord>(
       key: const ValueKey('screen-conditions'),
-      itemCount: shown?.length ?? 0,
-      itemBuilder: (_, i) {
-        final r = shown![i];
-        return Card(
-          key: ValueKey('cond-entry-${r.id}'),
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            title: Text(s.condLine(r.details! as ConditionEntryDetails)),
-            // Under the text, so a narrow window never squeezes it.
-            subtitle: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                key: ValueKey('cond-correct-${r.id}'),
-                onPressed: () => _open(correcting: r),
-                child: Text(s.amendAction(AmendReason.correction)),
-              ),
-            ),
-          ),
-        );
-      },
-      header: [
-        AreaIntro(
-          area: DestinationId.conditions,
-          title: s.condTitle,
-          what: s.condIntro,
+      area: DestinationId.conditions,
+      id: 'cond',
+      title: s.condTitle,
+      what: s.condIntro,
+      addLabel: s.condAdd,
+      emptyText: s.condNone,
+      load: () => svc.conditions(me),
+      addSheet: (_) => _ConditionSheet(svc: svc, me: me),
+      rowBuilder: (context, r, area) => RecordEntryRow(
+        id: 'cond',
+        entryId: r.id,
+        line: s.condLine(r.details! as ConditionEntryDetails),
+        onCorrect: () => area.openSheet(
+          (_) => _ConditionSheet(svc: svc, me: me, correcting: r),
         ),
-        const SizedBox(height: 16),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            key: const ValueKey('cond-add'),
-            onPressed: _open,
-            icon: const Icon(Icons.add),
-            label: Text(s.condAdd),
-          ),
-        ),
-        const SizedBox(height: 16),
-        if (_readFailed)
-          ReadFailedNote(id: 'cond', onRetry: _retry)
-        else if (entries == null)
-          const LoadingLine()
-        else if (entries.isEmpty)
-          Row(
-            children: [
-              const AionFigure(height: 64),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(s.condNone, key: const ValueKey('cond-none')),
-              ),
-            ],
-          ),
-      ],
+      ),
     );
   }
 }

@@ -5,9 +5,12 @@ import 'aion.dart';
 /// An empty area names the next step (U031): Aion, one concrete sentence
 /// and, where it can be done from here, one action.
 class FirstStep extends StatelessWidget {
-  const FirstStep({super.key, required this.text, this.action});
+  const FirstStep({super.key, required this.text, this.action, this.textKey});
 
   final String text;
+
+  /// The sentence's own key, where tests and tools look for it.
+  final Key? textKey;
   final Widget? action;
 
   @override
@@ -22,7 +25,11 @@ class FirstStep extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(text, style: Theme.of(context).textTheme.bodyLarge),
+              Text(
+                text,
+                key: textKey,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
               if (action != null) ...[const SizedBox(height: 4), action],
             ],
           ),

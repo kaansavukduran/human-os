@@ -813,7 +813,7 @@ void main() {
     final message = tester
         .widget<Text>(find.byKey(const ValueKey('measure-saved')))
         .data!;
-    expect(message, startsWith('Saved. Before saving this entry'));
+    expect(message, startsWith('Saved: 128/84 mmHg. Before saving this entry'));
 
     // The checkpoint is the vault exactly as it was before the measurement.
     final kept = (await s1.dataFiles!.backups()).single;
@@ -830,7 +830,7 @@ void main() {
     await waitFor(tester, find.byKey(const ValueKey('measure-saved')));
     expect(
       tester.widget<Text>(find.byKey(const ValueKey('measure-saved'))).data,
-      'Saved',
+      'Saved: 57 bpm',
       reason: 'one checkpoint, before the first measurement only',
     );
     expect((await s1.dataFiles!.backups()).length, 1);
@@ -862,7 +862,7 @@ void main() {
     await waitFor(tester, find.byKey(const ValueKey('measure-saved')));
     expect(
       tester.widget<Text>(find.byKey(const ValueKey('measure-saved'))).data,
-      startsWith('Saved. Before saving this entry'),
+      startsWith('Saved: 172.5 cm. Before saving this entry'),
     );
     final backups = await s1.dataFiles!.backups();
     expect(backups, hasLength(2));

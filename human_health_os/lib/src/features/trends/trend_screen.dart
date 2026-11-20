@@ -136,7 +136,7 @@ class _TrendScreenState extends State<TrendScreen> {
                     ),
                     child: CustomPaint(
                       size: box.biggest,
-                      painter: _TrendPainter(
+                      painter: TrendPainter(
                         points: points,
                         minSpan: minSpanFor(widget.kind, unitOf(points.last)),
                         decimal: s.lang == AppLang.tr ? ',' : '.',
@@ -227,8 +227,11 @@ double minSpanFor(RecordKind k, [String? unit]) => switch (k) {
 List<double> _xs(List<TrendPoint> points, Size size) =>
     timePositions(points, _left, size.width - _right);
 
-class _TrendPainter extends CustomPainter {
-  _TrendPainter({
+/// The trend chart (U008), also drawn by one lab test over time (F004-S4):
+/// dots by time, three plain reading lines, the first and last dates. No
+/// band, no colour per value.
+class TrendPainter extends CustomPainter {
+  TrendPainter({
     required this.points,
     required this.minSpan,
     required this.decimal,
@@ -238,9 +241,19 @@ class _TrendPainter extends CustomPainter {
     required this.label,
     required this.picked,
     required this.textStyle,
+    this.join = true,
+    this.dayLabel,
   });
 
   final List<TrendPoint> points;
+
+  /// Whether close readings are joined by a line (labs: never; nothing is
+  /// known between two samples).
+  final bool join;
+
+  /// The date under the axis; by default the local day of the instant. A
+  /// lab sample date is a calendar day and is shown without a zone shift.
+  final String Function(DateTime at)? dayLabel;
 
   /// The smallest value range the axis shows, so a tiny change does not
   /// fill the chart and look like a steep rise.
@@ -279,6 +292,7 @@ class _TrendPainter extends CustomPainter {
     }
     // First and last dates under the axis.
     String day(DateTime t) {
+      if (dayLabel case final f?) return f(t);
       final l = t.toLocal();
       return formatDay(l.year, l.month, l.day, displayDateOrder);
     }
@@ -304,7 +318,7 @@ class _TrendPainter extends CustomPainter {
         ..color = color
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke;
-      for (final seg in segments(points)) {
+      for (final seg in join ? segments(points) : const <List<TrendPoint>>[]) {
         final path = Path();
         for (var i = 0; i < seg.length; i++) {
           final o = Offset(xs[index[seg[i]]!], y(seg[i].values[sIdx]));
@@ -330,6 +344,6 @@ class _TrendPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_TrendPainter old) =>
+  bool shouldRepaint(TrendPainter old) =>
       old.points != points || old.picked != picked || old.line != line;
 }

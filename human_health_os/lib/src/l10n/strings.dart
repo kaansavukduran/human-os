@@ -2200,6 +2200,69 @@ class S {
       _t('Lab\'s printed range: $r', 'Laboratuvarın yazdığı aralık: $r');
   String get labNoRangePrinted => _t('No range printed', 'Aralık yazılmamış');
 
+  // One lab test over time (F004-S4): a view of results with the same name,
+  // unit and specimen as typed. Each result keeps its own printed range and
+  // flag; nothing is compared, merged or judged.
+  String get labGroupsTitle =>
+      _t('Same test over time', 'Aynı test, zaman içinde');
+  String get labGroupsRule => _t(
+    'Grouped only by the same test name, unit and specimen as typed. Human OS does not guess that two different names are the same test.',
+    'Yalnızca aynı yazılmış test adı, birim ve numune türüyle gruplanır. Human OS farklı iki adın aynı test olduğunu tahmin etmez.',
+  );
+  String labGroupLine(String label, String? unit, String? specimen, int n) =>
+      '${[label, unit ?? unitNotGiven, ?specimen].join(' · ')}: '
+      '${_t(n == 1 ? '1 result' : '$n results', '$n sonuç')}';
+  String labGroupUnit(String? unit) => _t(
+    'Unit as typed: ${unit ?? 'not given'}',
+    'Yazılan birim: ${unit ?? 'verilmedi'}',
+  );
+  String labGroupSpecimen(String specimen) =>
+      _t('Specimen as typed: $specimen', 'Yazılan numune türü: $specimen');
+  String get labGroupAxisNoUnit => _t('Unit not given', 'Birim verilmedi');
+  String labGroupChartSpoken(int n, String? unit, String values) {
+    final count = _t(
+      n == 1 ? '1 number result' : '$n number results',
+      '$n sayısal sonucun',
+    );
+    return _t(
+      'Chart of $count${unit == null ? '' : ' in $unit'}, oldest first: $values. Every result is listed after it.',
+      '${unit == null ? '' : '$unit cinsinden '}$count grafiği, eskiden yeniye: $values. Her sonuç aşağıda listelenmiştir.',
+    );
+  }
+
+  String get labGroupLegend => _t(
+    'Each dot is one result, placed by its sample date. Dots are not joined: nothing is known between two samples. No range is drawn; each result\'s range is listed with it.',
+    'Her nokta bir sonuçtur ve numune tarihine göre yerleşir. Noktalar birleştirilmez: iki numune arasında ne olduğu bilinmez. Grafikte aralık çizilmez; her sonucun aralığı kendi satırında yazılıdır.',
+  );
+  String get labGroupNoChart => _t(
+    'No result here is a plain number, so there is no chart.',
+    'Buradaki sonuçların hiçbiri düz bir sayı değil; bu yüzden grafik yok.',
+  );
+  String labGroupNotDrawn(String reason, int n) => switch (reason) {
+    'LAB_VALUE_CENSORED' => _t(
+      'Below or above a limit ($n): listed, not drawn, because the report gives a limit, not the value.',
+      'Bir sınırın altı ya da üstü ($n): listelenir, çizilmez; rapor değeri değil, bir sınırı verir.',
+    ),
+    'LAB_VALUE_TEXT' => _t(
+      'Printed as text ($n): listed, not drawn, because text is not a number.',
+      'Metin olarak yazılmış ($n): listelenir, çizilmez; metin bir sayı değildir.',
+    ),
+    'LAB_VERSION_CONFLICT' => _t(
+      'Two competing versions ($n): listed, not drawn, until one is chosen.',
+      'Çelişen iki sürüm ($n): biri seçilene kadar listelenir, çizilmez.',
+    ),
+    _ => _t(
+      'Not reported ($n): listed, not drawn; a missing value is not zero.',
+      'Değer yok ($n): listelenir, çizilmez; eksik değer sıfır değildir.',
+    ),
+  };
+  String get labGroupEvery =>
+      _t('Every result, newest first', 'Tüm sonuçlar, yeniden eskiye');
+  String labGroupLaboratory(String l) =>
+      _t('Laboratory: $l', 'Laboratuvar: $l');
+  String labGroupNameAsTyped(String name) =>
+      _t('Name as typed: $name', 'Yazılan ad: $name');
+
   // How the value is printed (F004-S2, D-043). The words describe the
   // printed form only; nothing compares the value with a range.
   String get labKindTitle => _t('Kind of result', 'Sonucun türü');

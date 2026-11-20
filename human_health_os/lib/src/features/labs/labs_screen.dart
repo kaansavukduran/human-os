@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
+import '../../domain/labs/lab_groups.dart';
 import '../../domain/ports/health_repository.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
@@ -18,6 +19,7 @@ import '../../presentation/widgets/status_chip.dart';
 import '../../presentation/widgets/term_link.dart';
 import '../measurements/measurement_format.dart' show labReportLines;
 import '../timeline/timeline_screen.dart' show fmtValue, fmtWhen;
+import 'lab_group_screen.dart';
 
 /// Labs (ladder F004): the list of current results first, and a sheet to
 /// enter a result exactly as the report printed it (U030: results before
@@ -219,7 +221,11 @@ class _LabsScreenState extends State<LabsScreen> {
 
   /// One row per shown version (a conflict lists each), flattened once per
   /// read so the list builds only the rows in view.
-  List<({HealthRecord record, bool conflict})> _rows = const [];
+  List<LabRow> _rows = const [];
+
+  /// Tests with more than one current result (F004-S4): the same name,
+  /// unit and specimen as typed. A view of [_rows]; nothing is written.
+  List<LabGroup> _groups = const [];
 
   HeartbeatService get _svc => widget.services.heartbeat;
   String get _me => widget.services.self.id;
@@ -248,6 +254,10 @@ class _LabsScreenState extends State<LabsScreen> {
             for (final x in e)
               for (final r in x.heads)
                 (record: r, conflict: x.status == EntryStatus.conflict),
+          ];
+          _groups = [
+            for (final g in labGroups(_rows))
+              if (g.length > 1) g,
           ];
           _loaded = true;
           _readFailed = false;
@@ -342,6 +352,34 @@ class _LabsScreenState extends State<LabsScreen> {
                 ),
         ),
         const SizedBox(height: 16),
+        if (!_readFailed && _loaded && _groups.isNotEmpty) ...[
+          Semantics(
+            header: true,
+            child: Text(s.labGroupsTitle, style: text.titleSmall),
+          ),
+          Text(
+            s.labGroupsRule,
+            key: const ValueKey('labs-group-rule'),
+            style: text.bodySmall,
+          ),
+          for (final g in _groups)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                key: ValueKey('lab-group-${g.rows.first.record.id}'),
+                icon: const Icon(Icons.show_chart_outlined),
+                label: Text(
+                  s.labGroupLine(g.label, g.unit, g.specimen, g.length),
+                ),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => LabGroupScreen(group: g),
+                  ),
+                ),
+              ),
+            ),
+          const SizedBox(height: 16),
+        ],
         if (_readFailed)
           ReadFailedNote(id: 'labs', onRetry: _retry)
         else if (!_loaded)

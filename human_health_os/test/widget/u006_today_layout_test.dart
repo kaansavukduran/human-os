@@ -19,8 +19,10 @@ List<String> tileOrderOnToday(WidgetTester tester) {
       RecordKind.bodyTemperature,
       RecordKind.oxygenSaturation,
       RecordKind.respiratoryRate,
+      RecordKind.capillaryGlucose,
       RecordKind.waistCircumference,
       RecordKind.height,
+      RecordKind.bodyFatPercentage,
     ])
       k.code,
   ];
@@ -132,8 +134,10 @@ void main() {
           'vital.body_temperature',
           'vital.oxygen_saturation',
           'vital.respiratory_rate',
+          'glucose.capillary',
           'body.waist_circumference',
           'body.height',
+          'body.fat_percentage',
         },
       ),
     );

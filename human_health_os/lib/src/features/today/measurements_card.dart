@@ -5,6 +5,7 @@ import '../../app/appearance_scope.dart';
 import '../../domain/guide/glossary.dart';
 import '../../domain/settings/appearance.dart';
 import '../../presentation/widgets/number_pad.dart';
+import '../../presentation/widgets/sheet_parts.dart' show FieldFocus;
 import '../guide/glossary_screen.dart';
 import '../trends/trend_screen.dart';
 import '../../application/heartbeat_service.dart';
@@ -33,8 +34,10 @@ class MeasurementsCard extends StatefulWidget {
     RecordKind.bodyTemperature,
     RecordKind.oxygenSaturation,
     RecordKind.respiratoryRate,
+    RecordKind.capillaryGlucose,
     RecordKind.waistCircumference,
     RecordKind.height,
+    RecordKind.bodyFatPercentage,
   ];
 
   @override
@@ -362,7 +365,16 @@ class _EntrySheetState extends State<_EntrySheet> {
   final _context = TextEditingController();
   final _when = TextEditingController();
   final _more = ExpansibleController();
+  final _focus = FieldFocus();
   late TextEditingController _active = _value;
+
+  /// The unit chosen for a kind with more than one (capillary glucose:
+  /// mg/dL or mmol/L, D-048); starts as the unit of the person's newest
+  /// reading of this kind, or none.
+  String? _unit;
+
+  /// Before or after eating, as chosen for a capillary glucose; optional.
+  GlucoseTiming? _timing;
   bool? _padChoice;
 
   bool get _pad =>
@@ -383,6 +395,20 @@ class _EntrySheetState extends State<_EntrySheet> {
   void initState() {
     super.initState();
     _loadNotes();
+    if (widget.kind.units.length > 1) _loadUnit();
+  }
+
+  /// The unit of the newest reading of this kind, so a person whose meter
+  /// shows mmol/L does not choose it every time. Shown chosen; changeable.
+  Future<void> _loadUnit() async {
+    final entries = await widget.services.heartbeat.measurementTimeline(
+      widget.services.self.id,
+      widget.kind,
+    );
+    final unit = latestWithValue(entries)?.shown.quantity?.unit;
+    if (mounted && _unit == null && unit != null) {
+      setState(() => _unit = unit);
+    }
   }
 
   Future<void> _loadNotes() async {
@@ -400,6 +426,7 @@ class _EntrySheetState extends State<_EntrySheet> {
     _diastolic.dispose();
     _context.dispose();
     _when.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
@@ -420,6 +447,8 @@ class _EntrySheetState extends State<_EntrySheet> {
           context: _context.text,
           when: _when.text,
           notMeasured: _notMeasured,
+          unit: _notMeasured ? '' : (_unit ?? ''),
+          glucoseTiming: _notMeasured ? null : _timing,
         ),
       );
       if (mounted) Navigator.of(context).pop(true);
@@ -441,6 +470,8 @@ class _EntrySheetState extends State<_EntrySheet> {
     if (_errorField == 'when' || _errorField == 'context') {
       _more.expand();
     }
+    // The field the error is about takes focus and comes into view.
+    _focus.focusAfterFrame(this, _errorField);
   }
 
   String? _errorFor(S s, String field) =>
@@ -467,6 +498,7 @@ class _EntrySheetState extends State<_EntrySheet> {
       child: TextField(
         key: ValueKey(key),
         controller: c,
+        focusNode: _focus[field],
         autofocus: autofocus,
         keyboardType: number
             ? const TextInputType.numberWithOptions(decimal: true)
@@ -486,6 +518,77 @@ class _EntrySheetState extends State<_EntrySheet> {
       ),
     ),
   );
+
+  /// The unit chips of a kind with more than one unit (D-048): none is
+  /// guessed from the number; the error, if any, shows under them.
+  Widget _unitChoice(S s, RecordKind kind) {
+    final text = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+    final error = _errorFor(s, 'unit');
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.glucoseUnitLabel, style: text.bodyMedium),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final (i, u) in kind.units.indexed)
+                ChoiceChip(
+                  key: ValueKey('measure-unit-$u'),
+                  focusNode: i == 0 ? _focus['unit'] : null,
+                  label: Text(s.unit(u)),
+                  selected: _unit == u,
+                  onSelected: _busy ? null : (_) => setState(() => _unit = u),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            error ?? s.glucoseUnitHelp,
+            key: error == null ? null : const ValueKey('measure-unit-error'),
+            style: text.bodySmall?.copyWith(
+              color: error == null ? scheme.outline : scheme.error,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Meal timing of a capillary glucose, as chosen (optional; tapping the
+  /// chosen one again clears it). Never inferred from the time.
+  Widget _timingChoice(S s) {
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.glucoseTimingLabel, style: text.bodyMedium),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final t in GlucoseTiming.values)
+                ChoiceChip(
+                  key: ValueKey('measure-timing-${t.code}'),
+                  label: Text(s.glucoseTiming(t)),
+                  selected: _timing == t,
+                  onSelected: _busy
+                      ? null
+                      : (on) => setState(() => _timing = on ? t : null),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   String _stamp(DateTime d) {
     String two(int n) => n.toString().padLeft(2, '0');
@@ -614,6 +717,9 @@ class _EntrySheetState extends State<_EntrySheet> {
                 hint: hint,
                 autofocus: true,
               ),
+            if (!_notMeasured && kind.units.length > 1) _unitChoice(s, kind),
+            if (!_notMeasured && kind == RecordKind.capillaryGlucose)
+              _timingChoice(s),
             if (!_notMeasured)
               Align(
                 alignment: Alignment.centerLeft,

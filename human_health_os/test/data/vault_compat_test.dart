@@ -101,14 +101,14 @@ void main() {
   }
 
   group('compatibility metadata (§35.3)', () {
-    test('this app writes vault format 1, reads record schema 15 (lab report '
-        'details) and writes weight and plain-number lab '
+    test('this app writes vault format 1, reads record schema 16 (glucose and '
+        'body fat as typed) and writes weight and plain-number lab '
         'results at 3, reads format 1, never '
         'downgrades', () {
       expect(vaultFormatVersion, 1);
       expect(vaultOldestReadableVersion, 1);
       expect(vaultDowngradeSupported, isFalse);
-      expect(HealthRecord.currentSchemaVersion, 15);
+      expect(HealthRecord.currentSchemaVersion, 16);
       expect(HealthRecord.labPrintedResultSchema, 14);
       expect(HealthRecord.labReportDetailsSchema, 15);
       expect(HealthRecord.defaultWriteSchema, 3);
@@ -143,6 +143,8 @@ void main() {
       expect(HealthRecord.writeSchemaFor(RecordKind.conditionEntry), 11);
       expect(HealthRecord.writeSchemaFor(RecordKind.preventiveEntry), 12);
       expect(HealthRecord.writeSchemaFor(RecordKind.documentReference), 13);
+      expect(HealthRecord.writeSchemaFor(RecordKind.capillaryGlucose), 16);
+      expect(HealthRecord.writeSchemaFor(RecordKind.bodyFatPercentage), 16);
       expect(Profile.currentSchemaVersion, 1);
     });
 

@@ -31,6 +31,7 @@ abstract class RecordDetails {
     ConditionEntryDetails.typeTag => ConditionEntryDetails.fromJson(j),
     PreventiveEntryDetails.typeTag => PreventiveEntryDetails.fromJson(j),
     DocumentReferenceDetails.typeTag => DocumentReferenceDetails.fromJson(j),
+    GlucoseTimingDetails.typeTag => GlucoseTimingDetails.fromJson(j),
     final t => throw FormatException('Unknown details type "$t"'),
   };
 }
@@ -93,6 +94,50 @@ class BloodPressureDetails extends RecordDetails {
   @override
   int get hashCode =>
       Object.hash(systolic, diastolic, unit, systolicText, diastolicText);
+}
+
+/// When a capillary glucose was taken relative to eating, as the person
+/// chose it (F007-S8, D-048). A label they pick, never inferred from the
+/// time or the value, and never read as a judgement.
+enum GlucoseTiming {
+  fasting('fasting'),
+  afterMeal('after_meal'),
+  other('other');
+
+  const GlucoseTiming(this.code);
+  final String code;
+
+  static GlucoseTiming fromCode(String code) => values.firstWhere(
+    (t) => t.code == code,
+    orElse: () => throw FormatException('Unknown glucose timing "$code"'),
+  );
+}
+
+/// The meal timing of a capillary glucose reading (record schema 16): kept
+/// in `details` beside the reading's quantity, never in its place, and only
+/// when the person chose one. The number and its unit stay in `quantity`.
+class GlucoseTimingDetails extends RecordDetails {
+  const GlucoseTimingDetails(this.timing);
+
+  static const String typeTag = 'glucose_timing';
+
+  final GlucoseTiming timing;
+
+  @override
+  String get type => typeTag;
+
+  @override
+  Map<String, Object?> toJson() => {'type': typeTag, 'timing': timing.code};
+
+  static GlucoseTimingDetails fromJson(Map<String, Object?> j) =>
+      GlucoseTimingDetails(GlucoseTiming.fromCode(j['timing']! as String));
+
+  @override
+  bool operator ==(Object other) =>
+      other is GlucoseTimingDetails && other.timing == timing;
+
+  @override
+  int get hashCode => timing.hashCode;
 }
 
 /// Longest text kept in a medication field, in characters.

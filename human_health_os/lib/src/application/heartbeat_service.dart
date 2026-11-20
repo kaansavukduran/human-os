@@ -106,6 +106,8 @@ class MeasurementInput {
     this.context = '',
     this.when = '',
     this.notMeasured = false,
+    this.unit = '',
+    this.glucoseTiming,
   });
 
   final String value;
@@ -122,6 +124,16 @@ class MeasurementInput {
   /// reading never becomes "not measured"; a correction of a "not measured"
   /// entry with no number typed stays one (its time or note changes).
   final bool notMeasured;
+
+  /// The unit chosen for a kind with more than one ([RecordKind.units]:
+  /// mg/dL or mmol/L for capillary glucose), kept as chosen and never
+  /// converted (D-048). Blank: none chosen (a correction keeps the stored
+  /// unit). Ignored for a kind with one unit.
+  final String unit;
+
+  /// Before or after eating, as chosen for a capillary glucose (D-048);
+  /// null = not given. Never inferred and never interpreted.
+  final GlucoseTiming? glucoseTiming;
 }
 
 /// The kinds for which "I did not measure this" is offered (D-047): the
@@ -134,6 +146,9 @@ const Set<RecordKind> notMeasuredKinds = {
   RecordKind.bodyTemperature,
   RecordKind.oxygenSaturation,
   RecordKind.respiratoryRate,
+  // A home glucose check is often on a routine too (D-048); body fat from a
+  // scale is now and then, like waist and height.
+  RecordKind.capillaryGlucose,
 };
 
 /// Like [parseDecimal], but refuses a value whose separator could be a
@@ -759,9 +774,12 @@ class HeartbeatService {
     if (context.runes.length > HealthRecord.maxContextLength) {
       throw const InputError('CONTEXT_TOO_LONG', 'context');
     }
+    if (input.glucoseTiming != null && kind != RecordKind.capillaryGlucose) {
+      throw ArgumentError.value(input.glucoseTiming, 'glucoseTiming');
+    }
     Quantity? quantity;
     String? originalText;
-    BloodPressureDetails? details;
+    RecordDetails? details;
     final typed = kind.isStructured
         ? [input.systolic, input.diastolic]
         : [input.value];
@@ -786,6 +804,11 @@ class HeartbeatService {
           kind.isStructured ? 'systolic' : 'value',
         );
       }
+      // The meal timing belongs to a reading; a "not measured" entry holds
+      // none (D-048).
+      if (input.glucoseTiming != null) {
+        throw const InputError('NOT_MEASURED_WITH_VALUE', 'timing');
+      }
     } else if (kind.isStructured) {
       final systolic = _measurementNumber(input.systolic, 'systolic');
       final diastolic = _measurementNumber(input.diastolic, 'diastolic');
@@ -803,11 +826,28 @@ class HeartbeatService {
       final number = _measurementNumber(input.value, 'value');
       // Definitional, not clinical: a percentage cannot be above 100. An
       // entry rule only; stored records are not re-judged (D-018).
-      if (kind == RecordKind.oxygenSaturation && number > 100) {
+      if ((kind == RecordKind.oxygenSaturation ||
+              kind == RecordKind.bodyFatPercentage) &&
+          number > 100) {
         throw const InputError('OUT_OF_DEFINITION', 'value');
       }
-      quantity = Quantity(number, kind.unit);
+      var unit = kind.unit;
+      if (kind.units.length > 1) {
+        // The unit the device showed, chosen by the person: kept as chosen,
+        // never guessed from the number and never converted (D-048). A
+        // correction keeps the stored unit unless another is chosen.
+        final chosen = input.unit.trim();
+        unit = chosen.isEmpty ? target?.quantity?.unit : chosen;
+        if (unit == null) {
+          throw const InputError('UNIT_CHOICE_REQUIRED', 'unit');
+        }
+        if (!kind.units.contains(unit)) {
+          throw const InputError('UNIT_NOT_SUPPORTED', 'unit');
+        }
+      }
+      quantity = Quantity(number, unit);
       originalText = input.value.trim();
+      if (input.glucoseTiming case final t?) details = GlucoseTimingDetails(t);
     }
     final now = clock.nowUtc();
     // A correction keeps the stored time unless a different one is typed
@@ -832,7 +872,11 @@ class HeartbeatService {
       id: _ids.newId(),
       profileId: profileId,
       kind: kind,
-      state: RecordState.observed,
+      // A scale's body fat is the device's estimate as it showed it: a
+      // report of a model output, never an observed fact (D-048).
+      state: kind.isDeviceEstimate
+          ? RecordState.reported
+          : RecordState.observed,
       valueStatus: notMeasured ? ValueStatus.notMeasured : ValueStatus.present,
       quantity: quantity,
       originalText: originalText,

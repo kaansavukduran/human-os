@@ -66,7 +66,11 @@ class _TrendScreenState extends State<TrendScreen> {
     final s = S.of(context);
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    final points = inRange(_all, _from());
+    final listed = inRange(_all, _from());
+    // One unit per axis (D-048): readings in another unit are listed below
+    // the chart, never drawn beside these and never converted.
+    final points = sameUnitAsNewest(listed);
+    final otherUnits = listed.length - points.length;
     final picked = _picked;
     return Scaffold(
       appBar: AppBar(title: Text(s.trendTitle(s.recordKind(widget.kind)))),
@@ -114,7 +118,7 @@ class _TrendScreenState extends State<TrendScreen> {
                       size: box.biggest,
                       painter: _TrendPainter(
                         points: points,
-                        minSpan: minSpanFor(widget.kind),
+                        minSpan: minSpanFor(widget.kind, unitOf(points.last)),
                         decimal: s.lang == AppLang.tr ? ',' : '.',
                         line: scheme.primary,
                         second: scheme.onSurface,
@@ -135,6 +139,17 @@ class _TrendScreenState extends State<TrendScreen> {
                   : s.trendLegend,
               style: text.bodySmall?.copyWith(color: scheme.outline),
             ),
+            if (otherUnits > 0) ...[
+              const SizedBox(height: 4),
+              Text(
+                s.trendOtherUnits(
+                  s.unit(unitOf(points.last) ?? ''),
+                  otherUnits,
+                ),
+                key: const ValueKey('trend-other-units'),
+                style: text.bodySmall?.copyWith(color: scheme.outline),
+              ),
+            ],
             if (picked != null) ...[
               const SizedBox(height: 8),
               Text(
@@ -145,7 +160,7 @@ class _TrendScreenState extends State<TrendScreen> {
             ],
             const SizedBox(height: 16),
             Text(s.trendAllPoints, style: text.titleSmall),
-            for (final p in points.reversed)
+            for (final p in listed.reversed)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Text(
@@ -174,7 +189,7 @@ class _TrendScreenState extends State<TrendScreen> {
 const double _left = 56, _right = 12, _top = 8, _bottom = 22;
 
 /// The smallest axis range per measure (in its stored unit).
-double minSpanFor(RecordKind k) => switch (k) {
+double minSpanFor(RecordKind k, [String? unit]) => switch (k) {
   RecordKind.bodyWeight => 5,
   RecordKind.bloodPressure => 20,
   RecordKind.restingHeartRate => 20,
@@ -183,6 +198,9 @@ double minSpanFor(RecordKind k) => switch (k) {
   RecordKind.respiratoryRate => 10,
   RecordKind.waistCircumference => 10,
   RecordKind.height => 10,
+  RecordKind.bodyFatPercentage => 5,
+  // In the unit of the drawn readings (only one is drawn; D-048).
+  RecordKind.capillaryGlucose => unit == 'mmol/L' ? 1 : 20,
   _ => 1,
 };
 

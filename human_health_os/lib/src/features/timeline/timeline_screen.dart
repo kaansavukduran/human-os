@@ -314,6 +314,11 @@ class _EntryDetailState extends State<_EntryDetail> {
   final _diastolic = TextEditingController();
   final _context = TextEditingController();
   final _when = TextEditingController();
+
+  /// The unit and meal timing of a capillary glucose being corrected
+  /// (D-048): opened as stored, changeable, never converted.
+  String? _unit;
+  GlucoseTiming? _timing;
   String? _correcting;
   String? _errorCode;
   String? _errorField;
@@ -339,6 +344,11 @@ class _EntryDetailState extends State<_EntryDetail> {
     // The note belongs to the observation; a correction keeps it unless
     // the person changes it.
     _context.text = head.context ?? '';
+    _unit = head.quantity?.unit;
+    _timing = switch (head.details) {
+      GlucoseTimingDetails(:final timing) => timing,
+      _ => null,
+    };
     if (head.kind.isMeasurement) {
       // A measurement opens as stored (G-48): its value as typed and its
       // time, so a wrong time alone can be put right. The same text saved
@@ -490,6 +500,7 @@ class _EntryDetailState extends State<_EntryDetail> {
         autofocus: true,
         helper: helper,
       ),
+      if (head.kind.units.length > 1) ..._glucoseChoices(s, head.kind),
       if (head.kind.isMeasurement) ...[
         _correctField(
           s,
@@ -500,6 +511,65 @@ class _EntryDetailState extends State<_EntryDetail> {
           number: false,
         ),
         ..._whenFields(s, head),
+      ],
+    ];
+  }
+
+  /// The unit (and, for capillary glucose, the meal timing) as chips,
+  /// opened with the stored choice (D-048).
+  List<Widget> _glucoseChoices(S s, RecordKind kind) {
+    final text = Theme.of(context).textTheme;
+    final error = _errorCode != null && _errorField == 'unit'
+        ? s.inputError(_errorCode!)
+        : null;
+    return [
+      Text(s.glucoseUnitLabel, style: text.bodyMedium),
+      const SizedBox(height: 4),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final u in kind.units)
+            ChoiceChip(
+              key: ValueKey('correct-unit-$u'),
+              label: Text(s.unit(u)),
+              selected: _unit == u,
+              onSelected: _busy ? null : (_) => setState(() => _unit = u),
+            ),
+        ],
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: 4, bottom: 8),
+        child: Text(
+          error ?? s.glucoseUnitHelp,
+          style: text.bodySmall?.copyWith(
+            color: error == null
+                ? Theme.of(context).colorScheme.outline
+                : Theme.of(context).colorScheme.error,
+          ),
+        ),
+      ),
+      if (kind == RecordKind.capillaryGlucose) ...[
+        Text(s.glucoseTimingLabel, style: text.bodyMedium),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final t in GlucoseTiming.values)
+                ChoiceChip(
+                  key: ValueKey('correct-timing-${t.code}'),
+                  label: Text(s.glucoseTiming(t)),
+                  selected: _timing == t,
+                  onSelected: _busy
+                      ? null
+                      : (on) => setState(() => _timing = on ? t : null),
+                ),
+            ],
+          ),
+        ),
       ],
     ];
   }
@@ -515,6 +585,14 @@ class _EntryDetailState extends State<_EntryDetail> {
               diastolic: _diastolic.text,
               context: _context.text,
               when: _when.text,
+              unit: _unit ?? '',
+              // A timing belongs to a reading: none is sent while the
+              // entry stays "not measured" (no number typed).
+              glucoseTiming:
+                  head.valueStatus == ValueStatus.notMeasured &&
+                      _controller.text.trim().isEmpty
+                  ? null
+                  : _timing,
             ),
           )
         : widget.svc.correctWeightKg(

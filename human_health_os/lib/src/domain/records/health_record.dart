@@ -130,7 +130,19 @@ enum RecordKind {
   /// schema 13): what it is, its date and issuer as typed, and where it is
   /// kept. [DocumentReferenceDetails]. A reference is not the document: no
   /// file bytes, no reading, no extraction.
-  documentReference('document.reference', minSchema: 13);
+  documentReference('document.reference', minSchema: 13),
+
+  /// Blood glucose from a finger-prick meter, typed by hand (F007 slice 8,
+  /// record schema 16, D-048). Kept in the unit the meter showed, mg/dL or
+  /// mmol/L, never converted; the meal timing, when given, is
+  /// [GlucoseTimingDetails]. A laboratory (venous plasma) glucose is a lab
+  /// result: the same display name is not the same measurand.
+  capillaryGlucose('glucose.capillary', minSchema: 16),
+
+  /// Body fat percentage as a home scale (or another device) showed it
+  /// (F007 slice 8, record schema 16, D-048): the device's estimate, stored
+  /// as [RecordState.reported], never as an observed fact.
+  bodyFatPercentage('body.fat_percentage', minSchema: 16, unit: '%');
 
   const RecordKind(this.code, {this.minSchema = 1, this.unit});
   final String code;
@@ -139,8 +151,21 @@ enum RecordKind {
   final int minSchema;
 
   /// The only unit stored for this kind (no conversion rule exists); null
-  /// for a lab result, whose printed unit is kept as printed.
+  /// for a lab result, whose printed unit is kept as printed, and for a
+  /// kind with more than one accepted unit ([units]).
   final String? unit;
+
+  /// The units a measurement of this kind may be stored in, each kept as
+  /// chosen and never converted into another (D-048): the meter's mg/dL or
+  /// mmol/L for capillary glucose, otherwise the one canonical [unit].
+  List<String> get units => switch (this) {
+    capillaryGlucose => const ['mg/dL', 'mmol/L'],
+    _ => [?unit],
+  };
+
+  /// The value is the device's own estimate as it showed it (a scale's body
+  /// fat), saved as reported, never as an observed fact (D-048).
+  bool get isDeviceEstimate => this == bodyFatPercentage;
 
   /// The F007 measurement kinds: typed by hand on Today, with an optional
   /// measurement context.
@@ -151,7 +176,9 @@ enum RecordKind {
     height ||
     bodyTemperature ||
     oxygenSaturation ||
-    respiratoryRate => true,
+    respiratoryRate ||
+    capillaryGlucose ||
+    bodyFatPercentage => true,
     bodyWeight ||
     labResult ||
     medicationItem ||
@@ -197,6 +224,8 @@ enum RecordKind {
     conditionEntry => ConditionEntryDetails.typeTag,
     preventiveEntry => PreventiveEntryDetails.typeTag,
     documentReference => DocumentReferenceDetails.typeTag,
+    // Optional beside the quantity, never in its place (D-048).
+    capillaryGlucose => GlucoseTimingDetails.typeTag,
     _ => null,
   };
 
@@ -370,9 +399,15 @@ class HealthRecord {
   ///   and/or high as typed, unit, partition), all as printed. Only a lab
   ///   result holding one of them is written at 15. Older records read
   ///   unchanged.
+  /// - 16 (F007-S8, step RS-016, additive, D-048): adds the measurement
+  ///   kinds `glucose.capillary` (quantity in mg/dL or mmol/L as chosen, no
+  ///   conversion, optional `glucose_timing` details) and
+  ///   `body.fat_percentage` (%, the device's estimate, state `reported`).
+  ///   No new key. Only these kinds are written at 16. Older records read
+  ///   unchanged.
   ///
   /// The newest schema this app reads; a newer one refuses the whole store.
-  static const int currentSchemaVersion = 15;
+  static const int currentSchemaVersion = 16;
 
   /// The schema that introduced [LabPrintedResult] (D-043).
   static const int labPrintedResultSchema = 14;
@@ -435,7 +470,8 @@ class HealthRecord {
   final String? context;
 
   /// The structured value of a structured kind (schema 4): a blood pressure
-  /// reading. Null for every other kind.
+  /// reading; or, beside a quantity, the meal timing of a capillary glucose
+  /// (schema 16). Null for every other kind.
   final RecordDetails? details;
 
   /// [observedAt] is a calendar day (UTC midnight of that day), not an
@@ -508,8 +544,9 @@ class HealthRecord {
       );
     }
     final d = details;
-    if (d != null &&
-        (!present || !kind.isStructured || d.type != kind.detailsType)) {
+    // A kind without a details type takes none; capillary glucose takes its
+    // timing beside the quantity (D-048).
+    if (d != null && (!present || d.type != kind.detailsType)) {
       throw const RecordValidationError(
         'DETAILS_MISMATCH',
         'Structured details belong to a present value of their own kind',
@@ -657,7 +694,9 @@ class HealthRecord {
           RecordKind.height ||
           RecordKind.bodyTemperature ||
           RecordKind.oxygenSaturation ||
-          RecordKind.respiratoryRate:
+          RecordKind.respiratoryRate ||
+          RecordKind.capillaryGlucose ||
+          RecordKind.bodyFatPercentage:
         // Structural checks only: no upper bound and no clinical threshold
         // (none is specified; master §43). A circumference or a rate of 0
         // or less is not a measurement.
@@ -709,10 +748,10 @@ class HealthRecord {
   }
 
   void _checkUnit(String? unit) {
-    if (unit != kind.unit) {
+    if (!kind.units.contains(unit)) {
       throw RecordValidationError(
         'UNIT_NOT_SUPPORTED',
-        '${kind.code} is stored in ${kind.unit}; "$unit" needs an explicit conversion rule',
+        '${kind.code} is stored in ${kind.units.join(' or ')}; "$unit" needs an explicit conversion rule',
       );
     }
   }

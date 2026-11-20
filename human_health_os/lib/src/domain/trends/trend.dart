@@ -60,6 +60,25 @@ List<TrendPoint> trendPointsFromRecords(List<HealthRecord> records) {
   return out;
 }
 
+/// The unit of a point's value.
+String? unitOf(TrendPoint p) => switch (p.record.details) {
+  BloodPressureDetails(:final unit) => unit,
+  _ => p.record.quantity?.unit,
+};
+
+/// The points a chart may draw on one axis: those in the newest point's
+/// unit. A kind kept in the unit it was typed in (capillary glucose, mg/dL
+/// or mmol/L; D-048) never has two units on one axis and is never
+/// converted; the other points are still listed as text.
+List<TrendPoint> sameUnitAsNewest(List<TrendPoint> points) {
+  if (points.isEmpty) return points;
+  final u = unitOf(points.last);
+  return [
+    for (final p in points)
+      if (unitOf(p) == u) p,
+  ];
+}
+
 /// Points at or after [from] (null keeps all).
 List<TrendPoint> inRange(List<TrendPoint> points, DateTime? from) => [
   for (final p in points)

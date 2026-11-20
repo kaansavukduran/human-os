@@ -462,6 +462,80 @@ void main() {
     dir.deleteSync(recursive: true);
   });
 
+  testWidgets('F007-S8: blood glucose in the unit chosen and body fat as '
+      'the device showed it survive a relaunch on the real file vault, after '
+      'the one upgrade checkpoint', (tester) async {
+    final dir = Directory.systemTemp.createTempSync('hhos-it-f007s8-');
+    final vault = File('${dir.path}/$vaultFileName');
+    LogRepository open() => LogRepository(
+      sink: FileLogSink(vault),
+      durability: StorageDurability.localFile,
+      location: vault.path,
+    );
+    final a = open();
+    await a.open();
+    final s1 = await servicesFor(dev, HostPlatform.linux, a);
+    final weight = await s1.heartbeat.recordWeightKg(
+      profileId: s1.self.id,
+      input: '72,4',
+    );
+    var checkpoints = 0;
+    final previous = a.beforeSchemaUpgrade;
+    a.beforeSchemaUpgrade = () async {
+      checkpoints++;
+      await previous?.call();
+    };
+    final glucose = await s1.heartbeat.recordMeasurement(
+      profileId: s1.self.id,
+      kind: RecordKind.capillaryGlucose,
+      input: const MeasurementInput(
+        value: '5,3',
+        unit: 'mmol/L',
+        glucoseTiming: GlucoseTiming.fasting,
+      ),
+    );
+    final fat = await s1.heartbeat.recordMeasurement(
+      profileId: s1.self.id,
+      kind: RecordKind.bodyFatPercentage,
+      input: const MeasurementInput(value: '24,5'),
+    );
+    final miss = await s1.heartbeat.recordMeasurement(
+      profileId: s1.self.id,
+      kind: RecordKind.capillaryGlucose,
+      input: const MeasurementInput(notMeasured: true),
+    );
+    expect(checkpoints, 1, reason: 'the first schema 16 record');
+    expect(weight.schemaVersion, 3);
+    expect(glucose.schemaVersion, 16);
+    expect(fat.state, RecordState.reported);
+
+    final b = open(); // relaunch
+    final report = await b.open();
+    expect(report.warnings, isEmpty);
+    final s2 = await servicesFor(dev, HostPlatform.linux, b, report: report);
+    final again = {for (final r in await b.records(s2.self.id)) r.id: r};
+    for (final r in [weight, glucose, fat, miss]) {
+      expect(again[r.id]!.toJson(), r.toJson());
+    }
+    expect(again[glucose.id]!.quantity, const Quantity(5.3, 'mmol/L'));
+    expect(again[miss.id]!.quantity, isNull);
+    await tester.pumpWidget(HumanOsApp(services: s2, appearance: english()));
+    await tester.pumpAndSettle();
+    for (final (code, shown) in [
+      ('glucose.capillary', '5.3 mmol/L · Fasting'),
+      ('body.fat_percentage', '24.5 %'),
+    ]) {
+      final f = find.byKey(ValueKey('measure-latest-value-$code'));
+      await tester.scrollUntilVisible(
+        f,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(tester.widget<Text>(f).data, shown);
+    }
+    dir.deleteSync(recursive: true);
+  });
+
   testWidgets('F005 restore drill: backup -> lose the vault -> fresh start '
       '-> restore -> relaunch shows the same records', (tester) async {
     if (!Platform.isLinux) return;

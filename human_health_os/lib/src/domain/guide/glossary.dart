@@ -219,6 +219,52 @@ const List<GlossaryEntry> glossary = [
     ),
   ),
   GlossaryEntry(
+    id: 'capillary_glucose',
+    kind: 'glucose.capillary',
+    term: (
+      'Blood glucose (finger-prick meter)',
+      'Kan şekeri (parmaktan ölçüm)',
+    ),
+    what: (
+      'The amount of sugar (glucose) in a drop of blood from the fingertip, as a home meter shows it. A laboratory glucose from a vein is a different measurement and goes in Labs.',
+      'Parmak ucundan alınan bir damla kandaki şeker (glukoz) miktarı; evdeki ölçüm cihazının gösterdiği gibi. Damardan alınan laboratuvar glukozu başka bir ölçümdür ve Tahliller\'e girilir.',
+    ),
+    unit: (
+      'mg/dL or mmol/L, whichever your meter shows; Human OS keeps the one you choose and never converts',
+      'mg/dL ya da mmol/L, cihazın hangisini gösteriyorsa; Human OS seçtiğini saklar ve asla çevirmez',
+    ),
+    howToMeasure: [
+      (
+        'Wash and dry your hands; follow the instructions of your meter and strips.',
+        'Ellerini yıka ve kurula; cihazının ve şeritlerinin talimatına uy.',
+      ),
+      (
+        'Write down the number and the unit exactly as the meter shows them, and whether you had eaten.',
+        'Sayıyı ve birimi cihazın gösterdiği gibi yaz; yemek yiyip yemediğini de belirt.',
+      ),
+    ],
+  ),
+  GlossaryEntry(
+    id: 'body_fat',
+    kind: 'body.fat_percentage',
+    term: ('Body fat (device estimate)', 'Vücut yağı (cihaz tahmini)'),
+    what: (
+      'The share of body weight a scale or other device estimates to be fat. The device calculates it from a small electric current and its own formula, so it is an estimate, and devices differ.',
+      'Bir tartının ya da başka bir cihazın vücut ağırlığının yağ olduğunu tahmin ettiği pay. Cihaz bunu zayıf bir elektrik akımı ve kendi formülüyle hesaplar; bu yüzden bir tahmindir ve cihazlar farklı sonuç verir.',
+    ),
+    unit: ('percent (%)', 'yüzde (%)'),
+    howToMeasure: [
+      (
+        'Use the same device at the same time of day, barefoot, as its instructions say.',
+        'Aynı cihazı günün aynı saatinde, çıplak ayakla ve talimatına göre kullan.',
+      ),
+      (
+        'Write down the number the device shows; it is not a measurement of the fat itself.',
+        'Cihazın gösterdiği sayıyı yaz; bu yağın kendisinin ölçümü değildir.',
+      ),
+    ],
+  ),
+  GlossaryEntry(
     id: 'reference_interval',
     term: ('Reference interval', 'Referans aralığı'),
     what: (

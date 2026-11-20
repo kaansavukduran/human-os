@@ -197,6 +197,10 @@ class S {
       'Yatmadan uyanmaya 24 saatten az olmalı; başka bir gündeyse yatma saatine tarih ekle.',
     ),
     'NO_CHANGE' => _t('Nothing to change.', 'Değişecek bir şey yok.'),
+    'UNIT_CHOICE_REQUIRED' => _t(
+      'Choose the unit your meter shows: mg/dL or mmol/L. It is kept as chosen and never converted. Nothing was saved.',
+      'Cihazının gösterdiği birimi seç: mg/dL ya da mmol/L. Seçtiğin gibi saklanır, asla çevrilmez. Hiçbir şey kaydedilmedi.',
+    ),
     'NOT_MEASURED_WITH_VALUE' => _t(
       'Leave the value empty for "not measured", or untick it to save the value.',
       '"Ölçülmedi" için değeri boş bırak ya da değeri kaydetmek için işareti kaldır.',
@@ -587,6 +591,14 @@ class S {
       'Koruyucu sağlık kaydı',
     ),
     RecordKind.documentReference => _t('Document', 'Belge'),
+    RecordKind.capillaryGlucose => _t(
+      'Blood glucose (finger-prick meter)',
+      'Kan şekeri (parmaktan ölçüm)',
+    ),
+    RecordKind.bodyFatPercentage => _t(
+      'Body fat, as the device showed',
+      'Vücut yağı, cihazın gösterdiği',
+    ),
   };
 
   // Documents (F010 slice 1): a reference to a document the person keeps,
@@ -1039,6 +1051,14 @@ class S {
       'Respiratory rate (breaths/min)',
       'Solunum hızı (soluk/dk)',
     ),
+    RecordKind.capillaryGlucose => _t(
+      'Blood glucose, as the meter showed',
+      'Kan şekeri, cihazın gösterdiği',
+    ),
+    RecordKind.bodyFatPercentage => _t(
+      'Body fat (%), as the device showed',
+      'Vücut yağı (%), cihazın gösterdiği',
+    ),
     _ => recordKind(k),
   };
 
@@ -1056,8 +1076,41 @@ class S {
       'A reading from a pulse oximeter. Blood-gas results are not stored here.',
       'Nabız oksimetresinden okunan değer. Kan gazı sonuçları burada saklanmaz.',
     ),
+    RecordKind.capillaryGlucose => _t(
+      'The number on your finger-prick meter, e.g. 95 (mg/dL) or 5.3 (mmol/L). A lab report\'s glucose goes in Labs.',
+      'Parmaktan ölçen cihazındaki sayı, ör. 95 (mg/dL) ya da 5,3 (mmol/L). Tahlil raporundaki glukoz Tahliller\'e girilir.',
+    ),
+    RecordKind.bodyFatPercentage => _t(
+      'The number your scale or device showed, e.g. 24.5. It is the device\'s estimate, not an exact measurement.',
+      'Tartının ya da cihazının gösterdiği sayı, ör. 24,5. Bu cihazın tahminidir, kesin bir ölçüm değildir.',
+    ),
     _ => null,
   };
+
+  /// The unit choice of a kind with more than one unit (D-048).
+  String get glucoseUnitLabel =>
+      _t('Unit your meter shows', 'Cihazının gösterdiği birim');
+  String get glucoseUnitHelp => _t(
+    'Kept as you choose it; never converted into the other unit.',
+    'Seçtiğin gibi saklanır; asla diğer birime çevrilmez.',
+  );
+
+  /// Meal timing of a capillary glucose, as chosen; never interpreted.
+  String get glucoseTimingLabel =>
+      _t('Relative to eating (optional)', 'Yemekle ilişkisi (isteğe bağlı)');
+  String glucoseTiming(GlucoseTiming t) => switch (t) {
+    GlucoseTiming.fasting => _t('Fasting', 'Aç karnına'),
+    GlucoseTiming.afterMeal => _t('After a meal', 'Yemekten sonra'),
+    GlucoseTiming.other => _t('Other time', 'Başka bir zaman'),
+  };
+  String get glucoseTimingNone => _t('Not given', 'Belirtilmedi');
+
+  /// Under a trend whose readings use more than one unit (D-048): only one
+  /// unit is drawn; the others are listed and never converted.
+  String trendOtherUnits(String unit, int n) => _t(
+    'The chart draws the readings in $unit. $n saved in another unit are listed after the chart and are never converted.',
+    'Grafik $unit cinsinden ölçümleri çizer. Başka birimle kaydedilen $n ölçüm aşağıda listelenir ve asla çevrilmez.',
+  );
 
   /// Shown when a backup was made for an entry that was then not saved.
   String checkpointKept(String where) => _t(
@@ -1209,6 +1262,8 @@ class S {
     '°C' => _t('degrees Celsius', 'santigrat derece'),
     '%' => _t('percent', 'yüzde'),
     'breaths/min' => _t('breaths per minute', 'dakikada soluk'),
+    'mg/dL' => _t('milligrams per decilitre', 'desilitrede miligram'),
+    'mmol/L' => _t('millimoles per litre', 'litrede milimol'),
     _ => u,
   };
   String spokenBloodPressure(String systolic, String diastolic) => _t(

@@ -56,15 +56,17 @@ void main() {
     });
   });
 
-  test('the tiles come in a fixed order, seven of them', () {
+  test('the tiles come in a fixed order, nine of them', () {
     expect(MeasurementsCard.kinds, [
       RecordKind.bloodPressure,
       RecordKind.restingHeartRate,
       RecordKind.bodyTemperature,
       RecordKind.oxygenSaturation,
       RecordKind.respiratoryRate,
+      RecordKind.capillaryGlucose,
       RecordKind.waistCircumference,
       RecordKind.height,
+      RecordKind.bodyFatPercentage,
     ]);
   });
 

@@ -44,8 +44,15 @@ String measurementValue(S s, HealthRecord r) {
   final q = r.quantity;
   if (q == null) return s.valueStatus(r.valueStatus);
   return '${fmtShown(s, q.value, r.originalText)} ${s.unit(q.unit ?? '')}'
-      '${s.converted(q.value, q.unit)}';
+      '${s.converted(q.value, q.unit)}${_timing(s, r)}';
 }
+
+/// " · Fasting" after a capillary glucose whose meal timing was chosen
+/// (D-048): the person's label, never a judgement of the number.
+String _timing(S s, HealthRecord r) => switch (r.details) {
+  GlucoseTimingDetails(:final timing) => ' · ${s.glucoseTiming(timing)}',
+  _ => '',
+};
 
 /// The value as a screen reader should say it.
 String spokenMeasurement(S s, HealthRecord r) {
@@ -58,7 +65,7 @@ String spokenMeasurement(S s, HealthRecord r) {
   final q = r.quantity;
   if (q == null) return s.valueStatus(r.valueStatus);
   return '${fmtShown(s, q.value, r.originalText)} ${s.spokenUnit(q.unit ?? '')}'
-      '${s.convertedSpoken(q.value, q.unit)}';
+      '${s.convertedSpoken(q.value, q.unit)}${_timing(s, r)}';
 }
 
 /// What was typed, when it differs from what is shown ('entered as "…"').

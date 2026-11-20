@@ -816,10 +816,10 @@ void main() {
         'newer one is refused here; details under an older label are never '
         'read', () {
       final log = File(fixture15).readAsStringSync();
-      // This build stands in for a newer app with 16.
+      // Record schema 16 (F007-S8) is read now; 17 stands for a newer app.
       final newer = log.replaceFirst(
         '"schema_version":15,',
-        '"schema_version":16,',
+        '"schema_version":17,',
       );
       expect(newer, isNot(log));
       expect(

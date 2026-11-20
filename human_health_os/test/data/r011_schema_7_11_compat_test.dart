@@ -54,6 +54,13 @@ const expectedWriteSchema = {
   RecordKind.documentReference: 13,
 };
 
+/// The kinds of schemas 3 to 13 this compatibility check covers; later kinds
+/// (schema 16, F007-S8) have their own test.
+final r011Kinds = [
+  for (final k in RecordKind.values)
+    if (k.minSchema <= 13) k,
+];
+
 const newKinds = [
   RecordKind.sleepNight,
   RecordKind.feelingCheckIn,
@@ -200,10 +207,10 @@ void main() {
     final before = await repo.records(me);
     expect(
       before.map((r) => r.kind).toSet(),
-      RecordKind.values.toSet(),
+      r011Kinds.toSet(),
       reason: 'every kind is covered',
     );
-    expect(before, hasLength(RecordKind.values.length));
+    expect(before, hasLength(r011Kinds.length));
     final bytes = vaultFile.readAsStringSync();
 
     final reopened = fileRepo(vaultFile);
@@ -240,7 +247,7 @@ void main() {
     }
     // And on disk, line by line.
     final lines = vaultFile.readAsLinesSync().skip(2);
-    expect(lines, hasLength(RecordKind.values.length));
+    expect(lines, hasLength(r011Kinds.length));
     for (final l in lines) {
       final data = ((jsonDecode(l) as Map)['data']! as Map)
           .cast<String, Object?>();
@@ -252,7 +259,7 @@ void main() {
         expect(data.containsKey('details'), isFalse);
       }
     }
-    expect(HealthRecord.currentSchemaVersion, 15);
+    expect(HealthRecord.currentSchemaVersion, 16);
     for (final k in newKinds) {
       expect(k.minSchema, expectedWriteSchema[k]);
     }
@@ -285,7 +292,7 @@ void main() {
       12,
       13,
     ]);
-    expect(manifest['record_count'], RecordKind.values.length);
+    expect(manifest['record_count'], r011Kinds.length);
     await files.save(DataFileKind.backup, backupFileName('r011', t0), bundle);
 
     vaultFile.deleteSync();
@@ -293,7 +300,7 @@ void main() {
     final saved = (await files.backups()).single;
     final staged = stageRestore(await files.read(saved));
     final out = await files.restore(staged, now: t0);
-    expect(out.records, RecordKind.values.length);
+    expect(out.records, r011Kinds.length);
     expect(out.keptPrevious, isNull);
     expect(vaultFile.readAsStringSync(), original);
 

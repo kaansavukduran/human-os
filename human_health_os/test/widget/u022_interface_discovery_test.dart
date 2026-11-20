@@ -102,6 +102,27 @@ void main() {
     },
   );
 
+  testWidgets('exact scale field is its own node, named only by its label', (
+    tester,
+  ) async {
+    // C001: the field once absorbed the section's texts, so a screen reader
+    // read "100%, the note, Exact scale" and its box covered the presets.
+    final handle = tester.ensureSemantics();
+    await launchWith(tester);
+    await tapKey(tester, 'open-settings');
+    final en = const S(AppLang.en);
+    final node = tester.getSemantics(keyed('set-interface-input'));
+    final data = node.getSemanticsData();
+    expect(data.flagsCollection.isTextField, isTrue);
+    expect(node.label, en.interfaceExact);
+    expect(node.label, isNot(contains(en.interfaceScaleNote)));
+    expect(
+      node.rect.height,
+      lessThanOrEqualTo(tester.getRect(keyed('set-interface-input')).height),
+    );
+    handle.dispose();
+  });
+
   testWidgets('changing scale preserves an unsaved measurement draft', (
     tester,
   ) async {

@@ -544,17 +544,23 @@ class _ScaleControlState extends State<_ScaleControl> {
           ],
         ),
         const SizedBox(height: 12),
-        TextField(
-          key: const ValueKey('set-interface-input'),
-          controller: _input,
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.done,
-          decoration: InputDecoration(
-            labelText: s.interfaceExact,
-            suffixText: '%',
-            errorText: _invalid ? s.interfaceInvalid : null,
+        // Its own node (container): otherwise the field becomes the node the
+        // section's plain texts merge into, so it is announced as "100%, the
+        // note, Exact scale" and its box covers the presets above it (C001).
+        Semantics(
+          container: true,
+          child: TextField(
+            key: const ValueKey('set-interface-input'),
+            controller: _input,
+            keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
+            decoration: InputDecoration(
+              labelText: s.interfaceExact,
+              suffixText: '%',
+              errorText: _invalid ? s.interfaceInvalid : null,
+            ),
+            onSubmitted: (_) => _apply(),
           ),
-          onSubmitted: (_) => _apply(),
         ),
         const SizedBox(height: 8),
         Wrap(

@@ -435,7 +435,7 @@ void main() {
       );
       tester.view.physicalSize = const Size(320, 640);
       await settle(tester);
-      await reveal(tester, 'restore-from-file', 200);
+      await reveal(tester, 'restore-from-file', 400);
       // As a person scrolls: the entry at the top of the list, the card's
       // status line above it out of sight.
       await tester.ensureVisible(

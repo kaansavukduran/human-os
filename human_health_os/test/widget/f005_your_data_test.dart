@@ -146,10 +146,14 @@ Future<void> reveal(WidgetTester tester, String key, double delta) async {
   await tester.scrollUntilVisible(
     find.byKey(ValueKey(key)),
     delta,
+    // The page's own vertical list, never a sideways row inside a card
+    // (which scrolls nothing and can leave the lazy list mid-drag).
     scrollable: find
         .descendant(
           of: find.byKey(const ValueKey('screen-today')),
-          matching: find.byType(Scrollable),
+          matching: find.byWidgetPredicate(
+            (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+          ),
         )
         .first,
   );

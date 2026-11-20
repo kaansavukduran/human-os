@@ -32,6 +32,7 @@ flutter build web --release --no-web-resources-cdn --dart-define=APP_ENV=develop
 # Flutter/Dart versions reach the app through FlutterVersion; FLUTTER_VERSION is reserved, never pass it.
 xvfb-run -a flutter test integration_test -d linux             # real file IO, relaunch, folder move (needs libgtk-3-dev)
 cd .. && EXPECT_FLUTTER_VERSION=3.47.6 node tools/flutter_web_smoke.mjs   # Playwright smoke: Today → Timeline → Labs, identity, console errors
+node tools/flutter_appearance_smoke.mjs                         # appearance smoke (interface scale, fonts; CI runs it too, C001)
 python3 tools/validate_project_state.py && python3 -m unittest tools/evidence/test_run_gate.py   # state/evidence self-audit
 pnpm install && pnpm typecheck && pnpm test && python3 tools/verify_contracts.py   # TS reference + Build Lab
 ```

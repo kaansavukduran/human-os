@@ -1,4 +1,4 @@
-// U001@v0.32: a first-time user finds a plain "how to use" page from Today
+// U001@v0.32: a first-time user finds a plain "how to use" page from Learn
 // with the mouse; it names the real buttons and judges nothing.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,12 +6,14 @@ import 'package:human_health_os/src/l10n/strings.dart';
 
 import 'f004_labs_test.dart' show interpretive, judged;
 import 'f007_measurements_test.dart' show launch, tapKey;
+import 'u034_learn_test.dart' show openLearn;
 
 void main() {
-  testWidgets('How to use opens from Today and lists six steps', (
+  testWidgets('How to use opens from Learn and lists six steps', (
     tester,
   ) async {
     await launch(tester);
+    await openLearn(tester);
     await tapKey(tester, 'tool-howto');
     expect(find.byKey(const ValueKey('screen-howto')), findsOneWidget);
     for (var i = 1; i <= 6; i++) {

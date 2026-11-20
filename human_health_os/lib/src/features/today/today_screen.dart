@@ -8,13 +8,11 @@ import '../../domain/settings/appearance.dart';
 import '../../core/ids.dart' show Clock;
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
+import '../../presentation/widgets/tool_row.dart';
 import '../derived/derived_screen.dart';
 import '../genetics/genetics_screen.dart';
-import '../guide/body_guide_screen.dart';
-import '../guide/glossary_screen.dart';
 import '../phyto/phyto_screen.dart';
 import '../report/summary_screen.dart';
-import '../help/how_to_screen.dart';
 import 'measurements_card.dart';
 import 'feeling_card.dart';
 import 'sleep_card.dart';
@@ -125,19 +123,9 @@ class _TodayScreenState extends State<TodayScreen> {
           const SizedBox(height: 12),
           _ToolGroup(s.toolsGroupApp),
           // Settings is not repeated here: the app bar and the rail or More
-          // sheet already open it (U030, one entry less).
-          _ToolTile(
-            key: const ValueKey('tool-howto'),
-            title: s.howToTitle,
-            hint: s.howToTileHint,
-            onTap: () {
-              AppearanceScope.read(context)?.visit(DiscoveryStep.howTo);
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const HowToScreen()),
-              );
-            },
-          ),
-          _ToolTile(
+          // sheet already open it (U030, one entry less). The glossary, the
+          // body guide and the how-to live in Learn (U034), not here.
+          ToolRow(
             key: const ValueKey('tool-summary'),
             title: s.summaryTitle,
             hint: s.summaryTileHint,
@@ -147,7 +135,7 @@ class _TodayScreenState extends State<TodayScreen> {
               ),
             ),
           ),
-          _ToolTile(
+          ToolRow(
             key: const ValueKey('tool-derived'),
             title: s.derivedTitle,
             hint: s.derivedTileHint,
@@ -158,26 +146,8 @@ class _TodayScreenState extends State<TodayScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _ToolGroup(s.toolsGroupLearn),
-          _ToolTile(
-            key: const ValueKey('tool-glossary'),
-            title: s.glossaryTitle,
-            hint: s.glossaryTileHint,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const GlossaryScreen()),
-            ),
-          ),
-          _ToolTile(
-            key: const ValueKey('tool-guide'),
-            title: s.guideTitle,
-            hint: s.guideTileHint,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const BodyGuideScreen()),
-            ),
-          ),
-          const SizedBox(height: 16),
           _ToolGroup(s.toolsGroupFiles),
-          _ToolTile(
+          ToolRow(
             key: const ValueKey('tool-phyto'),
             title: s.phytoTitle,
             hint: s.phytoTileHint,
@@ -187,7 +157,7 @@ class _TodayScreenState extends State<TodayScreen> {
               ),
             ),
           ),
-          _ToolTile(
+          ToolRow(
             key: const ValueKey('tool-genetics'),
             title: s.geneticsTitle,
             hint: s.geneticsTileHint,
@@ -301,69 +271,4 @@ class _ToolGroup extends StatelessWidget {
       ),
     ),
   );
-}
-
-/// A way into a tool that is not a daily number (G001): a plain row with
-/// its title and one line on what it is for, under its group's heading.
-/// No leading icon (R016, DESIGN_BRIEF anti-pattern 2): the seven pictures
-/// (help, clipboard, calculator, book, figure, leaf, microscope) added no
-/// meaning that the title and the group heading did not already give. The
-/// chevron stays: it is the one mark that says "opens a page".
-class _ToolTile extends StatelessWidget {
-  const _ToolTile({
-    super.key,
-    required this.title,
-    required this.hint,
-    required this.onTap,
-  });
-
-  final String title;
-  final String hint;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
-    // A button for assistive technology and the browser, named by its
-    // title and hint (an InkWell alone is only a tap target).
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
-      ),
-      child: Semantics(
-        container: true,
-        button: true,
-        child: InkWell(
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 48),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(title, style: text.titleMedium),
-                        Text(
-                          hint,
-                          style: text.bodyMedium?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.chevron_right, color: scheme.outline),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

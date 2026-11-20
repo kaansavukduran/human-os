@@ -9,6 +9,7 @@ import 'package:human_health_os/src/l10n/strings.dart';
 
 import 'f004_labs_test.dart' show interpretive, judged;
 import 'f007_measurements_test.dart' show launch, tapKey, settle;
+import 'u034_learn_test.dart' show openLearn, revealOnLearn;
 
 /// Words a guide must not use about a person: it names no disease and gives
 /// no instruction to treat.
@@ -93,9 +94,11 @@ void main() {
     });
   });
 
-  testWidgets('Today → guide → Heart: parts, specialties, what can be '
+  testWidgets('Learn → guide → Heart: parts, specialties, what can be '
       'recorded, and where to go first', (tester) async {
     await launch(tester);
+    await openLearn(tester);
+    await revealOnLearn(tester, 'tool-guide');
     await tapKey(tester, 'tool-guide');
     expect(find.byKey(const ValueKey('screen-guide')), findsOneWidget);
     await tapKey(tester, 'guide-system-heart');
@@ -119,7 +122,8 @@ void main() {
       size: const Size(320, 1400),
       textScale: 2.0,
     );
-    await reveal(tester, 'screen-today', 'tool-guide');
+    await openLearn(tester);
+    await revealOnLearn(tester, 'tool-guide');
     await tapKey(tester, 'tool-guide');
     for (final b in bodySystems) {
       await reveal(tester, 'screen-guide', 'guide-system-${b.id}');

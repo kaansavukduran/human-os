@@ -14,7 +14,7 @@ import 'package:human_health_os/src/core/capabilities.dart';
 import 'package:human_health_os/src/core/ids.dart';
 import 'package:human_health_os/src/data/local/log_repository.dart';
 import 'package:human_health_os/src/domain/settings/appearance.dart';
-import 'package:human_health_os/src/features/common/planned_destination_screen.dart';
+import 'package:human_health_os/src/features/learn/learn_screen.dart';
 import 'package:human_health_os/src/features/today/feeling_card.dart';
 import 'package:human_health_os/src/features/today/measurements_card.dart';
 import 'package:human_health_os/src/features/today/sleep_card.dart';
@@ -366,21 +366,14 @@ void main() {
       expect(find.byIcon(Icons.show_chart), findsNothing);
     });
 
-    testWidgets('a planned area states its principle without a decorative '
-        'icon', (tester) async {
-      final d = destinationById(DestinationId.compare);
+    testWidgets('Learn states what it never does without a decorative '
+        'icon (U034: no area is a "planned" page any more)', (tester) async {
+      final d = destinationById(DestinationId.learn);
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: PlannedDestinationScreen(destination: d)),
-        ),
+        const MaterialApp(home: Scaffold(body: LearnScreen())),
       );
       expect(find.byIcon(Icons.rule), findsNothing);
-      expect(
-        tester
-            .widget<Text>(find.byKey(const ValueKey('planned-principle')))
-            .data,
-        d.principle(AppLang.en),
-      );
+      expect(find.text(d.principle(AppLang.en)), findsOneWidget);
     });
 
     test('fields and buttons use the theme radius token (12 dp)', () {

@@ -1,8 +1,8 @@
 /// Responsive shell (v0.32 F001): primary navigation is exactly Today,
 /// Timeline and Labs — a navigation rail at ≥ 840 dp (extended labels at
-/// ≥ 1200 dp) and a compact bottom bar below that. The planned placeholder
-/// areas are a secondary group: a labelled section under the rail, and the
-/// "More" sheet on the bar (conflict C-8).
+/// ≥ 1200 dp) and a compact bottom bar below that. The other areas, each a
+/// working screen (U034), are a secondary group: a labelled section under
+/// the rail, and the "More" sheet on the bar (conflict C-8).
 library;
 
 import 'package:flutter/material.dart';
@@ -12,12 +12,12 @@ import '../domain/settings/appearance.dart';
 import '../features/settings/settings_screen.dart';
 
 import '../app/app_services.dart';
-import '../features/common/planned_destination_screen.dart';
 import '../features/labs/labs_screen.dart';
 import '../features/activity/activity_screen.dart';
 import '../features/conditions/conditions_screen.dart';
 import '../features/preventive/preventive_screen.dart';
 import '../features/documents/documents_screen.dart';
+import '../features/learn/learn_screen.dart';
 import '../features/medications/medications_screen.dart';
 import '../features/nutrition/nutrition_screen.dart';
 import '../features/timeline/timeline_screen.dart';
@@ -66,7 +66,7 @@ class _AppShellState extends State<AppShell> {
       DestinationId.conditions => ConditionsScreen(services: widget.services),
       DestinationId.preventive => PreventiveScreen(services: widget.services),
       DestinationId.documents => DocumentsScreen(services: widget.services),
-      _ => PlannedDestinationScreen(destination: destinationById(id)),
+      DestinationId.learn => const LearnScreen(),
     };
   }
 

@@ -1,4 +1,4 @@
-// U015@v0.32: Today's tools in three labelled groups (G-65), and in an
+// U015@v0.32: Today's tools in labelled groups (G-65; two since U034), and in an
 // encrypted build the introduction comes before a new vault's passphrase
 // screen, writing nothing (G-64); an existing vault goes straight to unlock.
 import 'package:flutter/material.dart';
@@ -46,17 +46,23 @@ double topOf(WidgetTester tester, String key) =>
     tester.getTopLeft(find.byKey(ValueKey(key))).dy;
 
 void main() {
-  testWidgets('tools sit under three headings, in order', (tester) async {
+  testWidgets('tools sit under two headings, in order; the glossary, body '
+      'guide and how-to are in Learn, not on Today (U034)', (tester) async {
     await launchWith(tester);
     final s = S(AppLang.en);
-    for (final h in [s.toolsGroupApp, s.toolsGroupLearn, s.toolsGroupFiles]) {
+    for (final h in [s.toolsGroupApp, s.toolsGroupFiles]) {
       expect(find.text(h), findsOneWidget, reason: h);
     }
+    for (final k in ['tool-howto', 'tool-glossary', 'tool-guide']) {
+      expect(find.byKey(ValueKey(k)), findsNothing, reason: k);
+    }
     double y(String text) => tester.getTopLeft(find.text(text)).dy;
-    expect(y(s.toolsGroupApp), lessThan(topOf(tester, 'tool-howto')));
-    expect(topOf(tester, 'tool-summary'), lessThan(y(s.toolsGroupLearn)));
-    expect(y(s.toolsGroupLearn), lessThan(topOf(tester, 'tool-glossary')));
-    expect(topOf(tester, 'tool-guide'), lessThan(y(s.toolsGroupFiles)));
+    expect(y(s.toolsGroupApp), lessThan(topOf(tester, 'tool-summary')));
+    expect(
+      topOf(tester, 'tool-summary'),
+      lessThan(topOf(tester, 'tool-derived')),
+    );
+    expect(topOf(tester, 'tool-derived'), lessThan(y(s.toolsGroupFiles)));
     expect(y(s.toolsGroupFiles), lessThan(topOf(tester, 'tool-phyto')));
     expect(
       topOf(tester, 'tool-phyto'),
@@ -64,8 +70,8 @@ void main() {
     );
     final semantics = tester.ensureSemantics();
     expect(
-      tester.getSemantics(find.text(s.toolsGroupLearn)),
-      matchesSemantics(label: s.toolsGroupLearn, isHeader: true),
+      tester.getSemantics(find.text(s.toolsGroupApp)),
+      matchesSemantics(label: s.toolsGroupApp, isHeader: true),
     );
     semantics.dispose();
   });
@@ -135,7 +141,7 @@ void main() {
   test('group headings judge nothing', () {
     for (final lang in AppLang.values) {
       final s = S(lang);
-      for (final w in [s.toolsGroupApp, s.toolsGroupLearn, s.toolsGroupFiles]) {
+      for (final w in [s.toolsGroupApp, s.toolsGroupFiles]) {
         expect(interpretive.hasMatch(w), isFalse, reason: w);
         expect(judged.hasMatch(w), isFalse, reason: w);
       }

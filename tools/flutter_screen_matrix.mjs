@@ -76,6 +76,7 @@ const SCREENS = {
     ['Conditions', 'Conditions', 'Conditions and symptoms', 'area'],
     ['Preventive', 'Preventive', 'Vaccinations, screenings, check-ups', 'area'],
     ['Documents', 'Documents', 'Documents', 'area'],
+    ['Learn', 'Learn', 'Learn', 'area'],
     ['Settings', 'Settings', 'Settings', 'settings'],
   ],
   'tr-TR': [
@@ -88,6 +89,7 @@ const SCREENS = {
     ['Conditions', 'Durumlar', 'Durumlar ve belirtiler', 'area'],
     ['Preventive', 'Koruyucu', 'Aşılar, taramalar, kontroller', 'area'],
     ['Documents', 'Belgeler', 'Belgeler', 'area'],
+    ['Learn', 'Öğren', 'Öğren', 'area'],
     ['Settings', 'Ayarlar', 'Ayarlar', 'settings'],
   ],
 };

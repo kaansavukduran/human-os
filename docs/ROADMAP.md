@@ -24,6 +24,8 @@
 
 Ordering rule: dependency order, one bounded slice per Forge, F002 before anything that stores more data.
 
+**Navigation areas (U034).** Every area in the rail and the More sheet opens a working screen. **Learn** hosts the glossary, the body guide and the how-to (moved there from Today's tools). **Compare is hidden** from the rail and the More sheet until a real compare exists: F011 has no compare or scenario engine yet, and the "Worked out from your records" (derived values) screen is not a comparison, so it is not shown under that name. Compare comes back with the compare-and-scenarios work (legacy F018 below), with its own engine, golden vectors and the rule that a scenario never changes real records.
+
 ## Legacy roadmap (pre-v0.31 ids, kept for traceability; superseded by the table above)
 
 ### FOUNDATION

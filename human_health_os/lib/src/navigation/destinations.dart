@@ -1,8 +1,8 @@
 /// Destinations. Primary navigation is Today, Timeline, Labs (v0.32 kernel)
 /// and Medications (F008). The other areas from v0.27 doc 209 are reachable
-/// as a secondary "More areas" group (conflict C-8): Nutrition and Activity
-/// are built (F007); each still unbuilt area names the Forge that builds it,
-/// so it says so instead of faking content.
+/// as a secondary "More areas" group (conflict C-8). Every listed area opens
+/// a working screen (U034): an area with nothing to offer yet, such as
+/// Compare, is not listed until it is built.
 library;
 
 import 'package:flutter/material.dart';
@@ -19,7 +19,8 @@ enum DestinationId {
   conditions,
   preventive,
   documents,
-  compare,
+  // Compare is not listed until it compares something (U034): F011 has no
+  // compare engine yet, and the derived values are not a comparison.
   learn,
 }
 
@@ -240,33 +241,21 @@ const List<Destination> destinations = [
     canDoTr: 'Sakladığın bir belgeyi (bir rapor ya da aşı kartı gibi) ve nerede durduğunu listele.',
   ),
   Destination(
-    id: DestinationId.compare,
-    en: 'Compare',
-    tr: 'Karşılaştır',
-    icon: Icons.compare_arrows_outlined,
-    selectedIcon: Icons.compare_arrows,
-    purposeEn:
-        'Compare yourself with scenarios ("what if") or synthetic profiles.',
-    purposeTr: 'Kendini senaryolarla ("ya şöyle olsaydı") ya da sentetik profillerle karşılaştır.',
-    plannedForge: 'Forge F011',
-    principleEn: 'A scenario never changes your real records.',
-    principleTr: 'Senaryo gerçek kayıtlarını asla değiştirmez.',
-    canDoEn: 'Nothing yet: this area is planned for a later version.',
-    canDoTr: 'Henüz bir şey yok: bu alan sonraki bir sürüm için planlandı.',
-  ),
-  Destination(
     id: DestinationId.learn,
     en: 'Learn',
     tr: 'Öğren',
     icon: Icons.school_outlined,
     selectedIcon: Icons.school,
-    purposeEn: 'Short lessons: missing vs zero, reference ranges, risk vs score, healthspan.',
-    purposeTr: 'Kısa dersler: eksik ve sıfır, referans aralıkları, risk ve skor, sağlıklı yaşam süresi.',
-    plannedForge: 'Forge F011',
-    principleEn: 'Reading a lesson is not the same as a health improvement.',
-    principleTr: 'Bir dersi okumak sağlıkta iyileşme ile aynı şey değildir.',
-    canDoEn: 'Nothing yet: this area is planned for a later version.',
-    canDoTr: 'Henüz bir şey yok: bu alan sonraki bir sürüm için planlandı.',
+    purposeEn: 'Plain explanations of the words in your records and of the body, and how to do things in Human OS.',
+    purposeTr: 'Kayıtlarındaki kelimelerin ve bedenin sade açıklamaları; Human OS\'ta işlerin nasıl yapıldığı.',
+    // U034: hosts the glossary, the body guide and the how-to. The shared
+    // lesson pack moves to JSON with F021 (ROADMAP); what this area says it
+    // does is built.
+    plannedForge: null,
+    principleEn: 'An explanation is not a diagnosis or medical advice. Human OS never diagnoses and never tells you what to do about your health.',
+    principleTr: 'Bir açıklama tanı ya da tıbbi tavsiye değildir. Human OS asla tanı koymaz, sağlığın için ne yapman gerektiğini söylemez.',
+    canDoEn: 'Look up a word, find which specialist looks after which part of the body, or read how to do things in the app.',
+    canDoTr: 'Bir kelimeye bak, bedenin hangi bölümüyle hangi uzmanın ilgilendiğini bul ya da uygulamada işlerin nasıl yapıldığını oku.',
   ),
 ];
 

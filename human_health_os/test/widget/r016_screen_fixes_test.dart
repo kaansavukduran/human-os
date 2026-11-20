@@ -14,6 +14,7 @@ import 'package:human_health_os/src/l10n/strings.dart';
 
 import 'f004_labs_test.dart' as labs;
 import 'f007_measurements_test.dart' show launch, settle, tapKey;
+import 'u034_learn_test.dart' show openLearn;
 
 const en = Locale('en', 'US');
 const tr = Locale('tr', 'TR');
@@ -190,44 +191,52 @@ void main() {
     }
   });
 
-  testWidgets('Today\'s tools are plain rows: title and hint, no leading '
-      'icon, keys kept', (tester) async {
+  testWidgets('Today\'s tools and Learn\'s entries are plain rows: title '
+      'and hint, no leading icon, keys kept', (tester) async {
     final s = await launch(tester, size: const Size(1280, 4000));
     await tester.pumpWidget(HumanOsApp(services: s));
     await settle(tester);
-    for (final (key, icon) in [
-      ('tool-howto', Icons.help_outline),
+    void plainRows(List<(String, IconData)> rows) {
+      for (final (key, icon) in rows) {
+        final tile = find.byKey(ValueKey(key));
+        expect(tile, findsOneWidget, reason: key);
+        expect(
+          find.descendant(of: tile, matching: find.byIcon(icon)),
+          findsNothing,
+          reason: key,
+        );
+        // Only the chevron, which says "opens a page".
+        expect(
+          find.descendant(of: tile, matching: find.byType(Icon)),
+          findsOneWidget,
+          reason: key,
+        );
+        expect(
+          find.descendant(of: tile, matching: find.byIcon(Icons.chevron_right)),
+          findsOneWidget,
+          reason: key,
+        );
+        expect(
+          find.descendant(of: tile, matching: find.byType(Text)),
+          findsNWidgets(2),
+          reason: key,
+        );
+      }
+    }
+
+    plainRows([
       ('tool-summary', Icons.assignment_outlined),
       ('tool-derived', Icons.calculate_outlined),
-      ('tool-glossary', Icons.menu_book_outlined),
-      ('tool-guide', Icons.accessibility_new_outlined),
       ('tool-phyto', Icons.eco_outlined),
       ('tool-genetics', Icons.biotech_outlined),
-    ]) {
-      final tile = find.byKey(ValueKey(key));
-      expect(tile, findsOneWidget, reason: key);
-      expect(
-        find.descendant(of: tile, matching: find.byIcon(icon)),
-        findsNothing,
-        reason: key,
-      );
-      // Only the chevron, which says "opens a page".
-      expect(
-        find.descendant(of: tile, matching: find.byType(Icon)),
-        findsOneWidget,
-        reason: key,
-      );
-      expect(
-        find.descendant(of: tile, matching: find.byIcon(Icons.chevron_right)),
-        findsOneWidget,
-        reason: key,
-      );
-      expect(
-        find.descendant(of: tile, matching: find.byType(Text)),
-        findsNWidgets(2),
-        reason: key,
-      );
-    }
+    ]);
+    // U034: the glossary, the body guide and the how-to moved to Learn.
+    await openLearn(tester);
+    plainRows([
+      ('tool-howto', Icons.help_outline),
+      ('tool-glossary', Icons.menu_book_outlined),
+      ('tool-guide', Icons.accessibility_new_outlined),
+    ]);
     await tapKey(tester, 'tool-glossary');
     expect(find.byType(BackButton), findsOneWidget);
   });

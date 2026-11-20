@@ -579,6 +579,32 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
         await page.screenshot({ path: join(out, `flutter-web-${label}-conditions.png`) });
       }
     }
+    // U034: Learn is a real area hosting the glossary, the body guide and
+    // the how-to (no "Nothing yet" page); Compare is not listed.
+    {
+      const L = en
+        ? { item: 'Learn', entries: ['Glossary', 'Body and specialties', 'How to use Human OS'], search: 'Search a term', compare: 'Compare' }
+        : { item: 'Öğren', entries: ['Sözlük', 'Vücut ve uzmanlık alanları', 'Human OS nasıl kullanılır'], search: 'Bir terim ara', compare: 'Karşılaştır' };
+      try {
+        await openArea(L.item);
+        await heading(L.item).waitFor({ timeout: 15_000 }).catch(() => {});
+        check(`${label}: opens ${L.item} from the more areas`, await heading(L.item).isVisible().catch(() => false));
+        for (const e of L.entries) {
+          const row = page.getByRole('button', { name: new RegExp(`^${esc(e)}(\\s|$)`) }).first();
+          check(`${label}: ${L.item} offers "${e}"`, await row.isVisible().catch(() => false));
+        }
+        check(`${label}: ${L.item} is not a "nothing yet" page`, (await page.getByText(/Nothing yet|Henüz bir şey yok/).count()) === 0);
+        check(`${label}: Compare is not listed`, (await page.getByRole('button', { name: L.compare, exact: true }).count()) === 0);
+        await page.getByRole('button', { name: new RegExp(`^${esc(L.entries[0])}(\\s|$)`) }).first().click({ timeout: 10_000 });
+        const search = page.getByRole('textbox', { name: L.search }).first();
+        await search.waitFor({ timeout: 15_000 }).catch(() => {});
+        check(`${label}: ${L.item} opens the glossary`, await search.isVisible().catch(() => false));
+        await page.getByRole('button', { name: en ? /^Back$/ : /^Geri$/ }).first().click({ timeout: 10_000 });
+        await page.waitForTimeout(600);
+      } catch (e) {
+        check(`${label}: opens ${L.item} from the more areas`, false, e.message.split('\n')[0]);
+      }
+    }
     // Today's check-in cards (lazy list: wheel over the padding until built).
     await navItem(todayLabel).click().catch(() => {});
     await heading(todayLabel).waitFor({ timeout: 15_000 }).catch(() => {});

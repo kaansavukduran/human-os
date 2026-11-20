@@ -9,6 +9,7 @@ import 'package:human_health_os/src/features/today/measurements_card.dart';
 import 'f004_labs_test.dart' show interpretive, judged;
 import 'f007_measurements_test.dart' show launch, tapKey, settle;
 import 'u002_guide_test.dart' show diagnosing, reveal;
+import 'u034_learn_test.dart' show openLearn, revealOnLearn;
 
 /// A target, a "normal" range or advice to aim for something.
 final RegExp targets = RegExp(
@@ -61,7 +62,7 @@ void main() {
   });
 
   testWidgets('"About this measurement" in a sheet opens its entry; the '
-      'glossary is searchable from Today', (tester) async {
+      'glossary is searchable from Learn', (tester) async {
     await launch(tester);
     await tapKey(tester, 'measure-tile-vital.blood_pressure');
     await tapKey(tester, 'measure-about');
@@ -73,7 +74,8 @@ void main() {
     await tester.tap(find.byTooltip('Back').first);
     await settle(tester);
     await tapKey(tester, 'measure-cancel');
-    await reveal(tester, 'screen-today', 'tool-glossary');
+    await openLearn(tester);
+    await revealOnLearn(tester, 'tool-glossary');
     await tapKey(tester, 'tool-glossary');
     await tester.enterText(
       find.byKey(const ValueKey('glossary-search')),
@@ -99,7 +101,8 @@ void main() {
       size: const Size(320, 1400),
       textScale: 2.0,
     );
-    await reveal(tester, 'screen-today', 'tool-glossary');
+    await openLearn(tester);
+    await revealOnLearn(tester, 'tool-glossary');
     await tapKey(tester, 'tool-glossary');
     for (final e in glossary) {
       await reveal(tester, 'screen-glossary', 'glossary-${e.id}');

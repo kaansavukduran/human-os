@@ -1079,6 +1079,18 @@ class S {
     'ölçüm zamanı $from yerine $to olarak düzeltildi',
   );
   String get correctWhenField => _t('When it was measured', 'Ölçüm zamanı');
+  String get correctWhenNotMeasuredField => _t(
+    'When you noted it was not measured',
+    'Ölçülmediğini not ettiğin zaman',
+  );
+  String get correctWhenNotMeasuredHint => _t(
+    'YYYY-MM-DD HH:MM, your device\'s time. Change it if you noted this at another time; the earlier version is kept.',
+    'YYYY-AA-GG SS:DD, cihazının saati. Bunu başka bir zamanda not ettiysen değiştir; önceki sürüm saklanır.',
+  );
+  String get correctNotMeasuredValueHint => _t(
+    'Leave empty to keep it as "Not measured", or type the value you measured.',
+    '"Ölçülmedi" olarak kalması için boş bırak ya da ölçtüğün değeri yaz.',
+  );
   String get correctWhenHint => _t(
     'YYYY-MM-DD HH:MM, your device\'s time. Change it only if the reading was taken at another time; the earlier version is kept.',
     'YYYY-AA-GG SS:DD, cihazının saati. Yalnızca ölçüm başka bir zamanda yapıldıysa değiştir; önceki sürüm saklanır.',
@@ -1312,6 +1324,16 @@ class S {
   String get summarySaveNotHere => _t(
     'This build keeps data encrypted, so the summary is shown here only and is not saved as an open file.',
     'Bu sürüm verileri şifreli tutar; bu yüzden özet yalnız burada gösterilir, açık bir dosya olarak kaydedilmez.',
+  );
+
+  /// The "not measured" entries of one kind, counted, not listed (R021).
+  String summaryNotMeasured(int count, String newest) => _t(
+    count == 1
+        ? '1 entry marked "Not measured" ($newest); not listed.'
+        : '$count entries marked "Not measured", the newest $newest; not listed.',
+    count == 1
+        ? '"Ölçülmedi" olarak işaretli 1 kayıt var ($newest); listede gösterilmiyor.'
+        : '"Ölçülmedi" olarak işaretli $count kayıt var, en yenisi $newest; listede gösterilmiyor.',
   );
   String summaryMore(int shown, int total) => _t(
     'Showing the newest $shown of $total.',

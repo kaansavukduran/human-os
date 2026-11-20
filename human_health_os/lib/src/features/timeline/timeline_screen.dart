@@ -419,15 +419,28 @@ class _EntryDetailState extends State<_EntryDetail> {
           ...TimePicks.recent(s, now: now).skip(1),
         ],
       ),
-      _correctField(
-        s,
-        _when,
-        s.correctWhenField,
-        'correct-input-when',
-        'when',
-        number: false,
-        helper: s.correctWhenHint,
-      ),
+      // A "not measured" entry has no reading time: its time is when the
+      // miss was noted (R021).
+      if (head.valueStatus == ValueStatus.notMeasured)
+        _correctField(
+          s,
+          _when,
+          s.correctWhenNotMeasuredField,
+          'correct-input-when',
+          'when',
+          number: false,
+          helper: s.correctWhenNotMeasuredHint,
+        )
+      else
+        _correctField(
+          s,
+          _when,
+          s.correctWhenField,
+          'correct-input-when',
+          'when',
+          number: false,
+          helper: s.correctWhenHint,
+        ),
     ];
   }
 
@@ -435,7 +448,9 @@ class _EntryDetailState extends State<_EntryDetail> {
   /// scalar measurements, two for blood pressure, plus the note and, for a
   /// measurement, its time.
   List<Widget> _correctionFields(S s, HealthRecord head) {
-    final helper = s.amendExplain(AmendReason.correction);
+    final helper = head.valueStatus == ValueStatus.notMeasured
+        ? s.correctNotMeasuredValueHint
+        : s.amendExplain(AmendReason.correction);
     if (head.kind == RecordKind.bloodPressure) {
       return [
         _correctField(

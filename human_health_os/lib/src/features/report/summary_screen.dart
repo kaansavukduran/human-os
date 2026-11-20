@@ -154,6 +154,11 @@ class _SummaryScreenState extends State<SummaryScreen> {
                       sec.partNote,
                       style: text.bodySmall?.copyWith(color: scheme.outline),
                     ),
+                  if (sec.missNote.isNotEmpty)
+                    Text(
+                      sec.missNote,
+                      style: text.bodySmall?.copyWith(color: scheme.outline),
+                    ),
                   for (final r in sec.rows)
                     Container(
                       padding: const EdgeInsets.symmetric(vertical: 6),

@@ -118,7 +118,9 @@ class MeasurementInput {
   final String when;
 
   /// "I did not measure this" (D-047): saved as `notMeasured` with no
-  /// number, never as zero. Only for [notMeasuredKinds], never a correction.
+  /// number, never as zero. Only for [notMeasuredKinds]. A correction of a
+  /// reading never becomes "not measured"; a correction of a "not measured"
+  /// entry with no number typed stays one (its time or note changes).
   final bool notMeasured;
 }
 
@@ -760,17 +762,25 @@ class HeartbeatService {
     Quantity? quantity;
     String? originalText;
     BloodPressureDetails? details;
-    if (input.notMeasured) {
+    final typed = kind.isStructured
+        ? [input.systolic, input.diastolic]
+        : [input.value];
+    final noNumberTyped = typed.every((t) => t.trim().isEmpty);
+    // A correction of a "not measured" entry with no number typed moves
+    // its time or note and stays "not measured" (D-047, R021); a typed
+    // number turns it into a reading.
+    final targetNotMeasured = target?.valueStatus == ValueStatus.notMeasured;
+    final notMeasured =
+        input.notMeasured || (targetNotMeasured && noNumberTyped);
+    if (notMeasured) {
       // Missing ≠ zero: a "not measured" entry holds no number at all.
-      // A correction says what the value was; withdrawing a reading is
-      // "entered in error", never a "not measured" version.
-      if (target != null || !notMeasuredKinds.contains(kind)) {
+      // A correction of a reading says what the value was; withdrawing a
+      // reading is "entered in error", never a "not measured" version.
+      if ((target != null && !targetNotMeasured) ||
+          !notMeasuredKinds.contains(kind)) {
         throw const InputError('NOT_MEASURED_NOT_OFFERED');
       }
-      final typed = kind.isStructured
-          ? [input.systolic, input.diastolic]
-          : [input.value];
-      if (typed.any((t) => t.trim().isNotEmpty)) {
+      if (!noNumberTyped) {
         throw InputError(
           'NOT_MEASURED_WITH_VALUE',
           kind.isStructured ? 'systolic' : 'value',
@@ -809,7 +819,8 @@ class HeartbeatService {
     final ctx = context.isEmpty ? null : context;
     // A correction that changes nothing would only add an empty version.
     if (target != null &&
-        target.valueStatus == ValueStatus.present &&
+        target.valueStatus ==
+            (notMeasured ? ValueStatus.notMeasured : ValueStatus.present) &&
         target.quantity == quantity &&
         target.originalText == originalText &&
         target.details == details &&
@@ -822,9 +833,7 @@ class HeartbeatService {
       profileId: profileId,
       kind: kind,
       state: RecordState.observed,
-      valueStatus: input.notMeasured
-          ? ValueStatus.notMeasured
-          : ValueStatus.present,
+      valueStatus: notMeasured ? ValueStatus.notMeasured : ValueStatus.present,
       quantity: quantity,
       originalText: originalText,
       provenance: const Provenance.manual(),

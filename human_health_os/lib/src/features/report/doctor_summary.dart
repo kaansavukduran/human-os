@@ -19,15 +19,26 @@ class SummaryRow {
 }
 
 class SummarySection {
-  const SummarySection(this.title, this.rows, this.total, [this.partNote = '']);
+  const SummarySection(
+    this.title,
+    this.rows,
+    this.total, [
+    this.partNote = '',
+    this.missNote = '',
+  ]);
   final String title;
+
+  /// One line counting the "not measured" entries of this kind (R021):
+  /// they are not rows, so they never push a reading out of the list.
+  final String missNote;
 
   /// "Showing the newest n of total" when [rows] is shorter than [total];
   /// printed on the page too, so a reader knows it is not everything.
   final String partNote;
   final List<SummaryRow> rows;
 
-  /// How many current readings exist (rows show at most [rowsPerSection]).
+  /// How many current readings with a value exist (rows show at most
+  /// [rowsPerSection]); "not measured" entries are counted in [missNote].
   final int total;
 }
 
@@ -75,19 +86,35 @@ class DoctorSummary {
           if (e.isLive) e.shown,
       ]..sort((a, b) => b.observedAt.compareTo(a.observedAt));
       if (live.isEmpty) continue;
+      // Only entries with a value are rows and count toward the cap; the
+      // "not measured" entries are summed in one neutral line (R021).
+      final misses = [
+        for (final r in live)
+          if (r.valueStatus == ValueStatus.notMeasured) r,
+      ];
+      final readings = [
+        for (final r in live)
+          if (r.valueStatus != ValueStatus.notMeasured) r,
+      ];
       sections.add(
         SummarySection(
           s.recordKind(k),
           [
-            for (final r in live.take(rowsPerSection))
+            for (final r in readings.take(rowsPerSection))
               SummaryRow(
                 isoWhen(r.observedAt),
                 measurementValue(s, r),
                 r.context ?? '',
               ),
           ],
-          live.length,
-          _part(s, live.length),
+          readings.length,
+          _part(s, readings.length),
+          misses.isEmpty
+              ? ''
+              : s.summaryNotMeasured(
+                  misses.length,
+                  isoWhen(misses.first.observedAt),
+                ),
         ),
       );
     }
@@ -172,6 +199,9 @@ class DoctorSummary {
       b.writeln('<h2>${e(sec.title)}</h2>');
       if (sec.partNote.isNotEmpty) {
         b.writeln('<p class="n">${e(sec.partNote)}</p>');
+      }
+      if (sec.missNote.isNotEmpty) {
+        b.writeln('<p class="n">${e(sec.missNote)}</p>');
       }
       b.writeln('<table>');
       for (final r in sec.rows) {

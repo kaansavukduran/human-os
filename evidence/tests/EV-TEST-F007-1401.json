@@ -1,0 +1,55 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-TEST-F007-1401",
+  "kind": "TEST",
+  "forge_id": "H001@v0.32",
+  "source_revision": "646d13a0b4763dd91b078e54554a3401f01fae42",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "env TZ=UTC flutter test",
+  "argv": [
+    "env",
+    "TZ=UTC",
+    "flutter",
+    "test"
+  ],
+  "cwd": "human_health_os",
+  "started_at": "2026-11-20T10:16:08.946Z",
+  "finished_at": "2026-11-20T10:23:12.064Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.4",
+    "python": "Python 3.13.18"
+  },
+  "host": "Linux 6.18.44-fc-v726 x86_64",
+  "summary": "06:58 +1285 ~1: All tests passed!",
+  "log_sha256": "062c2250fe411903c892a28d32cab65649c73ce4cb87efff7d92595c96ca9ccd",
+  "log_lines": 1401,
+  "log_tail": [
+    "06:55 +1274 ~1: /home/user/claudereponewscience/human_health_os/test/domain/g006_clinvar_yield_test.dart: a timer set before reading fires while a burst is read",
+    "06:56 +1275 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds Add focused by keyboard in the empty state keeps focus after the first save moves it above the list (R023)",
+    "06:56 +1276 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds a failed read is said in words with Try again; nothing else is shown as empty",
+    "06:56 +1277 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (en)",
+    "06:56 +1278 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (en)",
+    "06:56 +1279 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (en)",
+    "06:56 +1280 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (en)",
+    "06:56 +1281 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (en)",
+    "06:56 +1282 ~1: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: vault, records, wrong keys, tampering, backups and refused restores print nothing sensitive",
+    "06:57 +1283 ~1: /home/user/claudereponewscience/human_health_os/test/widget/u033_record_area_test.dart: meds 320 dp at twice the text size fits (tr)",
+    "06:57 +1284 ~1: /home/user/claudereponewscience/human_health_os/test/security/no_sensitive_logs_test.dart: a failing vault store: the gate and the log show only the error type",
+    "06:58 +1285 ~1: All tests passed!"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os"
+  ]
+}

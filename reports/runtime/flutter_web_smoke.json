@@ -1,9 +1,9 @@
 {
-  "ran_at": "2026-11-20T03:29:42.131Z",
-  "git_head": "e6cc1d7103da25901c5f8d21680670e5838795b6",
+  "ran_at": "2026-11-20T03:57:34.781Z",
+  "git_head": "51007ac3cc64568b24a79a4b9cba25b64ccf2cc0",
   "working_tree_dirty": false,
   "build": "/home/user/claudereponewscience/human_health_os/build/web",
-  "main_dart_js_sha256": "c33cdde1ef2242a7ac81603d8f59196ad986c1a4d410727916080b227192fd00",
+  "main_dart_js_sha256": "db21fc378ed9f3e1e2bbfacbd0fc14ff710ffc9c50854a787f206d3227c04502",
   "browser": "chromium 153.0.8010.12",
   "runs": [
     {
@@ -33,12 +33,37 @@
   ],
   "results": [
     {
+      "name": "served HTML: loading view present",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "served HTML: loading view is role=\"status\" aria-live=\"polite\"",
+      "status": "PASS",
+      "detail": "<div id=\"hos-loading\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\">"
+    },
+    {
       "name": "desktop-en: no introduction forced in the browser",
       "status": "PASS",
       "detail": ""
     },
     {
       "name": "desktop-en: app starts and shows Today",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "desktop-en: loading view shown before the first frame with role=status and \"Opening Human OS…\"",
+      "status": "PASS",
+      "detail": "{\"role\":\"status\",\"live\":\"polite\",\"lang\":\"en\",\"line\":\"Opening Human OS…\",\"animation\":\"hos-slide\"}"
+    },
+    {
+      "name": "desktop-en: loading indicator moves when motion is allowed",
+      "status": "PASS",
+      "detail": "hos-slide"
+    },
+    {
+      "name": "desktop-en: loading view gone once Today shows",
       "status": "PASS",
       "detail": ""
     },
@@ -185,7 +210,7 @@
     {
       "name": "desktop-en: backup downloads with a matching checksum",
       "status": "PASS",
-      "detail": "human-os-backup-96bc2710-20261120T032656Z.hhosbackup.json"
+      "detail": "human-os-backup-dff1a86e-20261120T035447Z.hhosbackup.json"
     },
     {
       "name": "desktop-en: backup holds the saved weight and lab result",
@@ -338,6 +363,11 @@
       "detail": ""
     },
     {
+      "name": "phone-en: loading view gone once Today shows",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
       "name": "phone-en: development profile banner visible",
       "status": "PASS",
       "detail": ""
@@ -480,7 +510,7 @@
     {
       "name": "phone-en: backup downloads with a matching checksum",
       "status": "PASS",
-      "detail": "human-os-backup-666a0181-20261120T032912Z.hhosbackup.json"
+      "detail": "human-os-backup-5058da5a-20261120T035703Z.hhosbackup.json"
     },
     {
       "name": "phone-en: backup holds the saved weight and lab result",
@@ -633,6 +663,21 @@
       "detail": ""
     },
     {
+      "name": "phone-tr: loading view shown before the first frame with role=status and \"Human OS açılıyor…\"",
+      "status": "PASS",
+      "detail": "{\"role\":\"status\",\"live\":\"polite\",\"lang\":\"tr\",\"line\":\"Human OS açılıyor…\",\"animation\":\"hos-slide\"}"
+    },
+    {
+      "name": "phone-tr: loading indicator moves when motion is allowed",
+      "status": "PASS",
+      "detail": "hos-slide"
+    },
+    {
+      "name": "phone-tr: loading view gone once Bugün shows",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
       "name": "phone-tr: development profile banner visible",
       "status": "PASS",
       "detail": ""
@@ -744,6 +789,31 @@
     },
     {
       "name": "phone-tr: no failed requests",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "reduced motion: loading view visible",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "reduced motion: loading indicator has no animation",
+      "status": "PASS",
+      "detail": "{\"name\":\"none\",\"duration\":\"0s\"}"
+    },
+    {
+      "name": "slow load: no second line before 15 s",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "slow load: second plain line after 15 s",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "slow load: no progress percentage",
       "status": "PASS",
       "detail": ""
     }

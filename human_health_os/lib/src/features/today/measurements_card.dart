@@ -76,7 +76,7 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
     // at 2x text on a 320 dp phone.
     final accessible = MediaQuery.accessibleNavigationOf(context);
     widget.services.checkpointSaved?.value = null;
-    final saved = await showModalBottomSheet<bool>(
+    final saved = await showModalBottomSheet<HealthRecord>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -87,7 +87,7 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
       builder: (_) => _EntrySheet(services: widget.services, kind: kind),
     );
     final checkpoint = widget.services.checkpointSaved?.value;
-    if (saved != true) {
+    if (saved == null) {
       // A backup may have been made for an entry that was then not saved:
       // the person is told where it is.
       if (checkpoint != null) {
@@ -109,11 +109,27 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // The value is read back with its unit (D-048): "Saved: 5,4
+            // mmol/L", so a unit chosen out of sight is seen at once; a
+            // screen reader hears the unit in words.
             Semantics(
               liveRegion: true,
-              child: Text(
-                checkpoint == null ? s.saved : s.checkpointSaved(checkpoint),
-                key: const ValueKey('measure-saved'),
+              label: checkpoint == null
+                  ? s.savedValue(spokenMeasurement(s, saved))
+                  : s.checkpointSaved(
+                      checkpoint,
+                      value: spokenMeasurement(s, saved),
+                    ),
+              child: ExcludeSemantics(
+                child: Text(
+                  checkpoint == null
+                      ? s.savedValue(measurementValue(s, saved))
+                      : s.checkpointSaved(
+                          checkpoint,
+                          value: measurementValue(s, saved),
+                        ),
+                  key: const ValueKey('measure-saved'),
+                ),
               ),
             ),
             // Under the text, not beside it, so the words wrap at large
@@ -437,7 +453,7 @@ class _EntrySheetState extends State<_EntrySheet> {
       _errorField = null;
     });
     try {
-      await widget.services.heartbeat.recordMeasurement(
+      final saved = await widget.services.heartbeat.recordMeasurement(
         profileId: widget.services.self.id,
         kind: widget.kind,
         input: MeasurementInput(
@@ -451,7 +467,7 @@ class _EntrySheetState extends State<_EntrySheet> {
           glucoseTiming: _notMeasured ? null : _timing,
         ),
       );
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) Navigator.of(context).pop(saved);
       return;
     } on InputError catch (e) {
       _errorCode = e.code;
@@ -489,6 +505,8 @@ class _EntrySheetState extends State<_EntrySheet> {
     String? hint,
     bool autofocus = false,
     bool last = true,
+    String? suffix,
+    String? spokenSuffix,
   }) => Padding(
     padding: const EdgeInsets.only(top: 12),
     child: Focus(
@@ -514,6 +532,16 @@ class _EntrySheetState extends State<_EntrySheet> {
           helperMaxLines: 3,
           errorText: _errorFor(s, field),
           errorMaxLines: 3,
+          // The chosen unit sits inside the field (D-048), beside the
+          // number, so it is seen while typing even when the chips are
+          // under the keyboard.
+          suffix: suffix == null
+              ? null
+              : Text(
+                  suffix,
+                  key: ValueKey('$key-unit'),
+                  semanticsLabel: spokenSuffix,
+                ),
         ),
       ),
     ),
@@ -530,21 +558,37 @@ class _EntrySheetState extends State<_EntrySheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(s.glucoseUnitLabel, style: text.bodyMedium),
-          const SizedBox(height: 4),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final (i, u) in kind.units.indexed)
-                ChoiceChip(
-                  key: ValueKey('measure-unit-$u'),
-                  focusNode: i == 0 ? _focus['unit'] : null,
-                  label: Text(s.unit(u)),
-                  selected: _unit == u,
-                  onSelected: _busy ? null : (_) => setState(() => _unit = u),
+          // The label and the chips are one group to a screen reader; each
+          // unit is spoken in words, not letter by letter.
+          Semantics(
+            key: const ValueKey('measure-unit-group'),
+            container: true,
+            label: s.glucoseUnitLabel,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ExcludeSemantics(
+                  child: Text(s.glucoseUnitLabel, style: text.bodyMedium),
                 ),
-            ],
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final (i, u) in kind.units.indexed)
+                      ChoiceChip(
+                        key: ValueKey('measure-unit-$u'),
+                        focusNode: i == 0 ? _focus['unit'] : null,
+                        label: Text(s.unit(u), semanticsLabel: s.spokenUnit(u)),
+                        selected: _unit == u,
+                        onSelected: _busy
+                            ? null
+                            : (_) => setState(() => _unit = u),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -716,6 +760,12 @@ class _EntrySheetState extends State<_EntrySheet> {
                 'value',
                 hint: hint,
                 autofocus: true,
+                suffix: kind.units.length > 1
+                    ? (_unit == null ? s.unitNotChosen : s.unit(_unit!))
+                    : null,
+                spokenSuffix: kind.units.length > 1
+                    ? (_unit == null ? s.unitNotChosen : s.spokenUnit(_unit!))
+                    : null,
               ),
             if (!_notMeasured && kind.units.length > 1) _unitChoice(s, kind),
             if (!_notMeasured && kind == RecordKind.capillaryGlucose)
@@ -820,7 +870,7 @@ class _EntrySheetState extends State<_EntrySheet> {
             const SizedBox(height: 4),
             TextButton(
               key: const ValueKey('measure-cancel'),
-              onPressed: _busy ? null : () => Navigator.of(context).pop(false),
+              onPressed: _busy ? null : () => Navigator.of(context).pop(),
               child: Text(s.cancel),
             ),
           ],

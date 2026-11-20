@@ -993,13 +993,13 @@ void main() {
     final saved = tester
         .widget<Text>(find.byKey(const ValueKey('measure-saved')))
         .data!;
-    expect(saved, startsWith('Saved. Before saving this entry'));
+    expect(saved, startsWith('Saved: 57 bpm. Before saving this entry'));
     expect(saved, contains('memory:backup/'));
     expect(files.files.keys.single, startsWith('backup/'));
     await saveScalar(tester, RecordKind.restingHeartRate, '58');
     expect(
       tester.widget<Text>(find.byKey(const ValueKey('measure-saved'))).data,
-      'Saved',
+      'Saved: 58 bpm',
       reason: 'only once',
     );
     expect(files.files, hasLength(1));

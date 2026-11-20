@@ -1090,6 +1090,9 @@ class S {
   /// The unit choice of a kind with more than one unit (D-048).
   String get glucoseUnitLabel =>
       _t('Unit your meter shows', 'Cihazının gösterdiği birim');
+
+  /// Inside the value field while no unit is chosen yet.
+  String get unitNotChosen => _t('unit?', 'birim?');
   String get glucoseUnitHelp => _t(
     'Kept as you choose it; never converted into the other unit.',
     'Seçtiğin gibi saklanır; asla diğer birime çevrilmez.',
@@ -1240,10 +1243,14 @@ class S {
     'Saved exactly as typed, with its time and source. Human OS does not judge these values. An empty field is never saved as 0.',
     'Yazdığın gibi, zamanı ve kaynağıyla saklanır. Human OS bu değerleri yorumlamaz. Boş alan asla 0 olarak kaydedilmez.',
   );
-  String checkpointSaved(String where) => _t(
-    'Saved. Before saving this entry, a backup of your earlier data was saved at $where: older versions of Human OS cannot open the new record format.',
-    'Kaydedildi. Kaydetmeden önce eski verilerinin yedeği şuraya alındı: $where. Uygulamanın eski sürümleri yeni kayıt biçimini açamaz.',
+  String checkpointSaved(String where, {String? value}) => _t(
+    '${value == null ? 'Saved' : 'Saved: $value'}. Before saving this entry, a backup of your earlier data was saved at $where: older versions of Human OS cannot open the new record format.',
+    '${value == null ? 'Kaydedildi' : 'Kaydedildi: $value'}. Kaydetmeden önce eski verilerinin yedeği şuraya alındı: $where. Uygulamanın eski sürümleri yeni kayıt biçimini açamaz.',
   );
+
+  /// The save confirmation of a measurement, read back with its unit
+  /// ("Saved: 5,4 mmol/L"; D-048).
+  String savedValue(String value) => _t('Saved: $value', 'Kaydedildi: $value');
   String get contextLabel => _t('note', 'not');
 
   /// A unit as shown (storage keeps the canonical unit).
@@ -1413,10 +1420,14 @@ class S {
     'Circles: systolic. Squares: diastolic. A break in the line means more than 7 days without a reading; nothing is drawn in between. Click the chart to see a reading.',
     'Daireler: sistolik. Kareler: diyastolik. Çizgideki kopukluk 7 günden uzun süre ölçüm olmadığını gösterir; arası doldurulmaz. Bir ölçümü görmek için grafiğe tıkla.',
   );
-  String trendChartSpoken(int n) => _t(
-    'Chart of $n saved readings; every reading is listed after it.',
-    '$n kayıtlı ölçümün grafiği; her ölçüm aşağıda listelenmiştir.',
+  String trendChartSpoken(int n, {String? unit}) => _t(
+    'Chart of $n saved readings${unit == null ? '' : ' in $unit'}; every reading is listed after it.',
+    '${unit == null ? '' : '$unit cinsinden '}$n kayıtlı ölçümün grafiği; her ölçüm aşağıda listelenmiştir.',
   );
+
+  /// The axis caption over a trend chart: the one unit it draws (D-048).
+  String trendAxisUnit(String unit) =>
+      _t('Values in $unit', 'Değerler $unit cinsinden');
   String get trendAllPoints => _t('Every reading', 'Tüm ölçümler');
   String get phytoTitle => _t('Plant chemicals', 'Bitki kimyasalları');
   String get phytoTileHint => _t(

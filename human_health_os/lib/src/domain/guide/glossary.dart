@@ -249,8 +249,8 @@ const List<GlossaryEntry> glossary = [
     kind: 'body.fat_percentage',
     term: ('Body fat (device estimate)', 'Vücut yağı (cihaz tahmini)'),
     what: (
-      'The share of body weight a scale or other device estimates to be fat. The device calculates it from a small electric current and its own formula, so it is an estimate, and devices differ.',
-      'Bir tartının ya da başka bir cihazın vücut ağırlığının yağ olduğunu tahmin ettiği pay. Cihaz bunu zayıf bir elektrik akımı ve kendi formülüyle hesaplar; bu yüzden bir tahmindir ve cihazlar farklı sonuç verir.',
+      'The share of body weight a scale or other device estimates to be fat. Many scales estimate it from a small electric current and their own formula; other devices work differently. Either way it is an estimate, and devices differ.',
+      'Bir tartının ya da başka bir cihazın vücut ağırlığının yağ olduğunu tahmin ettiği pay. Birçok tartı bunu zayıf bir elektrik akımı ve kendi formülüyle tahmin eder; başka cihazlar farklı yöntemler kullanır. Her durumda bu bir tahmindir ve cihazlar farklı sonuç verir.',
     ),
     unit: ('percent (%)', 'yüzde (%)'),
     howToMeasure: [

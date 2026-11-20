@@ -523,20 +523,33 @@ class _EntryDetailState extends State<_EntryDetail> {
         ? s.inputError(_errorCode!)
         : null;
     return [
-      Text(s.glucoseUnitLabel, style: text.bodyMedium),
-      const SizedBox(height: 4),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final u in kind.units)
-            ChoiceChip(
-              key: ValueKey('correct-unit-$u'),
-              label: Text(s.unit(u)),
-              selected: _unit == u,
-              onSelected: _busy ? null : (_) => setState(() => _unit = u),
+      // One group to a screen reader; each unit spoken in words.
+      Semantics(
+        key: const ValueKey('correct-unit-group'),
+        container: true,
+        label: s.glucoseUnitLabel,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ExcludeSemantics(
+              child: Text(s.glucoseUnitLabel, style: text.bodyMedium),
             ),
-        ],
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final u in kind.units)
+                  ChoiceChip(
+                    key: ValueKey('correct-unit-$u'),
+                    label: Text(s.unit(u), semanticsLabel: s.spokenUnit(u)),
+                    selected: _unit == u,
+                    onSelected: _busy ? null : (_) => setState(() => _unit = u),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4, bottom: 8),

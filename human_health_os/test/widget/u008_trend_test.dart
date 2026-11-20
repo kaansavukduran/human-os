@@ -97,7 +97,14 @@ void main() {
     expect(find.byKey(const ValueKey('trend-chart')), findsOneWidget);
     expect(find.textContaining('Circles: systolic'), findsOneWidget);
     expect(find.textContaining('118/76'), findsOneWidget);
-    expect(find.textContaining('119/77'), findsOneWidget);
+    // The save snack bar also reads it back (R022); the trend lists it once.
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('screen-trend')),
+        matching: find.textContaining('119/77'),
+      ),
+      findsOneWidget,
+    );
     expect(
       find.textContaining(' — '),
       findsNWidgets(3),

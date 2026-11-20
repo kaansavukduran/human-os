@@ -100,8 +100,28 @@ class _TrendScreenState extends State<TrendScreen> {
           else if (points.isEmpty)
             Text(s.trendNone, key: const ValueKey('trend-none'))
           else ...[
+            // The one unit drawn is named over the chart and in its
+            // spoken summary (D-048).
+            if (unitOf(points.last) case final u? when u.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: ExcludeSemantics(
+                  child: Text(
+                    s.trendAxisUnit(s.unit(u)),
+                    key: const ValueKey('trend-axis-unit'),
+                    style: text.bodySmall?.copyWith(color: scheme.outline),
+                  ),
+                ),
+              ),
             Semantics(
-              label: s.trendChartSpoken(points.length),
+              key: const ValueKey('trend-chart-summary'),
+              label: s.trendChartSpoken(
+                points.length,
+                unit: switch (unitOf(points.last)) {
+                  final u? when u.isNotEmpty => s.spokenUnit(u),
+                  _ => null,
+                },
+              ),
               child: SizedBox(
                 height: 220,
                 child: LayoutBuilder(

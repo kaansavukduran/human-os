@@ -26,7 +26,14 @@ void main() {
     await tapKey(tester, 'tool-summary');
     expect(find.byKey(const ValueKey('screen-summary')), findsOneWidget);
     expect(find.textContaining('118/76'), findsOneWidget);
-    expect(find.textContaining('172.5'), findsOneWidget);
+    // The save snack bar also reads it back (R022); the summary lists it once.
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('screen-summary')),
+        matching: find.textContaining('172.5'),
+      ),
+      findsOneWidget,
+    );
     expect(find.textContaining('<b>after walk</b>'), findsOneWidget);
     await tapKey(tester, 'summary-save');
     expect(find.byKey(const ValueKey('summary-message')), findsOneWidget);

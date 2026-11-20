@@ -19,7 +19,7 @@ on:
 env:
   FLUTTER_VERSION: "3.47.6"
   # downloads.yml passes its version so all files of one build share it.
-  RELEASE_VERSION: ${{ inputs.release_version || format('0.1.0-dev.{0}', github.run_number) }}
+  RELEASE_VERSION: ${{ inputs.release_version || format('0.1.1-dev.{0}', github.run_number) }}
 
 permissions:
   contents: read

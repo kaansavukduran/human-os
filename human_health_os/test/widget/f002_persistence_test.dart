@@ -16,6 +16,8 @@ import 'package:human_health_os/src/domain/ports/health_repository.dart';
 import 'package:human_health_os/src/domain/ports/storage_status.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
 
+import 'about_helper.dart';
+
 const dev = AppConfig(
   profile: BuildProfile.development,
   version: 't',
@@ -232,16 +234,9 @@ void main() {
       find.textContaining('daha yeni bir sürümüyle yazılmış'),
       findsOneWidget,
     );
-    await tester.scrollUntilVisible(
-      find.text('Kayıt kapalı'),
-      500,
-      scrollable: find
-          .descendant(
-            of: find.byKey(const ValueKey('screen-today')),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
+    // The capability list is in Settings → About (U032).
+    await openAbout(tester);
+    await scrollAboutTo(tester, find.text('Kayıt kapalı'));
     expect(find.text('Kayıt kapalı'), findsOneWidget);
   });
 

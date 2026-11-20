@@ -387,7 +387,6 @@ void main() {
         s.measurementsNote,
         s.checkpointSaved('/somewhere/backup.json'),
         s.measurementsTitle,
-        s.measurementKind,
         s.systolicField,
         s.diastolicField,
         s.contextField,

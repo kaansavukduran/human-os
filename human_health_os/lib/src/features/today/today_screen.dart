@@ -5,12 +5,9 @@ import 'package:flutter/material.dart';
 import '../../app/app_services.dart';
 import '../../app/appearance_scope.dart';
 import '../../domain/settings/appearance.dart';
-import '../../core/capabilities.dart';
 import '../../core/ids.dart' show Clock;
-import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
-import '../../presentation/widgets/status_chip.dart';
 import '../derived/derived_screen.dart';
 import '../genetics/genetics_screen.dart';
 import '../guide/body_guide_screen.dart';
@@ -207,94 +204,8 @@ class _TodayScreenState extends State<TodayScreen> {
           const SizedBox(height: 28),
         ],
         if (look.discoveryEnabled) ...[
-          const DiscoveryCard(),
+          DiscoveryCard(services: services),
           const SizedBox(height: 28),
-        ],
-        if (show(TodaySection.buildFacts)) ...[
-          Wrap(
-            key: const ValueKey('today-planned'),
-            spacing: 8,
-            runSpacing: 4,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(
-                s.dailyMissions,
-                style: text.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-              ),
-              StatusChip(label: s.plannedLater, tone: StatusTone.muted),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _Section(
-            title: s.thisBuild,
-            child: Column(
-              children: [
-                _KeyValue(s.profile, s.profileName(services.config.profile)),
-                _KeyValue(s.version, services.config.version),
-                _KeyValue(s.platform, services.registry.platform.name),
-                _KeyValue(s.sourceRevision, services.config.shortRevision),
-                _KeyValue(s.flutterVersion, services.config.flutterVersion),
-                _KeyValue(s.dartVersion, services.config.dartVersion),
-                _KeyValue(
-                  s.recordSchema,
-                  'v${HealthRecord.currentSchemaVersion}',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          _Section(
-            title: s.capabilities,
-            child: Column(
-              children: [
-                for (final c in services.registry.capabilities)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(s.capText(c.label), style: text.titleMedium),
-                              Text(s.capText(c.detail), style: text.bodyMedium),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // May wrap: at 320 dp with 2x text a fixed chip
-                        // overflowed the row (found by the F007 layout test).
-                        Flexible(
-                          child: StatusChip(
-                            label: switch (c.status) {
-                              CapabilityStatus.available => s.available,
-                              CapabilityStatus.notImplemented =>
-                                s.notImplemented,
-                              CapabilityStatus.notRequired => s.notRequired,
-                              CapabilityStatus.off => s.savingOff,
-                              CapabilityStatus.unsupportedOnPlatform =>
-                                s.unsupported,
-                            },
-                            tone: switch (c.status) {
-                              CapabilityStatus.available => StatusTone.ok,
-                              CapabilityStatus.notImplemented =>
-                                StatusTone.muted,
-                              CapabilityStatus.notRequired => StatusTone.ok,
-                              CapabilityStatus.off => StatusTone.info,
-                              CapabilityStatus.unsupportedOnPlatform =>
-                                StatusTone.info,
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
         ],
       ],
     );
@@ -365,71 +276,6 @@ class _DateLineState extends State<_DateLine> with WidgetsBindingObserver {
       key: const ValueKey('today-date'),
       style: theme.textTheme.bodyMedium?.copyWith(
         color: theme.colorScheme.outline,
-      ),
-    );
-  }
-}
-
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
-
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      // Keep child semantics separate so headings are not merged with body text.
-      semanticContainer: false,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Semantics(
-              header: true,
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            const SizedBox(height: 8),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _KeyValue extends StatelessWidget {
-  const _KeyValue(this.k, this.v);
-
-  final String k;
-  final String v;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      // Both sides may wrap: a long value (e.g. DEVELOPMENT at 2x text on a
-      // 320 dp phone) overflowed a fixed-width value cell.
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(child: Text(k, style: text.bodyMedium)),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              v,
-              textAlign: TextAlign.end,
-              style: text.bodyMedium?.copyWith(
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

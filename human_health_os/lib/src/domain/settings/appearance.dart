@@ -46,7 +46,11 @@ enum DiscoveryStep { settings, glossary, howTo }
 /// Today sections a person may hide. The weight and measurement areas are
 /// always there (they hold the person's numbers); Settings stays one click
 /// away in the top bar whatever is hidden.
-enum TodaySection { sleep, feeling, tools, yourData, buildFacts }
+///
+/// The build facts are not a Today section any more (U032): they live in
+/// Settings → About. A stored "buildFacts" name is ignored when read, like
+/// any other name this build does not know.
+enum TodaySection { sleep, feeling, tools, yourData }
 
 class AppearanceSettings {
   const AppearanceSettings({

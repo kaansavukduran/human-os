@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/human_os_app.dart' show fontFamilyFor;
 import '../../app/app_lock.dart';
+import '../../app/app_services.dart';
 import '../../app/appearance_scope.dart';
 import '../../config/app_config.dart';
 import '../../domain/settings/appearance.dart';
@@ -10,15 +11,22 @@ import '../../l10n/strings.dart';
 import '../today/measurements_card.dart';
 import '../../presentation/theme/human_os_theme.dart';
 import '../onboarding/first_run_screen.dart';
+import 'about_screen.dart';
 
 /// Language, light or dark, accent colour and text size (U005). Every choice
 /// applies at once and is one click; nothing here touches health data.
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key, this.config});
+  const SettingsScreen({super.key, this.config, this.services});
 
   /// The running build's configuration (version shown under Updates and
-  /// about); the compile-time values when not given.
+  /// about); the services' configuration, or the compile-time values, when
+  /// not given.
   final AppConfig? config;
+
+  /// The running app's services: they open About Human OS (U032), which
+  /// shows this build's facts and what works on this device. Without them
+  /// (a Settings screen built on its own) the About row is not shown.
+  final AppServices? services;
 
   @override
   Widget build(BuildContext context) {
@@ -357,7 +365,25 @@ class SettingsScreen extends StatelessWidget {
               onChange: set,
             ),
           ),
-          section(s.settingsUpdatesTitle, _UpdatesAndAbout(config: config)),
+          section(
+            s.settingsUpdatesTitle,
+            _UpdatesAndAbout(config: config ?? services?.config),
+          ),
+          if (services case final services?)
+            // Near the end: the facts about this build, for support and the
+            // curious, not for every day (U032).
+            ListTile(
+              key: const ValueKey('settings-about'),
+              contentPadding: EdgeInsets.zero,
+              title: Text(s.aboutTitle),
+              subtitle: Text(s.aboutHint),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => AboutScreen(services: services),
+                ),
+              ),
+            ),
         ],
       ),
     );

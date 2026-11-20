@@ -185,37 +185,32 @@ void main() {
     });
   }
 
-  test('Today build facts: only daily missions are not built (EN, TR)', () {
-    expect(S(AppLang.en).dailyMissions, 'Daily missions: not built yet.');
-    expect(S(AppLang.tr).dailyMissions, 'Günlük görevler: henüz yok.');
-    for (final lang in AppLang.values) {
-      final w = S(lang).dailyMissions.toLowerCase();
-      expect(w.contains('check-in'), isFalse, reason: w);
-      expect(w.contains('yoklama'), isFalse, reason: w);
-    }
-  });
-
-  testWidgets('Today: the build fact is the true one, and Settings has no '
-      'tile there (app bar and rail still open it)', (tester) async {
+  testWidgets('Today: the not-built missions line is gone (U032), and '
+      'Settings has no tile there (app bar and rail still open it)', (
+    tester,
+  ) async {
     final (s, _) = await boot(tester);
     await tester.pumpWidget(HumanOsApp(services: s));
     await settle(tester);
+    final scroll = find
+        .descendant(
+          of: find.byKey(const ValueKey('screen-today')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    // To the very end of Today: every lazily built row has been built once.
+    for (var i = 0; i < 60; i++) {
+      await tester.drag(scroll, const Offset(0, -400));
+      await tester.pump();
+    }
+    await settle(tester);
+    expect(find.byKey(const ValueKey('today-planned')), findsNothing);
     expect(
-      find.text('Check-ins and daily missions: not built yet.'),
+      find.textContaining(RegExp('mission', caseSensitive: false)),
       findsNothing,
     );
-    final fact = find.text('Daily missions: not built yet.');
-    await tester.scrollUntilVisible(
-      fact,
-      300,
-      scrollable: find
-          .descendant(
-            of: find.byKey(const ValueKey('screen-today')),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
-    expect(fact, findsOneWidget);
+    expect(find.textContaining('Daily missions'), findsNothing);
+    expect(find.textContaining('Günlük görevler'), findsNothing);
     expect(find.byKey(const ValueKey('tool-settings')), findsNothing);
     expect(find.byKey(const ValueKey('open-settings')), findsOneWidget);
     expect(find.byKey(const ValueKey('rail-settings')), findsOneWidget);

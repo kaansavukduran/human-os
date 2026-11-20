@@ -10,6 +10,8 @@ import 'package:human_health_os/src/config/app_config.dart';
 import 'package:human_health_os/src/core/capabilities.dart';
 import 'package:human_health_os/src/navigation/destinations.dart';
 
+import 'about_helper.dart';
+
 const devConfig = AppConfig(
   profile: BuildProfile.development,
   version: '0.1.0+1',
@@ -42,9 +44,8 @@ const tablet = Size(820, 1180);
 const desktop = Size(1440, 900);
 const laptop = Size(1024, 700);
 
-/// Tall enough for the whole of Today: a lazy list builds only what is on
-/// screen, and these tests read its last sections (This build,
-/// capabilities) next to its first (F007 made Today longer).
+/// Tall enough for the whole of Today and of About: a lazy list builds only
+/// what is on screen.
 const desktopTall = Size(1440, 4000);
 
 void main() {
@@ -162,6 +163,8 @@ void main() {
         dartVersion: '3.13.5',
       ),
     );
+    // In Settings → About since U032.
+    await openAbout(tester);
     expect(find.text('3.47.6'), findsOneWidget);
     expect(find.text('3.13.5'), findsOneWidget);
     expect(find.text('Record schema'), findsOneWidget);
@@ -172,6 +175,7 @@ void main() {
     'build identity that was not passed reads "unknown", not a guess',
     (tester) async {
       await pumpApp(tester, size: desktopTall);
+      await openAbout(tester);
       expect(find.text('Flutter'), findsOneWidget);
       expect(find.text('Dart'), findsOneWidget);
       // Flutter and Dart versions were not passed to devConfig.
@@ -204,7 +208,6 @@ void main() {
   testWidgets('every destination is reachable on desktop and none is blank', (
     tester,
   ) async {
-    // Tall: Today is a lazy list and its "planned" line is near the bottom.
     await pumpApp(tester, size: desktopTall);
     for (final d in destinations) {
       await tester.tap(
@@ -216,12 +219,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(ValueKey('screen-${d.id.name}')), findsOneWidget);
       if (d.plannedForge != null) {
+        if (d.id == DestinationId.today) {
+          // Today's built part is the weight card; its empty state is
+          // specific. The not-built missions line and its "Planned" chip
+          // are gone (U032): Today shows the person's own things.
+          expect(find.text('Planned for a later version'), findsNothing);
+          expect(find.byKey(const ValueKey('weight-empty')), findsOneWidget);
+          continue;
+        }
         // Honest empty state: says it is planned (no Forge id), shows no fake data.
         expect(find.text('Planned for a later version'), findsOneWidget);
-        if (d.id == DestinationId.today) {
-          // Today's built part is the weight card; its empty state is specific.
-          expect(find.byKey(const ValueKey('weight-empty')), findsOneWidget);
-        } else if (d.emptyStateEn != null) {
+        if (d.emptyStateEn != null) {
           // Records of this kind can exist elsewhere: never claim "none".
           expect(find.text(d.emptyStateEn!), findsOneWidget);
           expect(find.text('No records yet'), findsNothing);
@@ -254,7 +262,9 @@ void main() {
     expect(find.textContaining('Not for clinical decisions'), findsOneWidget);
   });
 
-  testWidgets('This build card shows the source revision', (tester) async {
+  testWidgets('About: the This build card shows the source revision', (
+    tester,
+  ) async {
     await pumpApp(
       tester,
       size: desktopTall,
@@ -264,6 +274,7 @@ void main() {
         sourceRevision: '0123456789abcdef0123',
       ),
     );
+    await openAbout(tester);
     expect(find.text('0123456789ab'), findsOneWidget);
   });
 
@@ -289,6 +300,8 @@ void main() {
         find.textContaining('Not saved: kept only until the app closes'),
         findsOneWidget,
       );
+      // The capability list lives in Settings → About (U032).
+      await openAbout(tester);
       expect(find.text('Not required'), findsOneWidget);
       // No capability is claimed as available before its adapter exists.
       expect(find.text('Available'), findsNothing);
@@ -299,6 +312,7 @@ void main() {
     tester,
   ) async {
     await pumpApp(tester, size: desktopTall, platform: HostPlatform.web);
+    await openAbout(tester);
     expect(find.text('Health Connect'), findsNothing);
     expect(find.text('Apple Health (HealthKit)'), findsNothing);
     expect(find.text('Not on this platform'), findsOneWidget);

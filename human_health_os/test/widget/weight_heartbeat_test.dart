@@ -9,6 +9,8 @@ import 'package:human_health_os/src/core/capabilities.dart';
 import 'package:human_health_os/src/data/local/log_repository.dart';
 import 'package:human_health_os/src/domain/ports/health_repository.dart';
 
+import 'about_helper.dart';
+
 const dev = AppConfig(
   profile: BuildProfile.development,
   version: 't',
@@ -91,18 +93,10 @@ void main() {
       await pumpWith(tester, launch());
       expect(find.byKey(const ValueKey('weight-latest')), findsOneWidget);
       expect(find.text('81.2 kg'), findsWidgets);
-      // The local storage capability is now real. Today is a lazy list:
-      // scroll until the capabilities card is built.
-      await tester.scrollUntilVisible(
-        find.text('Available'),
-        400,
-        scrollable: find
-            .descendant(
-              of: find.byKey(const ValueKey('screen-today')),
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
+      // The local storage capability is now real; the capability list is
+      // in Settings → About (U032).
+      await openAbout(tester);
+      await scrollAboutTo(tester, find.text('Available'));
       expect(find.text('Available'), findsOneWidget);
     },
   );

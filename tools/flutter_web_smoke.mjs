@@ -118,27 +118,50 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
   check(`${label}: loading view gone once ${todayLabel} shows`, (await page.locator('#hos-loading').count()) === 0);
   check(`${label}: development profile banner visible`, await page.getByText(banner).first().isVisible().catch(() => false));
   if (locale === 'en-US') {
-    const flutterRow = page.getByText('Flutter', { exact: true }).first();
-    // Today is a lazy list: Flutter builds the row only once it scrolls
-    // near it, so wheel over the list padding (left of the heading) first.
-    const th = await today.boundingBox().catch(() => null);
-    const tx = th ? Math.max(2, th.x - 8) : viewport.width - 6;
-    for (let i = 0; i < 30 && (await flutterRow.count()) === 0; i++) {
-      await page.mouse.move(tx, viewport.height / 2);
-      await page.mouse.wheel(0, 400);
-      await page.waitForTimeout(200);
+    // U032: the build identity lives in Settings → About Human OS, not on
+    // Today. Open it the way a person does and run the same checks.
+    let aboutOpen = false;
+    try {
+      await page.getByRole('button', { name: 'Settings', exact: true }).first().click({ timeout: 15_000 });
+      await heading('Settings').waitFor({ timeout: 15_000 });
+      // Settings is a lazy list: wheel down until the About row is built.
+      const aboutRow = page.getByRole('button', { name: /^About Human OS/ }).or(page.getByText('About Human OS', { exact: true })).first();
+      for (let i = 0; i < 40 && (await aboutRow.count()) === 0; i++) {
+        await page.mouse.move(viewport.width / 2, viewport.height / 2);
+        await page.mouse.wheel(0, 600);
+        await page.waitForTimeout(200);
+      }
+      await aboutRow.scrollIntoViewIfNeeded().catch(() => {});
+      await aboutRow.click({ timeout: 10_000 });
+      await heading('About Human OS').waitFor({ timeout: 15_000 });
+      aboutOpen = true;
+    } catch (e) {
+      check(`${label}: Settings → About Human OS opens`, false, e.message.split('\n')[0]);
     }
-    await flutterRow.scrollIntoViewIfNeeded().catch(() => {});
-    check(`${label}: build identity row (Flutter) present`, await flutterRow.isVisible().catch(() => false));
-    if (expectFlutter) {
-      check(`${label}: build identity shows Flutter ${expectFlutter}`, await page.getByText(expectFlutter, { exact: true }).first().isVisible().catch(() => false));
+    if (aboutOpen) {
+      check(`${label}: Settings → About Human OS opens`, true);
+      const flutterRow = page.getByText('Flutter', { exact: true }).first();
+      for (let i = 0; i < 30 && (await flutterRow.count()) === 0; i++) {
+        await page.mouse.move(viewport.width / 2, viewport.height / 2);
+        await page.mouse.wheel(0, 400);
+        await page.waitForTimeout(200);
+      }
+      await flutterRow.scrollIntoViewIfNeeded().catch(() => {});
+      check(`${label}: build identity row (Flutter) present`, await flutterRow.isVisible().catch(() => false));
+      if (expectFlutter) {
+        check(`${label}: build identity shows Flutter ${expectFlutter}`, await page.getByText(expectFlutter, { exact: true }).first().isVisible().catch(() => false));
+      }
+      await page.screenshot({ path: join(out, `flutter-web-${label}-about.png`) });
     }
-    for (let i = 0; i < 10; i++) {
-      await page.mouse.move(tx, viewport.height / 2);
-      await page.mouse.wheel(0, -2000);
-      await page.waitForTimeout(100);
+    // Back to Today (About → Settings → Today).
+    for (let i = 0; i < 3 && !(await today.isVisible().catch(() => false)); i++) {
+      // Named "Back" (its label may carry spacing, as on Settings).
+      const b = page.getByRole('button', { name: /\bBack\b/ }).first();
+      if ((await b.count()) === 0) break;
+      await b.click({ timeout: 5_000 }).catch(() => b.click({ timeout: 5_000, force: true }).catch(() => {}));
+      await page.waitForTimeout(500);
     }
-    await page.waitForTimeout(300);
+    check(`${label}: back on ${todayLabel} after About`, await today.isVisible().catch(() => false));
   }
   await page.screenshot({ path: join(out, `flutter-web-${label}-today.png`) });
   // v0.31 F001: Today → Timeline → Labs.

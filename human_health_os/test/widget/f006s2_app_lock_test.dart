@@ -465,6 +465,10 @@ void main() {
         300,
         scrollable: settingsList,
       );
+      // Off the bottom edge, where the "Saved" message may cover it (the
+      // About row below made Settings longer, U032).
+      await tester.ensureVisible(find.byKey(const ValueKey('set-lock-1')));
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('set-lock-reason')), findsNothing);
       expect(
         tester

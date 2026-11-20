@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/app_services.dart';
 import '../../app/appearance_scope.dart';
 import '../../domain/settings/appearance.dart';
 import '../../l10n/strings.dart';
@@ -10,7 +11,10 @@ import '../settings/settings_screen.dart';
 /// A calm, optional milestone for exploring the app, unrelated to health
 /// results or the number of measurements a person enters.
 class DiscoveryCard extends StatelessWidget {
-  const DiscoveryCard({super.key});
+  const DiscoveryCard({super.key, this.services});
+
+  /// Lets Settings opened from here reach About Human OS (U032).
+  final AppServices? services;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +69,9 @@ class DiscoveryCard extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => switch (step) {
-                        DiscoveryStep.settings => const SettingsScreen(),
+                        DiscoveryStep.settings => SettingsScreen(
+                          services: services,
+                        ),
                         DiscoveryStep.glossary => const GlossaryScreen(),
                         DiscoveryStep.howTo => const HowToScreen(),
                       },

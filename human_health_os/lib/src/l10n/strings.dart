@@ -88,6 +88,11 @@ class S {
       _t('Planned for a later version', 'İleriki bir sürümde gelecek');
   String get noRecordsYet => _t('No records yet', 'Henüz kayıt yok');
   String get thisBuild => _t('This build', 'Bu sürüm');
+  String get aboutTitle => _t('About Human OS', 'Human OS hakkında');
+  String get aboutHint => _t(
+    'Version, build details and what works on this device',
+    'Sürüm, yapı ayrıntıları ve bu cihazda neler çalışıyor',
+  );
   String get profile => _t('Build profile', 'Sürüm türü');
 
   /// The build profile as shown to a person (never the raw enum name).
@@ -126,12 +131,6 @@ class S {
     'Not for clinical decisions · STAGING BUILD · test use only',
     'Klinik karar için değildir · TEST SÜRÜMÜ · yalnızca deneme amaçlı',
   );
-  String get todayIntro => _t(
-    'Human OS is being built to keep every part of your health on one timeline. Today it records body weight, blood pressure, resting heart rate and waist circumference by hand; each entry keeps where it came from.',
-    'Human OS, sağlığının her parçasını tek bir zaman çizelgesinde tutmak için geliştiriliyor. Şu an kilo, tansiyon, dinlenme nabzı ve bel çevresi elle kaydediliyor; her kayıt nereden geldiğini saklar.',
-  );
-  String get dailyMissions =>
-      _t('Daily missions: not built yet.', 'Günlük görevler: henüz yok.');
   String get yourData => _t('Your data', 'Verilerin');
   String get available => _t('Available', 'Kullanılabilir');
   String get notImplemented => _t('Not built yet', 'Henüz yok');
@@ -1020,7 +1019,6 @@ class S {
 
   // Measurements (F007): kept exactly as typed, never judged.
   String get measurementsTitle => _t('Measurements', 'Ölçümler');
-  String get measurementKind => _t('What did you measure?', 'Neyi ölçtün?');
   String get systolicField => _t(
     'Systolic, the upper number (mmHg)',
     'Büyük tansiyon, sistolik (mmHg)',
@@ -1106,7 +1104,6 @@ class S {
     GlucoseTiming.afterMeal => _t('After a meal', 'Yemekten sonra'),
     GlucoseTiming.other => _t('Other time', 'Başka bir zaman'),
   };
-  String get glucoseTimingNone => _t('Not given', 'Belirtilmedi');
 
   /// Under a trend whose readings use more than one unit (D-048): only one
   /// unit is drawn; the others are listed and never converted.
@@ -1183,7 +1180,6 @@ class S {
       _t('Delete last character', 'Son karakteri sil');
   String get numberPadDecimal => _t('Decimal separator', 'Ondalık ayırıcı');
   String numberPadDigit(int d) => _t('Digit $d', '$d rakamı');
-  String get numberPadFor => _t('Typing into', 'Yazdığın alan:');
 
   /// The weekday and date shown at the top of Today.
   String dateLine(DateTime d) {
@@ -1680,7 +1676,6 @@ class S {
     TodaySection.feeling => _t('How you feel', 'Nasıl hissediyorsun'),
     TodaySection.tools => _t('Tools', 'Araçlar'),
     TodaySection.yourData => _t('Your data (backups)', 'Verilerin (yedekler)'),
-    TodaySection.buildFacts => _t('About this build', 'Bu sürüm hakkında'),
   };
   String get settingsCheckInsFirst => _t(
     'Sleep and How you feel at the top of Today',
@@ -2738,10 +2733,6 @@ class S {
   String get recoveryKeyBody => _t(
     'If you forget the passphrase, this key is the only other way into the vault. Write it down and keep it somewhere safe, away from this device. It is shown only now. Anyone who has it can open your vault.',
     'Parolayı unutursan kasaya girmenin tek diğer yolu bu anahtardır. Bir yere yaz ve bu cihazdan uzakta, güvenli bir yerde sakla. Yalnız şimdi gösteriliyor. Ona sahip olan herkes kasanı açabilir.',
-  );
-  String get recoveryKeySaved => _t(
-    'I have written down the recovery key',
-    'Kurtarma anahtarını bir yere yazdım',
   );
   // Recovery key confirmation (G-38, D-046).
   String get recoveryKeyWrittenContinue =>

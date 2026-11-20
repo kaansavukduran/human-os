@@ -13,6 +13,8 @@ import 'package:human_health_os/src/core/capabilities.dart';
 import 'package:human_health_os/src/data/local/log_repository.dart';
 import 'package:human_health_os/src/domain/ports/health_repository.dart';
 
+import 'about_helper.dart';
+
 const staging = AppConfig(
   profile: BuildProfile.staging,
   version: '0.1.0+1',
@@ -251,16 +253,9 @@ void main() {
       find.textContaining('keep this session in memory only'),
       findsOneWidget,
     );
-    await tester.scrollUntilVisible(
-      find.text('Saving off'),
-      500,
-      scrollable: find
-          .descendant(
-            of: find.byKey(const ValueKey('screen-today')),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
+    // The capability list is in Settings → About (U032).
+    await openAbout(tester);
+    await scrollAboutTo(tester, find.text('Saving off'));
     expect(find.text('Saving off'), findsOneWidget);
   });
 

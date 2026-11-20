@@ -9,6 +9,7 @@ import 'package:human_health_os/src/l10n/strings.dart';
 
 import 'f007_measurements_test.dart' show saveScalar, tapKey;
 import 'u005_settings_test.dart' show launchWith;
+import 'about_helper.dart';
 
 void main() {
   const en = S(AppLang.en);
@@ -120,7 +121,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('8:05 ÖS'), findsWidgets);
     expect(find.textContaining(RegExp(r'\d PM\b')), findsNothing);
-    // The build facts show the Turkish profile name, not the enum.
+    // The build facts (Settings → About since U032) show the Turkish
+    // profile name, not the enum.
+    await openAbout(tester);
     expect(find.text('GELİŞTİRME'), findsWidgets);
     expect(find.text('DEVELOPMENT'), findsNothing);
     expect(find.byType(Text), findsWidgets);

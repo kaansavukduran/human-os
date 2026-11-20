@@ -1,0 +1,72 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-RUNTIME-F007-1334",
+  "kind": "RUNTIME",
+  "forge_id": "U033@v0.32",
+  "source_revision": "cc3e4936bfc82f9eacd7ea392fdb596ea222387c",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "env EXPECT_FLUTTER_VERSION=3.47.6 node tools/flutter_web_smoke.mjs",
+  "argv": [
+    "env",
+    "EXPECT_FLUTTER_VERSION=3.47.6",
+    "node",
+    "tools/flutter_web_smoke.mjs"
+  ],
+  "cwd": ".",
+  "started_at": "2026-11-20T06:49:52.382Z",
+  "finished_at": "2026-11-20T06:54:39.672Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.4",
+    "python": "Python 3.13.18"
+  },
+  "host": "Linux 6.18.44-fc-v726 x86_64",
+  "summary": "PASS  slow load: no progress percentage",
+  "log_sha256": "b2a9f1ac9583b6ccdd9ecae847167f86e1b0f22ab2551ffb49c06d1ffc8251d6",
+  "log_lines": 161,
+  "log_tail": [
+    "PASS  phone-tr: Belgeler empty state says nothing recorded",
+    "PASS  phone-tr: Today shows the Uyku card",
+    "PASS  phone-tr: Today shows the Nas\u0131l hissediyorsun card",
+    "PASS  phone-tr: no external network requests",
+    "PASS  phone-tr: no page errors",
+    "PASS  phone-tr: no console errors",
+    "PASS  phone-tr: no failed requests",
+    "PASS  reduced motion: loading view visible",
+    "PASS  reduced motion: loading indicator has no animation  ({\"name\":\"none\",\"duration\":\"0s\"})",
+    "PASS  slow load: no second line before 15 s",
+    "PASS  slow load: second plain line after 15 s",
+    "PASS  slow load: no progress percentage"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os",
+    "tools/flutter_web_smoke.mjs"
+  ],
+  "target": "web",
+  "profile": "development",
+  "artifacts": [
+    {
+      "path": "/home/user/claudereponewscience/human_health_os/build/web/main.dart.js",
+      "type": "file",
+      "bytes": 3919098,
+      "sha256": "134af417e44692f41c5fb1574a6795477a94b0a968e0798e88dfaf8a5f253659"
+    },
+    {
+      "path": "/home/user/claudereponewscience/reports/runtime/flutter_web_smoke_cc3e4936bfc8.json",
+      "type": "file",
+      "bytes": 20748,
+      "sha256": "fdee8a21b0053f290c7cb5c6582ac76cab8b6114c338866cc1bab232057b6008"
+    }
+  ]
+}

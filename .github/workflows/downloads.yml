@@ -49,7 +49,7 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
-      - run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev ninja-build clang cmake pkg-config fakeroot zstd librsvg2-bin rpm xvfb
+      - run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev ninja-build clang cmake pkg-config fakeroot zstd librsvg2-bin rpm xvfb desktop-file-utils
       - name: Build
         working-directory: human_health_os
         run: |

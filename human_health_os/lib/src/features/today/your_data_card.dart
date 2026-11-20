@@ -621,13 +621,18 @@ class _YourDataCardState extends State<YourDataCard> {
     ],
     if (_message != null) ...[
       const SizedBox(height: 8),
-      Semantics(
-        liveRegion: true,
-        child: Text(
-          _message!,
-          key: const ValueKey('data-message'),
-          style: text.bodyMedium?.copyWith(
-            color: _messageIsError ? Theme.of(context).colorScheme.error : null,
+      _ScrollIntoView(
+        message: _message!,
+        child: Semantics(
+          liveRegion: true,
+          child: Text(
+            _message!,
+            key: const ValueKey('data-message'),
+            style: text.bodyMedium?.copyWith(
+              color: _messageIsError
+                  ? Theme.of(context).colorScheme.error
+                  : null,
+            ),
           ),
         ),
       ),
@@ -787,4 +792,46 @@ class _YourDataCardState extends State<YourDataCard> {
       ),
     );
   }
+}
+
+/// Scrolls a new status message into view when it is not (Q002): the
+/// message sits above the backup buttons and the restore-from-file entry,
+/// so with large text on a small screen the answer to a tap on the entry
+/// ("No file chosen", a refusal) was out of sight. Nothing moves while the
+/// message is already visible.
+class _ScrollIntoView extends StatefulWidget {
+  const _ScrollIntoView({required this.message, required this.child});
+
+  final String message;
+  final Widget child;
+
+  @override
+  State<_ScrollIntoView> createState() => _ScrollIntoViewState();
+}
+
+class _ScrollIntoViewState extends State<_ScrollIntoView> {
+  @override
+  void initState() {
+    super.initState();
+    _reveal();
+  }
+
+  @override
+  void didUpdateWidget(_ScrollIntoView old) {
+    super.didUpdateWidget(old);
+    if (old.message != widget.message) _reveal();
+  }
+
+  void _reveal() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || Scrollable.maybeOf(context) == null) return;
+      Scrollable.ensureVisible(
+        context,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

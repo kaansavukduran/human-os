@@ -104,6 +104,32 @@ for (const palette of ['Matrix', 'Axolotl', 'Trans']) for (const vp of ['phone',
 // 2× text through the browser's font size (the root font size Flutter web
 // reads as its text scale), as a person with a large browser font gets.
 for (const locale of LOCALES) GROUPS.push({ variant: 'text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: ALL });
+// Q002: sheets and deep sections that a screen's first view does not show:
+// the Labs add sheet and its "More from the report" section, Settings
+// scrolled to the palettes and to the app lock, and the restore-from-file
+// entry of Today's "Your data" card. At 320x640 (1× and 2× text) and on the
+// desktop, in both languages.
+const EXTRA_IDS = ['Labs: add sheet', 'Labs: more from the report', 'Settings: palettes', 'Settings: app lock', 'Today: restore from file'];
+for (const locale of LOCALES) {
+  GROUPS.push({ variant: 'sheets', vp: 'small-phone', locale, screens: EXTRA_IDS });
+  GROUPS.push({ variant: 'sheets', vp: 'desktop', locale, screens: EXTRA_IDS });
+  GROUPS.push({ variant: 'sheets-text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: EXTRA_IDS });
+}
+// The words the extra cells look for (lib/src/l10n/strings.dart).
+const X_TEXT = {
+  'en-US': {
+    labAdd: 'Add a result', labAddTitle: 'Add a result from a report', labMore: 'More from the report',
+    labInterval: 'Reference interval as printed (optional)', palette: 'Palette', lock: 'Lock after inactivity',
+    lockReason: 'Not available in this build: it saves without encryption (a development build), so there is no key to drop. The lock works in builds with an encrypted vault.',
+    lockControls: /^(Off|\d+ min|Lock when the app is hidden)/, restore: 'Restore from a backup file', noFile: 'No file chosen. Nothing was changed.',
+  },
+  'tr-TR': {
+    labAdd: 'Sonuç ekle', labAddTitle: 'Rapordan sonuç ekle', labMore: 'Rapordaki diğer bilgiler',
+    labInterval: 'Raporda yazan referans aralığı (isteğe bağlı)', palette: 'Renk paleti', lock: 'Kullanılmayınca kilitle',
+    lockReason: 'Bu sürümde yok: kayıtlar şifresiz tutuluyor (geliştirme sürümü), bu yüzden bellekten silinecek bir anahtar yok. Kilit, şifreli kasası olan sürümlerde çalışır.',
+    lockControls: /^(Kapalı|\d+ dk|Uygulama gizlenince kilitle)/, restore: 'Bir yedek dosyasından geri yükle', noFile: 'Dosya seçilmedi. Hiçbir şey değişmedi.',
+  },
+};
 
 // MATRIX_ONLY=<regex> limits the run to groups whose "variant vp locale"
 // matches (for debugging the tool); MATRIX_VERBOSE=1 logs each step.
@@ -188,8 +214,18 @@ async function runPass(root, mode) {
       if ((await b.count()) > 0) { await tap(b, 5_000).catch((e) => log('back', e.message.split('\n')[0])); await page.waitForTimeout(500); }
     };
     let inSettings = false;
+    // A modal sheet (the Labs add sheet) closes with Escape, as a keyboard
+    // or the system back gesture closes it.
+    let sheetOpen = false;
+    const closeSheet = async () => {
+      if (!sheetOpen) return;
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(700);
+      sheetOpen = false;
+    };
     const open = async (id) => {
       const { nav, kind } = names[id];
+      await closeSheet();
       if (inSettings) { await back(); inSettings = false; }
       if (kind === 'tab') {
         await tap(navItem(nav));
@@ -217,6 +253,82 @@ async function runPass(root, mode) {
     const toTop = async (x) => {
       for (let i = 0; i < 8; i++) { await page.mouse.move(x, vp.height / 2); await page.mouse.wheel(0, -3000); await page.waitForTimeout(80); }
       await page.waitForTimeout(400);
+    };
+
+    // Wheel at x until [locator] sits inside the viewport (below a top bar,
+    // above a bottom bar on touch layouts).
+    const reveal = async (locator, x, inSheet = false) => {
+      for (let i = 0; i < 60 && (await locator.count()) === 0; i++) {
+        await page.mouse.move(x, vp.height / 2);
+        await page.mouse.wheel(0, 300);
+        await page.waitForTimeout(150);
+      }
+      for (let i = 0; i < 30; i++) {
+        const b = await locator.boundingBox({ timeout: 1_000 }).catch(() => null);
+        if (b && b.y >= (inSheet ? 0 : 64) && b.y + b.height <= vp.height - (vp.touch && !inSheet ? 90 : 10)) return true;
+        await page.mouse.move(x, vp.height / 2);
+        await page.mouse.wheel(0, b ? Math.max(-400, Math.min(400, b.y - vp.height / 3)) : 300);
+        await page.waitForTimeout(200);
+      }
+      return false;
+    };
+    // The extra cells (Q002): how each is reached, what it must show
+    // (target), what is measured for 2x text (probe) and where to wheel.
+    const T = X_TEXT[g.locale];
+    let sheetX = 6;
+    const xh = (name) => page.getByRole('heading', { name, exact: true }).first();
+    const EXTRA = {
+      'Labs: add sheet': {
+        label: T.labAddTitle,
+        target: () => xh(T.labAddTitle),
+        sheet: true,
+        x: () => sheetX,
+        go: async () => {
+          await open('Labs');
+          await H(names.Labs.heading).waitFor({ timeout: 15_000 });
+          // With 2x text on a small phone the button sits below the fold.
+          const add = page.getByRole('button', { name: T.labAdd, exact: true }).first();
+          await reveal(add, await wheelX('Labs'));
+          await tap(add);
+          sheetOpen = true;
+          await xh(T.labAddTitle).waitFor({ timeout: 15_000 });
+          await page.waitForTimeout(600);
+          const b = await xh(T.labAddTitle).boundingBox({ timeout: 2_000 }).catch(() => null);
+          sheetX = b ? Math.max(2, b.x - 8) : 6;
+        },
+      },
+      'Labs: more from the report': {
+        label: T.labInterval,
+        target: () => xh(T.labInterval),
+        sheet: true,
+        x: () => sheetX,
+        go: async () => {
+          if (!sheetOpen) await EXTRA['Labs: add sheet'].go();
+          const more = page.getByRole('button', { name: new RegExp(`^${esc(T.labMore)}`) }).first();
+          await reveal(more, sheetX, true);
+          if ((await more.getAttribute('aria-expanded').catch(() => null)) !== 'true') await tap(more);
+          await page.waitForTimeout(700);
+        },
+      },
+      'Settings: palettes': {
+        label: T.palette,
+        target: () => xh(T.palette),
+        x: () => 6,
+        go: async () => { if (!inSettings) await open('Settings'); await H(names.Settings.heading).waitFor({ timeout: 15_000 }); },
+      },
+      'Settings: app lock': {
+        label: T.lock,
+        target: () => xh(T.lock),
+        x: () => 6,
+        go: async () => { if (!inSettings) await open('Settings'); await H(names.Settings.heading).waitFor({ timeout: 15_000 }); },
+      },
+      'Today: restore from file': {
+        label: T.restore,
+        target: () => page.getByRole('button', { name: T.restore, exact: true }).first(),
+        probe: () => H(names.Today.heading),
+        x: () => null,
+        go: async () => { await open('Today'); await H(names.Today.heading).waitFor({ timeout: 15_000 }); },
+      },
     };
 
     // Palette groups set the palette through Settings first.
@@ -256,26 +368,45 @@ async function runPass(root, mode) {
       const set = (name, status, detail = '') => { cell.checks[name] = { status, detail }; };
       let reached = false;
       log('cell', key);
+      const ex = EXTRA[id];
+      let x = 6;
+      let probeHeight = null;
+      let lockReasonSeen = false;
       try {
-        if (!(g.palette && id === 'Settings' && inSettings)) await open(id);
-        await H(names[id].heading).waitFor({ timeout: 15_000 });
-        reached = await H(names[id].heading).isVisible();
+        if (ex) {
+          await ex.go();
+          x = ex.x() ?? await wheelX('Today');
+          if (ex.probe) { await toTop(x); probeHeight = (await ex.probe().boundingBox({ timeout: 2_000 }).catch(() => null))?.height ?? null; }
+          reached = await reveal(ex.target(), x, !!ex.sheet);
+          if (!reached) cell.navError = 'target not brought into view';
+          // Read while the section is on screen (lazy lists drop it later).
+          if (reached && id === 'Settings: app lock') {
+            await page.waitForTimeout(300);
+            lockReasonSeen = (await page.getByText(T.lockReason, { exact: true }).count()) + (await page.getByLabel(T.lockReason, { exact: true }).count()) > 0;
+          }
+        } else {
+          if (!(g.palette && id === 'Settings' && inSettings)) await open(id);
+          await H(names[id].heading).waitFor({ timeout: 15_000 });
+          reached = await H(names[id].heading).isVisible();
+        }
       } catch (e) {
         cell.navError = e.message.split('\n')[0];
       }
       log('reached', reached, cell.navError ?? '');
-      const x = reached ? await wheelX(id) : 6;
-      if (reached && id !== 'Settings') await toTop(x);
+      const targetLoc = ex ? ex.target() : H(names[id].heading);
+      if (!ex) x = reached ? await wheelX(id) : 6;
+      if (!ex && reached && id !== 'Settings') await toTop(x);
       if (mode === 'release') {
-        const hb = reached ? await H(names[id].heading).boundingBox().catch(() => null) : null;
-        set('heading_visible', reached && hb && hb.y >= 0 && hb.y + hb.height <= vp.height ? 'PASS' : 'FAIL', reached ? `"${names[id].heading}"` : `"${names[id].heading}" not shown${cell.navError ? `: ${cell.navError}` : ''}`);
+        const hb = reached ? await targetLoc.boundingBox({ timeout: 2_000 }).catch(() => null) : null;
+        const what = `"${ex ? ex.label : names[id].heading}"`;
+        set('heading_visible', reached && hb && hb.y >= 0 && hb.y + hb.height <= vp.height ? 'PASS' : 'FAIL', reached ? what : `${what} not shown${cell.navError ? `: ${cell.navError}` : ''}`);
         if (g.palette) set('palette_applied', paletteApplied ? 'PASS' : 'FAIL', `${g.palette} chosen in Settings`);
         // Compared later: 2× text must really reach the app. Settings' title
         // is in the top bar, whose text Flutter caps at about 1.34×, so the
         // first heading of its content is measured there.
         const probe = id === 'Settings' ? H(SETTINGS_FIRST_HEADING[g.locale]) : null;
-        cell.headingHeight = probe ? (await probe.boundingBox().catch(() => null))?.height ?? null : hb?.height ?? null;
-        const shot = `${g.variant}_${g.vp}_${g.locale}_${id}.png`;
+        cell.headingHeight = ex?.probe ? probeHeight : probe ? (await probe.boundingBox().catch(() => null))?.height ?? null : hb?.height ?? null;
+        const shot = `${g.variant}_${g.vp}_${g.locale}_${id.replace(/[^A-Za-z]+/g, '-')}.png`;
         await page.screenshot({ path: join(out, shot) }).catch(() => {});
         cell.screenshot = shot;
       }
@@ -284,6 +415,7 @@ async function runPass(root, mode) {
       // control is measured at the largest size seen while scrolling.
       const seen = new Map();
       let hscroll = { max: 0, width: vp.width };
+      if (reached && ex) await toTop(x);
       if (reached) {
         let lastSig = '';
         let same = 0;
@@ -332,6 +464,52 @@ async function runPass(root, mode) {
           await page.waitForTimeout(mode === 'debug' ? 450 : 250);
         }
         await toTop(x);
+      }
+      // The app lock in a development build: the reason is shown and every
+      // lock control is disabled (none looks usable).
+      if (mode === 'release' && reached && id === 'Settings: app lock') {
+        const reason = lockReasonSeen ? 1 : 0;
+        const ctl = [...seen.values()].filter((n) => T.lockControls.test(n.name));
+        const enabled = ctl.filter((n) => !n.disabled);
+        set('lock_state_clear', reason > 0 && ctl.length >= 2 && enabled.length === 0 ? 'PASS' : 'FAIL',
+          `reason shown: ${reason > 0}; ${ctl.length} lock controls, ${enabled.length} enabled${enabled.length ? ` (${enabled.map((n) => n.name.slice(0, 30)).join(', ')})` : ''}`);
+      }
+      // The restore entry opens the system file chooser; a chooser closed
+      // without a file says so and changes nothing.
+      if (mode === 'release' && reached && id === 'Today: restore from file') {
+        try {
+          await reveal(ex.target(), x);
+          const [chooser] = await Promise.all([page.waitForEvent('filechooser', { timeout: 15_000 }), tap(ex.target())]);
+          set('restore_chooser_opens', 'PASS', 'the browser file chooser opened');
+          await chooser.setFiles([]);
+          const msg = page.getByText(T.noFile, { exact: true }).or(page.getByLabel(T.noFile, { exact: true })).first();
+          await msg.waitFor({ state: 'attached', timeout: 15_000 }).catch(() => {});
+          // The card's status line sits above the explanation and the entry
+          // (it also reports backups and exports); the app scrolls it into
+          // view (Q002). Out of view fails, with a screenshot.
+          // The app scrolls a new message into view after the frame that
+          // shows it; measure once that has settled.
+          await page.waitForTimeout(1_000);
+          const mb = await msg.boundingBox({ timeout: 1_000 }).catch(() => null);
+          const inView = !!mb && mb.y >= 0 && mb.y + mb.height <= vp.height;
+          // What the person sees right after closing the chooser.
+          if (!inView) {
+            cell.screenshotAfter = cell.screenshot.replace(/\.png$/, '_after-cancel.png');
+            await page.screenshot({ path: join(out, cell.screenshotAfter) }).catch(() => {});
+          }
+          // Flutter keeps no semantics for text scrolled out above the list,
+          // so look upward from the entry in small steps.
+          for (let k = 0; k < 30 && (await msg.count()) === 0; k++) {
+            await page.mouse.move(x, vp.height / 2);
+            await page.mouse.wheel(0, -200);
+            await page.waitForTimeout(250);
+          }
+          const seenMsg = (await msg.count()) > 0;
+          cell.restoreMessageInView = inView;
+          set('restore_cancel_reported', seenMsg && inView ? 'PASS' : 'FAIL', seenMsg ? `"${T.noFile}"${inView ? ' (in view)' : ' (NOT in view after 1 s: above the entry, scrolled out; announced as a live region)'}` : 'no message after the chooser closed without a file');
+        } catch (e) {
+          set('restore_chooser_opens', 'FAIL', e.message.split('\n')[0]);
+        }
       }
       await page.waitForTimeout(200);
       if (mode === 'release') {
@@ -391,8 +569,9 @@ const cells = Object.values(release).map((c) => {
 });
 // 2× text cells: the larger text really reached the app (the heading is at
 // least 1.6× as tall as on the same screen, size and language at 1×).
-for (const c of cells.filter((c) => c.variant === 'text-2x')) {
-  const ref = cells.find((r) => r.variant === 'base' && r.viewport === c.viewport && r.locale === c.locale && r.screen === c.screen);
+for (const c of cells.filter((c) => c.variant.endsWith('text-2x'))) {
+  const refVariant = c.variant === 'text-2x' ? 'base' : c.variant.replace(/-text-2x$/, '');
+  const ref = cells.find((r) => r.variant === refVariant && r.viewport === c.viewport && r.locale === c.locale && r.screen === c.screen);
   const ratio = ref?.headingHeight && c.headingHeight ? c.headingHeight / ref.headingHeight : null;
   c.checks.text_scaled_2x = ratio == null
     ? { status: 'NOT_TESTED', detail: 'heading not measured at 1× or 2×' }
@@ -430,6 +609,9 @@ const meta = {
     touch_targets: `touch viewports: every enabled semantics button/link/tab/checkbox/switch/radio/slider or tappable node is >= ${MIN_TARGET}x${MIN_TARGET} CSS px (largest size seen while scrolling the whole screen)`,
     no_flutter_overflow: 'debug build of the same revision: the console has no "overflowed by N pixels" report while the screen is opened and scrolled',
     no_flutter_exceptions: 'debug build: no other Flutter framework exception report',
+    lock_state_clear: 'Settings: app lock: in a build without an encrypted vault the reason text is shown and every lock control (minute chips, lock-when-hidden switch) is disabled',
+    restore_chooser_opens: 'Today: restore from file: tapping the entry opens the browser file chooser',
+    restore_cancel_reported: 'Today: restore from file: closing the chooser without a file shows "No file chosen. Nothing was changed." on screen within 1 s',
     text_scaled_2x: '2× text cells only: the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app',
   },
   counts,

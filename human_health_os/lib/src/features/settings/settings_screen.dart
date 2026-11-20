@@ -33,7 +33,15 @@ class SettingsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Semantics(header: true, child: Text(title, style: text.titleMedium)),
+          // Its own node (container): without it Flutter merges the header
+          // flag and the title into the section's node, so the web shows a
+          // <header> landmark labelled with the title and the section's
+          // text, and no heading to navigate by (Q002).
+          Semantics(
+            header: true,
+            container: true,
+            child: Text(title, style: text.titleMedium),
+          ),
           const SizedBox(height: 8),
           child,
         ],

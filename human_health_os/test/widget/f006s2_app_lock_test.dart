@@ -319,6 +319,7 @@ void main() {
 
     testWidgets('development build: the setting is shown disabled with the '
         'reason, and a saved choice never locks', (tester) async {
+      final semantics = tester.ensureSemantics();
       tester.view.physicalSize = const Size(1280, 2600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
@@ -345,6 +346,16 @@ void main() {
         scrollable: settingsScroll(),
       );
       expect(textOf(tester, 'set-lock-reason'), contains('development build'));
+      // Q002: the section title is a heading of its own; the reason is read
+      // as its own text, not folded into the title's label.
+      expect(
+        tester.getSemantics(find.text('Lock after inactivity')),
+        isSemantics(label: 'Lock after inactivity', isHeader: true),
+      );
+      expect(
+        tester.getSemantics(find.byKey(const ValueKey('set-lock-reason'))),
+        isSemantics(label: textOf(tester, 'set-lock-reason'), isHeader: false),
+      );
       for (final m in AppearanceSettings.lockMinuteChoices) {
         final chip = tester.widget<ChoiceChip>(
           find.byKey(ValueKey('set-lock-$m')),
@@ -367,6 +378,7 @@ void main() {
       await tester.pump();
       expect(find.byKey(const ValueKey('screen-settings')), findsOneWidget);
       await closeApp(tester);
+      semantics.dispose();
     });
 
     testWidgets('memory-only session of an encrypted build: disabled, with '

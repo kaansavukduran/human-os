@@ -422,6 +422,50 @@ void main() {
       expect(files.vaultText, isNull);
     });
 
+    testWidgets('320 dp and 2x text: the answer to the restore entry is '
+        'scrolled into view (Q002)', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final files = browserLike()..vaultText = 'live';
+      await startDev(
+        tester,
+        sink: MemoryLogSink(),
+        files: files,
+        picker: FakePicker(),
+      );
+      tester.view.physicalSize = const Size(320, 640);
+      await settle(tester);
+      await reveal(tester, 'restore-from-file', 200);
+      // As a person scrolls: the entry at the top of the list, the card's
+      // status line above it out of sight.
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('restore-from-file')),
+      );
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('restore-from-file')));
+      await settle(tester);
+      expect(message(tester), 'No file chosen. Nothing was changed.');
+      final list = tester.getRect(
+        find
+            .descendant(
+              of: find.byKey(const ValueKey('screen-today')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      final shown = tester.getRect(find.byKey(const ValueKey('data-message')));
+      expect(
+        shown.top,
+        greaterThanOrEqualTo(list.top),
+        reason: '$shown in $list',
+      );
+      expect(
+        shown.bottom,
+        lessThanOrEqualTo(list.bottom),
+        reason: '$shown in $list',
+      );
+    });
+
     testWidgets('cancel at every step changes nothing: no file chosen, '
         'cancel at the preview', (tester) async {
       final bundle = await backupMadeElsewhere(tester);

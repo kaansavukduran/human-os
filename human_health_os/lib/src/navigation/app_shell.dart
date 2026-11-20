@@ -80,6 +80,8 @@ class _AppShellState extends State<AppShell> {
       child: KeyedSubtree(key: ValueKey(_current), child: _screenFor(_current)),
     );
     final wide = width >= kRailBreakpoint;
+    // Read above the Scaffold, which removes the inset from its body.
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom > 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -97,11 +99,26 @@ class _AppShellState extends State<AppShell> {
       ),
       // The profile banner sits above the content and takes the height its
       // text needs, so no clause is cut at large text sizes (audit UX-1).
-      body: Column(
-        children: [
-          BuildProfileBanner(config: widget.services.config),
-          Expanded(child: _content(wide, width, body)),
-        ],
+      // With the on-screen keyboard open the body can be shorter than the
+      // banner needs (320x640, 2x text, Turkish: Q002): the banner then takes
+      // at most 40% of it and scrolls, its full text still read out by its
+      // label, instead of the column overflowing.
+      body: LayoutBuilder(
+        builder: (context, box) {
+          final banner = BuildProfileBanner(config: widget.services.config);
+          return Column(
+            children: [
+              if (keyboard && box.maxHeight.isFinite)
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: box.maxHeight * 0.4),
+                  child: SingleChildScrollView(primary: false, child: banner),
+                )
+              else
+                banner,
+              Expanded(child: _content(wide, width, body)),
+            ],
+          );
+        },
       ),
       bottomNavigationBar: wide
           ? null

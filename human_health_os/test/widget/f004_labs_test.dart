@@ -78,13 +78,17 @@ Future<void> reveal(WidgetTester tester, Finder f) async {
     final list = find
         .descendant(
           of: find.byKey(const ValueKey('screen-labs')),
-          matching: find.byType(Scrollable),
+          // The screen's own vertical list, never a sideways row inside it.
+          matching: find.byWidgetPredicate(
+            (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+          ),
         )
         .first;
-    // Back to the top, then down until the item is built.
+    // Back to the top, then down until the item is built. Enough steps for
+    // twice-size text with taller fonts (Windows renders text taller).
     await tester.fling(list, const Offset(0, 4000), 4000);
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(f, 150, scrollable: list);
+    await tester.scrollUntilVisible(f, 150, scrollable: list, maxScrolls: 200);
   }
   await tester.ensureVisible(f);
   await tester.pumpAndSettle();

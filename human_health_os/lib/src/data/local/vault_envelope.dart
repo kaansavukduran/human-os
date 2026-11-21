@@ -538,6 +538,23 @@ class EncryptedLogSink implements LogSink {
     _size = await _storedSize();
   }
 
+  /// A whole envelope of this vault, in memory: [envelopeHeaderLine] (the
+  /// stored first line: same id, same key slots) and [innerLines] sealed
+  /// with this vault's key, numbered from 0 (the log header). Ends with a
+  /// newline. Writes nothing (F005-S3: bringing in development records).
+  String sealEnvelope(String envelopeHeaderLine, List<String> innerLines) {
+    final header = EnvelopeHeader.parse(envelopeHeaderLine);
+    if (header.vaultId != vaultId) {
+      throw const VaultEnvelopeError('ENVELOPE_UNREADABLE');
+    }
+    final out = StringBuffer('$envelopeHeaderLine\n');
+    for (var i = 0; i < innerLines.length; i++) {
+      if (innerLines[i].contains('\n')) throw ArgumentError('one line each');
+      out.writeln(_sealLine(vaultId, i, innerLines[i]));
+    }
+    return out.toString();
+  }
+
   String _sealLine(String id, int seq, String line) {
     final s = seal(_key, _utf8(line), _entryAad(id, seq));
     return jsonEncode({

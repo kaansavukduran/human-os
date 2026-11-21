@@ -4,6 +4,7 @@ import '../../app/app_services.dart';
 import '../../application/export.dart';
 import '../../data/backup/backup_bundle.dart';
 import '../../data/backup/data_files.dart';
+import '../../data/backup/dev_import.dart';
 import '../../core/redact.dart' show errorCode;
 import '../../data/crypto/recovery_key.dart' show RecoveryKeyFormatError;
 import '../../data/local/vault_envelope.dart' show KeyKind;
@@ -32,6 +33,10 @@ class YourDataCard extends StatefulWidget {
 
 class _YourDataCardState extends State<YourDataCard> {
   List<SavedFile> _backups = const [];
+
+  /// True while the encrypted vault holds no records: only then are the
+  /// records of a development build offered (F005-S3, D-050).
+  bool _vaultEmpty = false;
   String? _message;
   bool _messageIsError = false;
 
@@ -67,7 +72,15 @@ class _YourDataCardState extends State<YourDataCard> {
     final f = _files;
     if (f == null || !f.canRestore) return;
     final list = await f.backups();
-    if (mounted) setState(() => _backups = list);
+    final empty =
+        _s.stageDevelopmentImport != null &&
+        (await _s.heartbeat.repository.records(_s.self.id)).isEmpty;
+    if (mounted) {
+      setState(() {
+        _backups = list;
+        _vaultEmpty = empty;
+      });
+    }
   }
 
   Future<void> _run(
@@ -118,6 +131,7 @@ class _YourDataCardState extends State<YourDataCard> {
         ? '\n${s.reloadToGoOn}'
         : '';
     return switch (e) {
+      ImportError() => s.importError(e.code, e.detail) + again,
       BackupError() => s.backupError(e.code, e.message) + again,
       RecoveryKeyFormatError() => s.recoveryKeyFormat,
       // A read, write or rename failed outside the restore gate's checks;
@@ -584,6 +598,136 @@ class _YourDataCardState extends State<YourDataCard> {
     );
   }
 
+  /// Records of a development build into this empty encrypted vault
+  /// (F005-S3, G-76, D-050): a backup or an export the person chooses goes
+  /// through the same gate as a restore (manifest and checksum where
+  /// present, format and record-schema compatibility, counts, every record
+  /// rule), then a preview with the counts and the warning that the chosen
+  /// file is not encrypted and is never deleted by the app, a required
+  /// confirmation, then the adapter's staged write of the vault re-sealed
+  /// with its own key. Nothing is written before the confirmation; a
+  /// failure changes nothing.
+  Future<void> _importDevelopment(S s) async {
+    final prepare = _s.stageDevelopmentImport!;
+    final files = _files!;
+    final picker = _s.backupPicker ?? const SystemBackupFilePicker();
+    _working(s.busyReading);
+    final PickedBackup? picked;
+    final StagedImport imp;
+    try {
+      picked = await picker.pick(title: s.chooseImportTitle);
+      if (picked == null) {
+        _say(s.noFileChosen);
+        return;
+      }
+      _working(s.busyCheckingFile);
+      imp = stageImport(picked.text, now: DateTime.now().toUtc());
+    } catch (e) {
+      _say(_describe(e, s, chosenFile: true), error: true);
+      return;
+    }
+    if (!mounted) return;
+    _say(null);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) {
+        var understood = false;
+        return StatefulBuilder(
+          builder: (c, setDialog) => AlertDialog(
+            key: const ValueKey('import-preview'),
+            title: Text(s.importTitle),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s.importPreview(
+                      name: picked!.name,
+                      export: imp.source == ImportSource.jsonExport,
+                      records: imp.recordCount,
+                      profiles: imp.profileCount,
+                      made: imp.madeAt == null ? null : fmtWhen(imp.madeAt!),
+                      version: imp.sourceAppVersion,
+                    ),
+                    key: const ValueKey('import-preview-text'),
+                  ),
+                  if (imp.skippedEntries > 0) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      s.importSkipped(imp.skippedEntries),
+                      key: const ValueKey('import-skipped'),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Text(
+                    s.importWarning,
+                    key: const ValueKey('import-warning-text'),
+                    style: Theme.of(c).textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(s.importHow),
+                  CheckboxListTile(
+                    key: const ValueKey('import-understand'),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: understood,
+                    onChanged: (v) => setDialog(() => understood = v ?? false),
+                    title: Text(s.importUnderstand),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                key: const ValueKey('cancel-import'),
+                onPressed: () => Navigator.of(c).pop(false),
+                child: Text(s.cancel),
+              ),
+              FilledButton(
+                key: const ValueKey('confirm-import'),
+                onPressed: understood ? () => Navigator.of(c).pop(true) : null,
+                child: Text(s.importConfirm),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (!mounted) return;
+    if (ok != true) {
+      _say(s.importCancelled);
+      return;
+    }
+    await _run(
+      (s) async {
+        final now = DateTime.now().toUtc();
+        final RestoreOutcome out;
+        try {
+          final staged = await prepare(imp, now);
+          out = await files.restore(
+            staged,
+            now: now,
+            // From the moment the vault file starts to change, this
+            // session's memory no longer matches it: no more writes.
+            beforeSwitch: _lockAfterRestore,
+          );
+        } on BackupError catch (e) {
+          if (e.code == 'RESTORE_TARGET_HAS_RECORDS') {
+            throw const ImportError('IMPORT_TARGET_HAS_RECORDS');
+          }
+          rethrow;
+        }
+        _lockAfterRestore();
+        return s.imported(imp.recordCount, imp.profileCount, out.keptPrevious);
+      },
+      s,
+      busy: s.busyImporting,
+      chosenFile: true,
+    );
+  }
+
   Widget _chosenFileButton(S s) => OutlinedButton.icon(
     key: const ValueKey('restore-from-file'),
     onPressed: _busy || _restored ? null : () => _restoreChosen(s),
@@ -748,6 +892,24 @@ class _YourDataCardState extends State<YourDataCard> {
                 const SizedBox(height: 8),
                 _chosenFileButton(s),
               ] else if (files.canRestore) ...[
+                if (encrypted &&
+                    _s.stageDevelopmentImport != null &&
+                    _vaultEmpty &&
+                    !_restored) ...[
+                  Text(
+                    s.importExplain,
+                    key: const ValueKey('import-explain'),
+                    style: text.bodyMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    key: const ValueKey('import-development'),
+                    onPressed: _busy ? null : () => _importDevelopment(s),
+                    icon: const Icon(Icons.move_down_outlined),
+                    label: Text(s.importFromDevelopment),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 Semantics(
                   header: true,
                   child: Text(s.backupsTitle, style: text.titleMedium),

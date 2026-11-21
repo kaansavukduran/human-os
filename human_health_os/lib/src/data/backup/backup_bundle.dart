@@ -215,6 +215,7 @@ class StagedRestore {
     this.state, {
     this.envelope,
     this.dataKey,
+    this.opener,
   });
 
   final BackupManifest manifest;
@@ -229,6 +230,11 @@ class StagedRestore {
   /// The envelope header of an encrypted backup.
   final EnvelopeHeader? envelope;
   final Uint8List? dataKey;
+
+  /// Opens a written copy with the key of the vault it was sealed for,
+  /// without handing the key out (an import into the unlocked vault,
+  /// F005-S3); used instead of [dataKey] when set.
+  final OpenedEnvelope Function(String text)? opener;
 
   bool get encrypted => envelope != null;
 
@@ -251,9 +257,12 @@ class StagedRestore {
         utf8.encode(written).length == manifest.payloadBytes;
     if (ok) {
       try {
-        final log = encrypted
-            ? openEnvelopeText(written, dataKey!, envelope!.vaultId).inner
-            : written;
+        final open = opener;
+        final log = !encrypted
+            ? written
+            : open != null
+            ? open(written).inner
+            : openEnvelopeText(written, dataKey!, envelope!.vaultId).inner;
         ok = parseVaultLog(log).records.length == st.records.length;
       } catch (_) {
         ok = false;

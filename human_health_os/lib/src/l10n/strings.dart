@@ -2523,6 +2523,121 @@ class S {
     'Exported $n records to the place you chose ($name). This file is not encrypted: keep it private.',
     '$n kayıt seçtiğin yere aktarıldı ($name). Bu dosya şifreli değil: gizli tut.',
   );
+  // Bringing records of a development build into an empty encrypted vault
+  // (F005-S3, G-76, D-050).
+  String get importFromDevelopment => _t(
+    'Bring in records from the development build',
+    'Geliştirme sürümündeki kayıtları buraya getir',
+  );
+  String get importExplain => _t(
+    'This vault holds no records yet. If you kept records in the development build, choose a backup or an export you made there. It is checked first, and you see what it holds before anything changes.',
+    'Bu kasada henüz kayıt yok. Geliştirme sürümünde kayıt tuttuysan, orada aldığın bir yedeği ya da dışa aktarımı seç. Önce kontrol edilir ve bir şey değişmeden önce içinde ne olduğunu görürsün.',
+  );
+  String get chooseImportTitle => _t(
+    'Choose a development backup or export',
+    'Bir geliştirme sürümü yedeği ya da dışa aktarımı seç',
+  );
+  String get busyCheckingFile =>
+      _t('Checking the file…', 'Dosya kontrol ediliyor…');
+  String get busyImporting => _t('Bringing in…', 'Getiriliyor…');
+  String get importTitle =>
+      _t('Bring these records in?', 'Bu kayıtlar getirilsin mi?');
+  String importPreview({
+    required String name,
+    required bool export,
+    required int records,
+    required int profiles,
+    required String? made,
+    required String? version,
+  }) {
+    final what = export
+        ? _t('an export (JSON)', 'bir dışa aktarım (JSON)')
+        : _t('a development backup', 'bir geliştirme sürümü yedeği');
+    final when = made == null
+        ? ''
+        : version == null
+        ? _t('\nMade $made.', '\nOluşturma: $made.')
+        : _t(
+            '\nMade $made by Human OS $version.',
+            '\nOluşturma: $made, Human OS $version.',
+          );
+    final checked = export
+        ? _t(
+            'Format, version, its own counts and every record were checked (an export has no checksum).',
+            'Biçim, sürüm, kendi sayıları ve her kayıt kontrol edildi (dışa aktarımın sağlama toplamı yoktur).',
+          )
+        : _t(
+            'Checksum, version and contents were checked.',
+            'Sağlama toplamı, sürüm ve içerik kontrol edildi.',
+          );
+    return _t(
+      'File: $name, $what.$when\nIt holds $records records and $profiles profile. $checked',
+      'Dosya: $name, $what.$when\n$records kayıt ve $profiles profil içeriyor. $checked',
+    );
+  }
+
+  String importSkipped(int n) => _t(
+    '$n entries in it could not be read by the development build; they are not brought in and stay in the file.',
+    'İçindeki $n girdi geliştirme sürümünce okunamamıştı; getirilmez, dosyada kalır.',
+  );
+  String get importWarning => _t(
+    'The file you chose is not encrypted. Anyone who opens it can read your health records. Human OS does not delete it for you: once the records are here, delete the file yourself, and its copies.',
+    'Seçtiğin dosya şifreli değil. Onu açan herkes sağlık kayıtlarını okuyabilir. Human OS onu senin yerine silmez: kayıtlar buraya gelince dosyayı ve kopyalarını kendin sil.',
+  );
+  String get importHow => _t(
+    'The records are written into this vault encrypted, exactly as they were saved (same entries, same corrections). The vault file as it is now is kept beside it, not deleted. Nothing changes until you choose Bring in; this works only while the vault holds no records.',
+    'Kayıtlar bu kasaya şifreli olarak, kaydedildikleri gibi yazılır (aynı girdiler, aynı düzeltmeler). Kasa dosyasının şimdiki hâli yanında saklanır, silinmez. Getir\'i seçene kadar hiçbir şey değişmez; bu yalnız kasada kayıt yokken çalışır.',
+  );
+  String get importUnderstand => _t(
+    'I understand that the file stays unencrypted until I delete it',
+    'Dosyanın ben silene kadar şifresiz kaldığını anlıyorum',
+  );
+  String get importConfirm => _t('Bring in', 'Getir');
+  String get importCancelled => _t(
+    'Nothing was brought in. Nothing was changed.',
+    'Hiçbir şey getirilmedi. Hiçbir şey değişmedi.',
+  );
+  String imported(int records, int profiles, String? keptAt) =>
+      _t(
+        'Brought in $records records and $profiles profile, encrypted in this vault. Close and reopen Human OS, then unlock it with your passphrase as before. The file you chose is not encrypted and was not changed: delete it yourself when you no longer need it.',
+        '$records kayıt ve $profiles profil bu kasaya şifreli olarak getirildi. Uygulamayı kapatıp yeniden aç, sonra her zamanki parolanla kilidini aç. Seçtiğin dosya şifreli değil ve değiştirilmedi: artık gerekmediğinde onu kendin sil.',
+      ) +
+      (keptAt == null
+          ? ''
+          : _t(
+              ' The vault file as it was before (no records) was kept at $keptAt.',
+              ' Kasa dosyasının önceki hâli (kayıtsız) şurada saklandı: $keptAt.',
+            ));
+  String importError(String code, String detail) => switch (code) {
+    'IMPORT_ENCRYPTED_BACKUP' => _t(
+      'This backup is encrypted: it comes from an encrypted vault, not from the development build. Restore it from the list of backups instead. Nothing was changed.',
+      'Bu yedek şifreli: geliştirme sürümünden değil, şifreli bir kasadan geliyor. Onun yerine yedekler listesinden geri yükle. Hiçbir şey değişmedi.',
+    ),
+    'IMPORT_EMPTY' => _t(
+      'This file holds no records, so there is nothing to bring in. Nothing was changed.',
+      'Bu dosyada kayıt yok; getirilecek bir şey yok. Hiçbir şey değişmedi.',
+    ),
+    'IMPORT_PROFILE_UNSUPPORTED' => _t(
+      'This file does not hold the records of exactly one person (your own profile), so it is not brought in. Nothing was changed.',
+      'Bu dosya tam olarak bir kişinin (kendi profilinin) kayıtlarını içermiyor; bu yüzden getirilmedi. Hiçbir şey değişmedi.',
+    ),
+    'IMPORT_RECORD_INVALID' || 'IMPORT_RECORD_NOT_EXACT' => _t(
+      'A record in this file does not follow the rules of this version, so nothing is brought in: no record is ever changed on the way. Nothing was changed.\n${technicalDetail(detail.isEmpty ? code : '$code $detail')}',
+      'Bu dosyadaki bir kayıt bu sürümün kurallarına uymuyor; bu yüzden hiçbir şey getirilmedi: yolda hiçbir kayıt değiştirilmez. Hiçbir şey değişmedi.\n${technicalDetail(detail.isEmpty ? code : '$code $detail')}',
+    ),
+    'IMPORT_EXPORT_DAMAGED' => _t(
+      'This export does not match its own counts or timeline; it may be damaged or edited. Nothing was changed.',
+      'Bu dışa aktarım kendi sayıları ya da zaman çizelgesiyle uyuşmuyor; bozulmuş ya da düzenlenmiş olabilir. Hiçbir şey değişmedi.',
+    ),
+    'IMPORT_TARGET_HAS_RECORDS' => _t(
+      'This vault already holds records. Records are brought in only into a vault that holds none, so nothing is mixed or hidden. Nothing was changed.',
+      'Bu kasada zaten kayıt var. Kayıtlar yalnız hiç kayıt olmayan bir kasaya getirilir; böylece hiçbir şey karışmaz ya da gizlenmez. Hiçbir şey değişmedi.',
+    ),
+    _ => _t(
+      'This file is not a Human OS backup or export from the development build. Nothing was changed.',
+      'Bu dosya geliştirme sürümünden bir Human OS yedeği ya da dışa aktarımı değil. Hiçbir şey değişmedi.',
+    ),
+  };
   String get dataUnencrypted => _t(
     'Backups and exports are not encrypted yet (development build). Keep the files private.',
     'Yedekler ve dışa aktarımlar henüz şifreli değil (geliştirme sürümü). Dosyaları gizli tut.',

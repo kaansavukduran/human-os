@@ -13,6 +13,7 @@ import '../core/ids.dart' show Clock, SystemClock;
 import '../core/redact.dart' show errorCode;
 import '../data/backup/backup_bundle.dart';
 import '../data/backup/data_files.dart';
+import '../data/backup/dev_import.dart';
 import '../data/local/encrypted_vault.dart';
 import '../data/local/log_repository.dart';
 import '../data/local/sealed_preferences.dart';
@@ -300,6 +301,32 @@ Future<AppServices> servicesFor(
     replacedBy: replacedBy,
     reloadPage: reloadPage,
     closeVault: closeVaultOf(repo),
+    stageDevelopmentImport: _importStager(repo, files, config),
+  );
+}
+
+/// How records of a development build enter [repo] (F005-S3, D-050): only
+/// an encrypted vault whose file the adapter can replace through the
+/// staged restore steps (desktop and phones). Null elsewhere.
+Future<StagedRestore> Function(StagedImport, DateTime)? _importStager(
+  HealthRepository repo,
+  DataFiles? files,
+  AppConfig config,
+) {
+  if (repo is! LogRepository || files == null) return null;
+  final sink = repo.sink;
+  if (sink is! EncryptedLogSink ||
+      !files.canRestore ||
+      files.restoresChosenFile ||
+      !files.holdsEncryptedVault) {
+    return null;
+  }
+  return (source, now) => stageImportIntoVault(
+    source,
+    sink,
+    now: now,
+    appVersion: config.version,
+    sourceRevision: config.sourceRevision,
   );
 }
 

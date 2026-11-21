@@ -21,6 +21,7 @@ import 'package:human_health_os/src/data/local/storage_io.dart';
 import 'package:human_health_os/src/data/local/vault_log.dart';
 import 'package:human_health_os/src/domain/ports/health_repository.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
+import 'package:human_health_os/src/features/today/backup_file_picker.dart';
 import 'package:human_health_os/src/domain/settings/appearance.dart';
 import 'package:human_health_os/src/navigation/app_shell.dart';
 import 'package:integration_test/integration_test.dart';
@@ -1055,6 +1056,181 @@ void main() {
     expect(latest(RecordKind.height), '172.5 cm');
     data.deleteSync(recursive: true);
   });
+
+  testWidgets('F005-S3 on real files: a development vault is backed up, an '
+      'encrypted vault in another folder brings it in through the screens, '
+      'a relaunch and unlock shows the records, and the vault file holds no '
+      'plaintext marker', (tester) async {
+    if (!Platform.isLinux) return;
+    final devData = Directory.systemTemp.createTempSync('hhos-it-f005s3-dev-');
+    final encData = Directory.systemTemp.createTempSync('hhos-it-f005s3-enc-');
+    const marker = 'PLAINTEXT-MARKER-QX7';
+    const pass = 'Mavi-Kedi 7 Ağaç Lamba!';
+
+    // 1. The development build: records, then a backup on disk.
+    final devEnv = {'XDG_DATA_HOME': devData.path, 'HOME': devData.path};
+    final devChoice = await createPlatformRepository(
+      dev,
+      env: devEnv,
+      executablePath: '${devData.path}/bin/human_health_os',
+    );
+    final devReport = await devChoice.repository.open();
+    final d = await servicesFor(
+      dev,
+      HostPlatform.linux,
+      devChoice.repository,
+      report: devReport,
+      files: devChoice.files,
+    );
+    final w = await d.heartbeat.recordWeightKg(
+      profileId: d.self.id,
+      input: '81,5',
+    );
+    await d.heartbeat.correctWeightKg(
+      profileId: d.self.id,
+      targetId: w.id,
+      input: '81,2',
+    );
+    await d.heartbeat.recordDocument(
+      profileId: d.self.id,
+      title: '$marker kan tahlili',
+      nature: DocumentType.labReport,
+    );
+    final devRecords = await d.heartbeat.repository.records(d.self.id);
+    final backupPath = await d.dataFiles!.save(
+      DataFileKind.backup,
+      'dev.hhosbackup.json',
+      await d.makeBackup!(DateTime.utc(2026, 11, 20, 8)),
+    );
+    final backupBytes = File(backupPath).readAsStringSync();
+    expect(backupBytes, contains(marker), reason: 'the dev file is plain');
+
+    // 2. The encrypted build in another folder, created through the gate;
+    // the system chooser hands over the real backup file.
+    final encEnv = {'HHOS_DATA_DIR': encData.path, 'HOME': encData.path};
+    final picker = SystemBackupFilePicker(
+      choose: (_) async => _RealFile(File(backupPath)),
+    );
+    final choice = await createPlatformRepository(prod, env: encEnv);
+    final vault = choice.vault!;
+    final gate = VaultGate(
+      vault: vault,
+      inspection: await vault.inspect(),
+      open: (o) => servicesFor(
+        prod,
+        HostPlatform.linux,
+        o.repository,
+        reason: StorageReason.saving,
+        report: o.report,
+        files: o.files,
+        derive: choice.derive,
+        preferences: o.preferences,
+        backupPicker: picker,
+      ),
+      memoryOnly: (reason, {detail}) => throw StateError('not used'),
+    );
+    await tester.pumpWidget(
+      HumanOsApp.start(AppStartup.gate(gate), appearance: english()),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('gate-passphrase')), pass);
+    await tester.enterText(
+      find.byKey(const ValueKey('gate-passphrase-confirm')),
+      pass,
+    );
+    await tapKey(tester, 'gate-continue');
+    await tester.pumpAndSettle();
+    final key = tester
+        .widget<SelectableText>(find.byKey(const ValueKey('gate-recovery-key')))
+        .data!;
+    await tapKey(tester, 'gate-key-written');
+    await tester.pumpAndSettle();
+    await confirmRecoveryGroups(tester, key);
+    await tapKey(tester, 'gate-create-vault');
+    await waitFor(tester, find.byKey(const ValueKey('screen-today')));
+
+    final file = File('${encData.path}/vault.hhosvault');
+    final before = file.readAsStringSync();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('import-development')),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('screen-today')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    await tapKey(tester, 'import-development');
+    await waitFor(tester, find.byKey(const ValueKey('import-preview')));
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('import-preview-text')))
+          .data,
+      contains('It holds 3 records and 1 profile.'),
+    );
+    expect(file.readAsStringSync(), before, reason: 'nothing before confirm');
+    await tapKey(tester, 'import-understand');
+    await tester.pumpAndSettle();
+    await tapKey(tester, 'confirm-import');
+    await waitFor(tester, find.textContaining('Brought in 3 records'));
+
+    // 3. The vault file: no plaintext marker, the earlier envelope kept.
+    final stored = file.readAsStringSync();
+    for (final s in [marker, 'kan tahlili', '81,5', '81,2', pass, key]) {
+      expect(stored, isNot(contains(s)), reason: s);
+    }
+    final kept = encData
+        .listSync()
+        .map((e) => e.path.split('/').last)
+        .where((n) => n.startsWith('vault.hhosvault.before-restore-'))
+        .toList();
+    expect(kept, hasLength(1));
+    expect(File('${encData.path}/${kept.single}').readAsStringSync(), before);
+    expect(
+      File(backupPath).readAsStringSync(),
+      backupBytes,
+      reason: 'the chosen file is never changed or deleted by the app',
+    );
+
+    // 4. Relaunch the real start path, unlock, see the records.
+    await tester.pumpWidget(const SizedBox());
+    final startup = await startApp(prod, HostPlatform.linux, env: encEnv);
+    expect(startup.gate, isNotNull);
+    await tester.pumpWidget(HumanOsApp.start(startup, appearance: english()));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('gate-passphrase')), pass);
+    await tapKey(tester, 'gate-unlock');
+    await waitFor(tester, find.byKey(const ValueKey('screen-today')));
+    expect(find.text('81.2 kg'), findsWidgets);
+    final s = tester.widget<AppShell>(find.byType(AppShell)).services;
+    expect(s.self.id, d.self.id);
+    final got = await s.heartbeat.repository.records(s.self.id);
+    expect(
+      {for (final r in got) r.id: jsonEncode(r.toJson())},
+      {for (final r in devRecords) r.id: jsonEncode(r.toJson())},
+    );
+    expect(find.byKey(const ValueKey('import-development')), findsNothing);
+    devData.deleteSync(recursive: true);
+    encData.deleteSync(recursive: true);
+  });
+}
+
+/// A real file as the system chooser hands it over.
+class _RealFile implements ChosenFile {
+  _RealFile(this.file);
+
+  final File file;
+
+  @override
+  String get name => file.uri.pathSegments.last;
+
+  @override
+  Future<int?> size() => file.length();
+
+  @override
+  Future<List<int>> read() => file.readAsBytes();
 }
 
 /// A fixed, synthetic recovery key: integration runs stay reproducible.

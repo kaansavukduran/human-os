@@ -6,7 +6,9 @@ import 'package:flutter/foundation.dart';
 
 import '../application/heartbeat_service.dart';
 import '../config/app_config.dart';
+import '../data/backup/backup_bundle.dart' show StagedRestore;
 import '../data/backup/data_files.dart';
+import '../data/backup/dev_import.dart' show StagedImport;
 import '../data/local/vault_envelope.dart' show KeyDeriver, deriveInline;
 import '../core/capabilities.dart';
 import '../domain/ports/health_repository.dart';
@@ -42,6 +44,7 @@ class AppServices {
     this.replacedBy,
     this.reloadPage,
     this.closeVault,
+    this.stageDevelopmentImport,
   });
 
   final AppConfig config;
@@ -120,4 +123,13 @@ class AppServices {
   /// memory. Writes nothing. Null where there is no key to drop
   /// (development builds, memory-only sessions).
   final Future<void> Function()? closeVault;
+
+  /// Builds, in memory, the unlocked encrypted vault with the records of a
+  /// development build added after its log header, ready for the restore
+  /// adapter's staged write (F005-S3, G-76, D-050). Refuses a vault that
+  /// holds records. Writes nothing. Null where there is no encrypted vault
+  /// whose file a restore can replace (development builds, memory-only
+  /// sessions, the browser).
+  final Future<StagedRestore> Function(StagedImport source, DateTime now)?
+  stageDevelopmentImport;
 }

@@ -3,9 +3,48 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "F005-S3",
+    "contract": "v0.32",
+    "run_id": "F005-S3@v0.32",
+    "slice": "Bring records from a development build into an empty encrypted vault through the staged gate, with the unencrypted-file warning (G-76)",
+    "goal": "Bring records from a development build into an empty encrypted vault through the staged gate, with the unencrypted-file warning (G-76)",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "5015f07",
+    "app_revision": null,
+    "started_at": "2026-11-21T10:18:21Z",
+    "finished_at": null,
+    "scope": [
+      "human_health_os/lib",
+      "human_health_os/test",
+      "tools/release"
+    ],
+    "acceptance_criteria": [
+      "AC-1 each fix has a regression test",
+      "AC-2 full suites, web smoke, Linux build and runtime pass"
+    ],
+    "completed_steps": [
+      "implementation a3fa12a; release note"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox, Safari, real screen readers NOT TESTED"
+    ],
+    "depends_on": [
+      "H001"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

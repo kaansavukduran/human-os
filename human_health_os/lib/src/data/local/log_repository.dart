@@ -76,6 +76,11 @@ class LogRepository implements HealthRepository {
   /// throws, the write is refused (`CHECKPOINT_FAILED`) and nothing is
   /// written. Null where no checkpoint can be kept.
   Future<void> Function()? beforeSchemaUpgrade;
+
+  /// Called after a record was written and is in memory (a screen that
+  /// depends on whether the store holds records re-checks then). Never
+  /// called for a refused write or an idempotent retry.
+  void Function()? afterRecordAppended;
   VaultState? _state;
   bool _readOnly = false;
   String? _lockedCode;
@@ -233,6 +238,7 @@ class LogRepository implements HealthRepository {
     // Write first, then update memory: memory never shows unsaved data.
     await _append(encodeOp('record.append', record.toJson()));
     _s.apply('record.append', record.toJson());
+    afterRecordAppended?.call();
   }
 
   Future<void> _checkpointBefore(HealthRecord record) async {

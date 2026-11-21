@@ -60,21 +60,33 @@ class _YourDataCardState extends State<YourDataCard> {
     _reload();
     // A checkpoint made by a save elsewhere on Today shows up in the list.
     widget.services.checkpointSaved?.addListener(_reload);
+    // A record saved anywhere ends "the vault is empty": the import entry
+    // leaves at once, not on the next visit (review finding).
+    widget.services.recordsAppended?.addListener(_recheckEmpty);
   }
 
   @override
   void dispose() {
     widget.services.checkpointSaved?.removeListener(_reload);
+    widget.services.recordsAppended?.removeListener(_recheckEmpty);
     super.dispose();
+  }
+
+  Future<bool> _isVaultEmpty() async =>
+      _s.stageDevelopmentImport != null &&
+      (await _s.heartbeat.repository.records(_s.self.id)).isEmpty;
+
+  Future<void> _recheckEmpty() async {
+    if (!_vaultEmpty) return;
+    final empty = await _isVaultEmpty();
+    if (mounted && empty != _vaultEmpty) setState(() => _vaultEmpty = empty);
   }
 
   Future<void> _reload() async {
     final f = _files;
     if (f == null || !f.canRestore) return;
     final list = await f.backups();
-    final empty =
-        _s.stageDevelopmentImport != null &&
-        (await _s.heartbeat.repository.records(_s.self.id)).isEmpty;
+    final empty = await _isVaultEmpty();
     if (mounted) {
       setState(() {
         _backups = list;

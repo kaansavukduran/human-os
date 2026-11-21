@@ -1,8 +1,10 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:file_picker_web/file_picker_web.dart' show FilePickerWebOptions;
 
-import 'backup_file_chooser_io.dart' show PlatformChosenFile;
 import 'backup_file_picker.dart' show ChosenFile;
+import 'platform_chosen_file.dart';
+
+export 'platform_chosen_file.dart';
 
 /// The browser. file_picker's `withData` defaults to true, which reads the
 /// whole file into memory at pick time, before any size check could refuse
@@ -20,3 +22,6 @@ Future<ChosenFile?> chooseSystemFile(String title) async {
   );
   return f == null ? null : PlatformChosenFile(f);
 }
+
+/// The browser keeps no copy of a chosen file on disk: nothing to drop.
+Future<void> releaseChosenFile(ChosenFile file) async {}

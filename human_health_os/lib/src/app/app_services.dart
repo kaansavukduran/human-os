@@ -35,6 +35,7 @@ class AppServices {
     this.lockStorage,
     this.restartRequired,
     this.checkpointSaved,
+    this.recordsAppended,
     this.genomePicker,
     this.saveCopy,
     this.vaultPreferences,
@@ -87,6 +88,11 @@ class AppServices {
   /// Where the upgrade checkpoint was saved in this session (a backup made
   /// before the first record of a newer schema); null until then (F007).
   final ValueNotifier<String?>? checkpointSaved;
+
+  /// Counts the records written in this session; screens that depend on
+  /// whether the store holds records listen to it (F005-S3: the import
+  /// entry leaves once a record exists). Null where nothing reports it.
+  final ValueNotifier<int>? recordsAppended;
 
   /// Chooses a raw DNA file (G001); null means the system dialog. Tests and
   /// the browser smoke put a fake here instead of a native dialog.

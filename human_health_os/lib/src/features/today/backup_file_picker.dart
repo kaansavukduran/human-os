@@ -100,10 +100,18 @@ Future<PickedBackup> readChosenBackup(
 /// extension filter: a name is not trusted; the restore gate checks the
 /// content.
 class SystemBackupFilePicker implements BackupFilePicker {
-  const SystemBackupFilePicker({this.choose = chooseSystemFile});
+  const SystemBackupFilePicker({
+    this.choose = chooseSystemFile,
+    this.release = releaseChosenFile,
+  });
 
   /// Opens the chooser; tests hand in a fake file.
   final Future<ChosenFile?> Function(String title) choose;
+
+  /// Drops the copy the chooser made of the chosen file (D-050): phone
+  /// choosers copy it, unencrypted, into the app's cache or temporary
+  /// folder. Runs once the file was read, refused or failed to read.
+  final Future<void> Function(ChosenFile file) release;
 
   @override
   Future<PickedBackup?> pick({
@@ -113,6 +121,14 @@ class SystemBackupFilePicker implements BackupFilePicker {
     // The chooser hides the app on phones: no lock while it is open.
     final f = await withAppLockHeld(() => choose(title));
     if (f == null) return null;
-    return readChosenBackup(f, limit);
+    try {
+      return await readChosenBackup(f, limit);
+    } finally {
+      try {
+        await release(f);
+      } catch (_) {
+        // A failed clean-up never hides the read's result or refusal.
+      }
+    }
   }
 }

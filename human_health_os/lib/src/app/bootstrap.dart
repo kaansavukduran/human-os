@@ -205,6 +205,10 @@ Future<AppServices> servicesFor(
       ? _backupMaker(repo, config)
       : null;
   final checkpointSaved = ValueNotifier<String?>(null);
+  final recordsAppended = ValueNotifier<int>(0);
+  if (repo is LogRepository) {
+    repo.afterRecordAppended = () => recordsAppended.value++;
+  }
   if (repo is LogRepository &&
       makeBackup != null &&
       files != null &&
@@ -292,6 +296,7 @@ Future<AppServices> servicesFor(
     lockStorage: repo is LogRepository ? repo.lock : null,
     restartRequired: ValueNotifier<bool>(false),
     checkpointSaved: checkpointSaved,
+    recordsAppended: recordsAppended,
     genomePicker: genomePicker,
     saveCopy: saveCopy,
     vaultPreferences: preferences,

@@ -355,3 +355,77 @@ Future<StorageChoice> createPlatformRepository(
     files: FileDataFiles(dataDir: dir, vault: file),
   );
 }
+
+/// Drops the copy a phone's chooser made of a chosen file (F005-S3,
+/// D-050). On Android file_picker copies the file into the app's cache
+/// folder (`cache/file_picker/...`), on iOS into the app's `tmp` folder: an
+/// unencrypted copy of the person's file inside the app. [clearChooser]
+/// (file_picker's own clean-up) runs, then [path] is deleted if, and only
+/// if, it lies inside that app-owned folder. The person's own file,
+/// anywhere else, is never touched. Desktop choosers make no copy: nothing
+/// is done there. Never throws.
+Future<void> dropChooserCopy(
+  String? path, {
+  required Future<void> Function() clearChooser,
+}) async {
+  final android = Platform.isAndroid;
+  if (!android && !Platform.isIOS) return;
+  try {
+    await clearChooser();
+  } catch (_) {
+    // The path check below still runs.
+  }
+  final appDir = mobileAppDataDir;
+  if (path == null || appDir == null) return;
+  final sep = Platform.pathSeparator;
+  final folder = pickerCopyFolder(
+    appDataDir: appDir,
+    android: android,
+    sep: sep,
+  );
+  if (folder == null || !isInside(path, folder, sep)) return;
+  try {
+    final copy = File(path);
+    if (await copy.exists()) await copy.delete();
+  } catch (_) {
+    // Already gone, or the system clears it with the cache.
+  }
+}
+
+/// The app-owned folder where a phone's chooser puts its copy of a chosen
+/// file, from the app's data folder as the native side reports it
+/// ([appDataDir]): Android `filesDir` → its sibling `cache`; iOS
+/// `Library/Application Support` → the container's `tmp`. Null when
+/// [appDataDir] does not have that shape.
+String? pickerCopyFolder({
+  required String appDataDir,
+  required bool android,
+  required String sep,
+}) {
+  final parts = appDataDir.split(sep);
+  while (parts.length > 1 && parts.last.isEmpty) {
+    parts.removeLast();
+  }
+  final up = android ? 1 : 2;
+  if (parts.length <= up + 1) return null;
+  final shaped = android
+      ? parts.last == 'files'
+      : parts.last == 'Application Support' &&
+            parts[parts.length - 2] == 'Library';
+  if (!shaped) return null;
+  return [
+    ...parts.sublist(0, parts.length - up),
+    android ? 'cache' : 'tmp',
+  ].join(sep);
+}
+
+/// Whether [path] lies strictly inside [folder] (no `.` or `..` segments,
+/// which could lead out of it).
+bool isInside(String path, String folder, String sep) {
+  final prefix = folder.endsWith(sep) ? folder : '$folder$sep';
+  if (!path.startsWith(prefix) || path.length == prefix.length) return false;
+  return !path
+      .substring(prefix.length)
+      .split(sep)
+      .any((s) => s == '..' || s == '.' || s.isEmpty);
+}

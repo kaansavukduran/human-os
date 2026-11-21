@@ -14,14 +14,23 @@ class FileDataFiles implements DataFiles {
     required this.vault,
     this.target = const RestoreTarget.plaintext(),
     Future<void> Function(File file, String to)? rename,
-  }) : _rename = rename ?? _renameFile;
+    Future<void> Function(File file, String to)? copy,
+  }) : _rename = rename ?? _renameFile,
+       _copy = copy ?? _copyFile;
 
   static Future<void> _renameFile(File file, String to) => file.rename(to);
 
+  static Future<void> _copyFile(File file, String to) => file.copy(to);
+
   static int _tmpCounter = 0;
 
-  /// Moves a file (tests replace it to make a step fail).
+  /// Moves a file, replacing what is at `to` in one step (POSIX rename(2);
+  /// on Windows Dart's rename replaces an existing file). Tests replace it
+  /// to make a step fail.
   final Future<void> Function(File file, String to) _rename;
+
+  /// Copies a file (tests replace it to make a step fail).
+  final Future<void> Function(File file, String to) _copy;
 
   final Directory dataDir;
   final File vault;
@@ -95,9 +104,8 @@ class FileDataFiles implements DataFiles {
     void Function()? beforeSwitch,
   }) async {
     target.checkKind(staged);
-    final live = await vault.exists()
-        ? decodeLogBytes(await vault.readAsBytes())
-        : null;
+    final liveBytes = await vault.exists() ? await vault.readAsBytes() : null;
+    final live = liveBytes == null ? null : decodeLogBytes(liveBytes);
     target.refuseIfHolds(live);
     await vault.parent.create(recursive: true);
     // Staged destination: written and verified before anything is switched.
@@ -112,38 +120,76 @@ class FileDataFiles implements DataFiles {
     // From here the file at the vault path changes: this session's memory
     // no longer matches it, so it stops writing first (review finding).
     beforeSwitch?.call();
+    // The vault's path is never empty (D-050): the previous vault is kept
+    // by a copy (it stays where it is), then the restored copy replaces it
+    // in one rename. A crash at any point leaves either the previous or the
+    // restored vault at the path, never neither.
     String? kept;
-    try {
-      if (await vault.exists()) {
-        final aside = '${vault.path}.before-restore-${fileStamp(now)}';
-        await _rename(vault, aside);
+    if (liveBytes != null) {
+      final aside = '${vault.path}.before-restore-${fileStamp(now)}';
+      try {
+        await _copy(vault, aside);
+        if (!_same(await File(aside).readAsBytes(), liveBytes)) {
+          throw const FileSystemException('the kept copy differs');
+        }
         kept = aside;
+      } catch (_) {
+        await _deleteQuietly(File(aside));
+        await _deleteQuietly(restoring);
+        // The previous vault never left its place.
+        throw const BackupError('RESTORE_NOT_SWITCHED', '');
       }
+    }
+    try {
       await _rename(restoring, vault.path);
     } catch (_) {
-      final movedAside = kept != null;
-      // Never leave the vault's place empty: put the previous vault back.
-      if (kept != null && !await vault.exists()) {
-        try {
-          await _rename(File(kept), vault.path);
-          kept = null;
-        } catch (_) {
-          // It stays at [kept]; the message says where.
+      await _deleteQuietly(restoring);
+      if (await vault.exists()) {
+        // The rename changed nothing: the previous vault (if any) is still
+        // in place, and its kept copy is a duplicate. Checked, never assumed.
+        if (kept != null &&
+            liveBytes != null &&
+            _same(await vault.readAsBytes(), liveBytes)) {
+          await _deleteQuietly(File(kept));
+          throw const BackupError('RESTORE_NOT_SWITCHED', '');
         }
+        if (kept == null) throw const BackupError('RESTORE_NOT_SWITCHED', '');
+        throw BackupError('RESTORE_SWITCH_FAILED', kept);
       }
+      if (kept == null) throw const BackupError('RESTORE_NOT_SWITCHED', '');
+      // A rename that removed the vault and then failed: put the kept copy
+      // back, so the path is not left empty.
       try {
-        if (await restoring.exists()) await restoring.delete();
+        await _copy(File(kept), vault.path);
+        throw const BackupError('RESTORE_SWITCH_FAILED', '');
+      } on BackupError {
+        rethrow;
       } catch (_) {
-        // A leftover copy of the backup is harmless.
+        await _deleteQuietly(vault);
+        // It stays at [kept]; the message says where.
+        throw BackupError('RESTORE_SWITCH_FAILED', kept);
       }
-      // Nothing was moved: the previous vault (if any) never left its place.
-      if (!movedAside) throw const BackupError('RESTORE_NOT_SWITCHED', '');
-      throw BackupError('RESTORE_SWITCH_FAILED', kept ?? '');
     }
     return RestoreOutcome(
       records: staged.manifest.recordCount,
       location: vault.path,
       keptPrevious: kept,
     );
+  }
+
+  static bool _same(List<int> a, List<int> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  static Future<void> _deleteQuietly(File f) async {
+    try {
+      if (await f.exists()) await f.delete();
+    } catch (_) {
+      // A leftover copy stays; it is never the only copy of anything.
+    }
   }
 }

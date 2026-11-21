@@ -28,6 +28,7 @@ import 'f006_vault_gate_test.dart'
         latest,
         pass,
         prod,
+        saveWeight,
         settle,
         tapKey,
         textOf,
@@ -215,6 +216,19 @@ void main() {
     );
     expect(find.byKey(const ValueKey('import-preview')), findsNothing);
     expect(disk.raw.text, before);
+  });
+
+  testWidgets('the entry leaves as soon as a record is saved, without '
+      'leaving Today (review finding)', (tester) async {
+    final bundle = (await tester.runAsync(devBackup))!;
+    final disk = Disk();
+    await launch(tester, disk, FakePicker(bundle));
+    await createThroughGate(tester);
+    expect(find.byKey(const ValueKey('import-development')), findsOneWidget);
+    await saveWeight(tester, '80');
+    expect(latest(tester), '80 kg');
+    expect(find.byKey(const ValueKey('import-development')), findsNothing);
+    expect(find.byKey(const ValueKey('import-explain')), findsNothing);
   });
 
   testWidgets('Turkish: the entry, the warning and the confirmation', (

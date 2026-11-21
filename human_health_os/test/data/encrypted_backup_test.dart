@@ -365,7 +365,10 @@ void main() {
 
     Future<
       (
-        FileDataFiles Function(Future<void> Function(File, String)),
+        FileDataFiles Function({
+          Future<void> Function(File, String)? rename,
+          Future<void> Function(File, String)? copy,
+        }),
         StagedRestore,
         List<int>,
       )
@@ -385,73 +388,124 @@ void main() {
         kind: KeyKind.passphrase,
       );
       return (
-        (Future<void> Function(File, String) rename) => FileDataFiles(
+        ({
+          Future<void> Function(File, String)? rename,
+          Future<void> Function(File, String)? copy,
+        }) => FileDataFiles(
           dataDir: tmp,
           vault: file,
           target: RestoreTarget.encrypted(fresh.sink.open),
           rename: rename,
+          copy: copy,
         ),
         staged,
         file.readAsBytesSync().toList(),
       );
     }
 
-    test('a restore whose last move fails: the session stops writing first, '
-        'the previous vault goes back in place (review finding)', () async {
+    Iterable<FileSystemEntity> keptCopies() =>
+        tmp.listSync().where((e) => e.path.contains('before-restore'));
+
+    test('the vault path is never empty during a restore: a crash before or '
+        'after any step leaves the previous or the restored vault there '
+        '(D-050)', () async {
       final (filesWith, staged, live) = await restoreSetup();
-      var locked = false;
-      final files = filesWith((f, to) async {
-        if (f.path.endsWith('.restoring')) {
-          throw const FileSystemException('held by another program');
-        }
-        await f.rename(to);
-      });
-      await expectLater(
-        files.restore(staged, now: t0, beforeSwitch: () => locked = true),
-        throwsA(
-          isA<BackupError>()
-              .having((e) => e.code, 'code', 'RESTORE_SWITCH_FAILED')
-              .having((e) => e.message, 'kept at', ''),
-        ),
+      final seen = <String>[];
+      void snapshot(String at) {
+        expect(file.existsSync(), isTrue, reason: 'vault present $at');
+        seen.add(at);
+      }
+
+      final files = filesWith(
+        copy: (f, to) async {
+          snapshot('before copy');
+          // A crash here leaves the previous vault untouched.
+          expect(file.readAsBytesSync(), live);
+          await f.copy(to);
+          snapshot('after copy');
+        },
+        rename: (f, to) async {
+          snapshot('before rename');
+          // A crash between the two steps: the previous vault is still at
+          // its path, and a kept copy beside it.
+          expect(file.readAsBytesSync(), live);
+          expect(keptCopies().single, isA<File>());
+          await f.rename(to);
+          snapshot('after rename');
+        },
       );
-      expect(locked, isTrue);
-      expect(file.readAsBytesSync(), live, reason: 'back in place');
+      final out = await files.restore(staged, now: t0, beforeSwitch: () {});
+      expect(seen, [
+        'before copy',
+        'after copy',
+        'before rename',
+        'after rename',
+      ]);
+      expect(File(out.keptPrevious!).readAsBytesSync(), live);
+      expect(file.readAsBytesSync(), isNot(live));
       expect(File('${file.path}.restoring').existsSync(), isFalse);
-      expect(
-        tmp.listSync().where((e) => e.path.contains('before-restore')),
-        isEmpty,
-      );
     });
 
-    test('a restore whose first move fails changed nothing and says so; '
-        'writes stay paused as a precaution (fix-round finding)', () async {
+    test('a restore whose last move fails: the session stops writing first, '
+        'the previous vault never left its place (review finding)', () async {
       final (filesWith, staged, live) = await restoreSetup();
       var locked = false;
-      final files = filesWith((f, to) async {
-        if (to.contains('before-restore')) {
-          throw const FileSystemException('held by another program');
-        }
-        await f.rename(to);
-      });
+      final files = filesWith(
+        rename: (f, to) async {
+          if (f.path.endsWith('.restoring')) {
+            throw const FileSystemException('held by another program');
+          }
+          await f.rename(to);
+        },
+      );
       await expectLater(
         files.restore(staged, now: t0, beforeSwitch: () => locked = true),
         backupError('RESTORE_NOT_SWITCHED'),
       );
       expect(locked, isTrue);
+      expect(file.readAsBytesSync(), live, reason: 'still in place');
+      expect(File('${file.path}.restoring').existsSync(), isFalse);
+      expect(keptCopies(), isEmpty, reason: 'the duplicate is dropped');
+    });
+
+    test('a restore whose keeping copy fails changed nothing and says so; '
+        'writes stay paused as a precaution (fix-round finding)', () async {
+      final (filesWith, staged, live) = await restoreSetup();
+      var locked = false;
+      var renamed = false;
+      final files = filesWith(
+        copy: (f, to) async {
+          File(to).writeAsStringSync('half'); // a partial copy, then failure
+          throw const FileSystemException('disk full');
+        },
+        rename: (f, to) async {
+          renamed = true;
+          await f.rename(to);
+        },
+      );
+      await expectLater(
+        files.restore(staged, now: t0, beforeSwitch: () => locked = true),
+        backupError('RESTORE_NOT_SWITCHED'),
+      );
+      expect(locked, isTrue);
+      expect(renamed, isFalse);
       expect(file.readAsBytesSync(), live);
       expect(File('${file.path}.restoring').existsSync(), isFalse);
+      expect(keptCopies(), isEmpty);
     });
 
     test('with no live vault, a failed move changed nothing and says so '
         '(fix-round finding)', () async {
       final (filesWith, staged, _) = await restoreSetup();
       file.deleteSync();
-      final files = filesWith((f, to) async {
-        if (f.path.endsWith('.restoring')) {
-          throw const FileSystemException('held by another program');
-        }
-        await f.rename(to);
-      });
+      final files = filesWith(
+        rename: (f, to) async {
+          if (f.path.endsWith('.restoring')) {
+            throw const FileSystemException('held by another program');
+          }
+          await f.rename(to);
+        },
+      );
       await expectLater(
         files.restore(staged, now: t0, beforeSwitch: () {}),
         backupError('RESTORE_NOT_SWITCHED'),
@@ -460,16 +514,43 @@ void main() {
       expect(File('${file.path}.restoring').existsSync(), isFalse);
     });
 
-    test('when even the move back fails, the previous vault is kept and its '
+    test('a replacing move that removed the vault and then failed: the kept '
+        'copy is put back at the path', () async {
+      final (filesWith, staged, live) = await restoreSetup();
+      final files = filesWith(
+        rename: (f, to) async {
+          File(to).deleteSync();
+          throw const FileSystemException('failed after removing');
+        },
+      );
+      await expectLater(
+        files.restore(staged, now: t0, beforeSwitch: () {}),
+        throwsA(
+          isA<BackupError>()
+              .having((e) => e.code, 'code', 'RESTORE_SWITCH_FAILED')
+              .having((e) => e.message, 'kept at', ''),
+        ),
+      );
+      expect(file.readAsBytesSync(), live, reason: 'back in place');
+      expect(File('${file.path}.restoring').existsSync(), isFalse);
+    });
+
+    test('when even the copy back fails, the previous vault is kept and its '
         'place is named, never lost', () async {
       final (filesWith, staged, live) = await restoreSetup();
-      final files = filesWith((f, to) async {
-        if (f.path.endsWith('.restoring') ||
-            f.path.contains('before-restore')) {
-          throw const FileSystemException('held by another program');
-        }
-        await f.rename(to);
-      });
+      final files = filesWith(
+        rename: (f, to) async {
+          File(to).deleteSync();
+          throw const FileSystemException('failed after removing');
+        },
+        copy: (f, to) async {
+          if (f.path.contains('before-restore')) {
+            File(to).writeAsStringSync('half');
+            throw const FileSystemException('disk full');
+          }
+          await f.copy(to);
+        },
+      );
       try {
         await files.restore(staged, now: t0, beforeSwitch: () {});
         fail('the restore should fail');
@@ -477,6 +558,7 @@ void main() {
         expect(e.code, 'RESTORE_SWITCH_FAILED');
         expect(e.message, contains('before-restore'));
         expect(File(e.message).readAsBytesSync(), live);
+        expect(file.existsSync(), isFalse, reason: 'no half copy left');
       }
     });
   });

@@ -1,0 +1,63 @@
+name: pages
+
+# Publishes the web app to GitHub Pages from main, so the owner can open
+# the current build in a browser. It is the development profile: entries
+# stay in that browser's own storage on that device, are not encrypted and
+# the app says so on screen (DEVELOPMENT BUILD). Nothing is sent anywhere.
+# One-time repository setting: Settings > Pages > Source: GitHub Actions.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "human_health_os/**"
+      - ".github/workflows/pages.yml"
+
+env:
+  FLUTTER_VERSION: "3.47.6"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - name: Build the web app (development profile, no CDN)
+        working-directory: human_health_os
+        run: |
+          flutter pub get --enforce-lockfile
+          flutter build web --release --no-web-resources-cdn \
+            --base-href "/${{ github.event.repository.name }}/" \
+            --dart-define=APP_ENV=development \
+            --dart-define=APP_VERSION=0.2.0-dev.${{ github.run_number }} \
+            --dart-define=SOURCE_REVISION=${{ github.sha }}
+          touch build/web/.nojekyll
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: human_health_os/build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

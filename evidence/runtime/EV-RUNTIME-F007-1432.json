@@ -1,0 +1,73 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-RUNTIME-F007-1432",
+  "kind": "RUNTIME",
+  "forge_id": "Q003@v0.32",
+  "source_revision": "e717d6c5aa22d2bf396da91b09b1f6056fd465eb",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "env CHROME_EXECUTABLE=/home/antigravity/.cache/ms-playwright/chromium-1194/chrome-linux/chrome EXPECT_FLUTTER_VERSION=3.47.6 node tools/flutter_web_smoke.mjs",
+  "argv": [
+    "env",
+    "CHROME_EXECUTABLE=/home/antigravity/.cache/ms-playwright/chromium-1194/chrome-linux/chrome",
+    "EXPECT_FLUTTER_VERSION=3.47.6",
+    "node",
+    "tools/flutter_web_smoke.mjs"
+  ],
+  "cwd": ".",
+  "started_at": "2026-11-24T02:16:23.910Z",
+  "finished_at": "2026-11-24T02:21:54.967Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.5",
+    "python": "Python 3.12.16"
+  },
+  "host": "Linux 6.18.57 x86_64",
+  "summary": "PASS  slow load: no progress percentage",
+  "log_sha256": "2ff624e2f6fae106a1caab7ab3d038a454dc9fbb5d4c5cf27f44f7a0faa947dd",
+  "log_lines": 182,
+  "log_tail": [
+    "PASS  phone-tr: \u00d6\u011fren opens the glossary",
+    "PASS  phone-tr: Today shows the Uyku card",
+    "PASS  phone-tr: Today shows the Nas\u0131l hissediyorsun card",
+    "PASS  phone-tr: no external network requests",
+    "PASS  phone-tr: no page errors",
+    "PASS  phone-tr: no console errors",
+    "PASS  phone-tr: no failed requests",
+    "PASS  reduced motion: loading view visible",
+    "PASS  reduced motion: loading indicator has no animation  ({\"name\":\"none\",\"duration\":\"0s\"})",
+    "PASS  slow load: no second line before 15 s",
+    "PASS  slow load: second plain line after 15 s",
+    "PASS  slow load: no progress percentage"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os",
+    "tools/flutter_web_smoke.mjs"
+  ],
+  "target": "web",
+  "profile": "development",
+  "artifacts": [
+    {
+      "path": "/home/antigravity/kaansavukduran/human-os/human_health_os/build/web/main.dart.js",
+      "type": "file",
+      "bytes": 3936333,
+      "sha256": "8680f5e73841fc7b05a513b4ce54c353f2a6481275cc50e0d8edbd0693b7bb79"
+    },
+    {
+      "path": "/home/antigravity/kaansavukduran/human-os/reports/runtime/flutter_web_smoke_e717d6c5aa22.json",
+      "type": "file",
+      "bytes": 23193,
+      "sha256": "50b212a4bb58f6ccbc9d2cd7e193e7c683fde98ce958fa2da7400010a5866869"
+    }
+  ]
+}

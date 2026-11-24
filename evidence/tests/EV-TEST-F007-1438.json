@@ -1,0 +1,56 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-TEST-F007-1438",
+  "kind": "TEST",
+  "forge_id": "Q003@v0.32",
+  "source_revision": "e717d6c5aa22d2bf396da91b09b1f6056fd465eb",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "pnpm test",
+  "argv": [
+    "pnpm",
+    "test"
+  ],
+  "cwd": ".",
+  "started_at": "2026-11-24T01:50:20.650Z",
+  "finished_at": "2026-11-24T01:50:54.760Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.5",
+    "python": "Python 3.12.16"
+  },
+  "host": "Linux 6.18.57 x86_64",
+  "summary": null,
+  "log_sha256": "d0120e9308d96e817d4bd4e4df861d69bd63f0dd130536f8e9d50011384cf628",
+  "log_lines": 66,
+  "log_tail": [
+    "apps/client test: (Use `node --trace-warnings ...` to show where the warning was created)",
+    "apps/client test:  \u001b[32m\u2713\u001b[39m test/repository.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 716\u001b[2mms\u001b[22m\u001b[39m",
+    "apps/client test:    \u001b[32m\u2713\u001b[39m ApiRepository (cloud account) against services/api \u001b[2m(3)\u001b[22m",
+    "apps/client test:      \u001b[33m\u001b[2m\u2713\u001b[22m\u001b[39m satisfies the same contract over HTTP\u001b[33m 487\u001b[2mms\u001b[22m\u001b[39m",
+    "apps/client test: \u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m",
+    "apps/client test: \u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m",
+    "apps/client test: \u001b[2m   Start at \u001b[22m 01:50:48",
+    "apps/client test: \u001b[2m   Duration \u001b[22m 6.27s\u001b[2m (transform 73%, tests 14%, import 12%, worker 1%)\u001b[22m",
+    "apps/client test: \u001b[2m  Transform \u001b[22m \u001b[33mtransforming modules took 3.81s\u001b[39m\u001b[2m \u00b7 73% of tracked time, re-done on every run\u001b[22m",
+    "apps/client test: \u001b[2m            \u001b[22m \u001b[2mpersist transforms across runs with \u001b[22m\u001b[33mfsModuleCache: true\u001b[39m",
+    "apps/client test: \u001b[2m            \u001b[22m \u001b[2mlearn more: https://vitest.dev/guide/improving-performance#caching-between-reruns\u001b[22m",
+    "apps/client test: Done"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "packages",
+    "apps",
+    "services",
+    "pnpm-lock.yaml"
+  ]
+}

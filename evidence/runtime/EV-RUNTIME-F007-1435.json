@@ -1,0 +1,94 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-RUNTIME-F007-1435",
+  "kind": "RUNTIME",
+  "forge_id": "Q003@v0.32",
+  "source_revision": "e717d6c5aa22d2bf396da91b09b1f6056fd465eb",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "env HOME=/tmp/q003-linux-home LANG=C.UTF-8 xvfb-run -a -s '-screen 0 1280x900x24' tools/linux/measurements_smoke.sh f008-dev-schema5 reports/runtime/linux-q003 /tmp/q003-linux-home -- human_health_os/build/linux/x64/release/bundle/human_health_os",
+  "argv": [
+    "env",
+    "HOME=/tmp/q003-linux-home",
+    "LANG=C.UTF-8",
+    "xvfb-run",
+    "-a",
+    "-s",
+    "-screen 0 1280x900x24",
+    "tools/linux/measurements_smoke.sh",
+    "f008-dev-schema5",
+    "reports/runtime/linux-q003",
+    "/tmp/q003-linux-home",
+    "--",
+    "human_health_os/build/linux/x64/release/bundle/human_health_os"
+  ],
+  "cwd": ".",
+  "started_at": "2026-11-24T02:25:23.461Z",
+  "finished_at": "2026-11-24T02:25:42.821Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.5",
+    "python": "Python 3.12.16"
+  },
+  "host": "Linux 6.18.57 x86_64",
+  "summary": "# result: PASS",
+  "log_sha256": "9b602365261fea42f685d4579edb13c48e51cc019a69419b01626e52b0eb4d48",
+  "log_lines": 22,
+  "log_tail": [
+    "[IMPORTANT:flutter/shell/platform/embedder/embedder_surface_gl_impeller.cc(126)] Using the Impeller rendering backend (OpenGLESSDF).",
+    "# screenshot: f008-dev-schema5-today.png",
+    "# screenshot: f008-dev-schema5-measurements.png",
+    "# screenshot: f008-dev-schema5-history.png",
+    "# liveness: alive",
+    "# vault sha256 after: e81f91aad1a8990904abcda152e14ec81c652e96b3779ed5a1b619dfe76a5112",
+    "# vault file: unchanged",
+    "# files: <home>/.local/share/human-health-os/appearance.json <home>/.local/share/human-health-os/vault.hhoslog.jsonl ",
+    "# data folder: only the vault and the display preferences",
+    "# preferences: unchanged",
+    "# error events: none",
+    "# result: PASS"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os",
+    "tools/linux/measurements_smoke.sh"
+  ],
+  "target": "linux",
+  "arch": "x86_64",
+  "profile": "development",
+  "artifacts": [
+    {
+      "path": "/home/antigravity/kaansavukduran/human-os/reports/runtime/linux-q003/f008-dev-schema5.log",
+      "type": "file",
+      "bytes": 1312,
+      "sha256": "9b602365261fea42f685d4579edb13c48e51cc019a69419b01626e52b0eb4d48"
+    },
+    {
+      "path": "/home/antigravity/kaansavukduran/human-os/reports/runtime/linux-q003/f008-dev-schema5-measurements.png",
+      "type": "file",
+      "bytes": 111403,
+      "sha256": "4abe03cac6e60e5eff6a001bd4c2d62a8dec93e9b15d0a2de7b2d8d82f763c51"
+    },
+    {
+      "path": "/home/antigravity/kaansavukduran/human-os/reports/runtime/linux-q003/f008-dev-schema5-history.png",
+      "type": "file",
+      "bytes": 79928,
+      "sha256": "268cc7dcfa51d92e2104f55cc85410013b92d59b798c307225875619229a695e"
+    },
+    {
+      "path": "/home/antigravity/kaansavukduran/human-os/human_health_os/build/linux/x64/release/bundle/lib/libapp.so",
+      "type": "file",
+      "bytes": 8455048,
+      "sha256": "0e756345ab5965f0871e41cbc000550305eb5ecf9f7bc92f78c4a52edb6662db"
+    }
+  ]
+}

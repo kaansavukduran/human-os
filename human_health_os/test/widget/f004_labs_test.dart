@@ -74,6 +74,20 @@ Future<void> go(WidgetTester tester, AppServices s, String label) async {
 /// Scrolls the Labs list until [f] is built and on screen (the list is
 /// lazy, so a field far below is not built yet on a small phone).
 Future<void> reveal(WidgetTester tester, Finder f) async {
+  // The screen reads its records from real files; on a slow machine (the
+  // Windows CI runner) the read can outlast settle()'s short wait, and then
+  // the list is still the loading line. Wait for the read, bounded.
+  for (
+    var i = 0;
+    i < 100 && find.byKey(const ValueKey('loading-line')).evaluate().isNotEmpty;
+    i++
+  ) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pump();
+  }
+  await tester.pumpAndSettle();
   if (f.evaluate().isEmpty) {
     final list = find
         .descendant(

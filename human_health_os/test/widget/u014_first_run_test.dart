@@ -40,19 +40,22 @@ Future<AppearanceController> launchReal(
 }
 
 void main() {
-  testWidgets('three steps, Türkçe chosen with the mouse, Start opens Today '
-      'and is remembered', (tester) async {
+  testWidgets('two steps (U037), Türkçe chosen with the mouse, Start opens '
+      'Today and is remembered', (tester) async {
     final store = MemoryAppearanceStore();
     await launchReal(tester, store);
-    expect(find.text('Step 1 of 3'), findsOneWidget);
+    expect(find.text('Step 1 of 2'), findsOneWidget);
+    // What it does and that it stays on this device, on one step.
+    expect(find.byKey(const ValueKey('first-private')), findsOneWidget);
     await tapKey(tester, 'first-next');
-    expect(find.text('Step 2 of 3'), findsOneWidget);
+    expect(find.text('Step 2 of 2'), findsOneWidget);
+    // The last step says where the first value is typed.
+    expect(find.byKey(const ValueKey('first-then')), findsOneWidget);
     await tapKey(tester, 'first-back');
-    expect(find.text('Step 1 of 3'), findsOneWidget);
-    await tapKey(tester, 'first-next');
+    expect(find.text('Step 1 of 2'), findsOneWidget);
     await tapKey(tester, 'first-next');
     await tapKey(tester, 'first-language-tr');
-    expect(find.text('Adım 3 / 3'), findsOneWidget);
+    expect(find.text('Adım 2 / 2'), findsOneWidget);
     await tapKey(tester, 'first-next');
     expect(find.byKey(const ValueKey('screen-today')), findsOneWidget);
     expect(store.saved?.firstRunDone, isTrue);
@@ -104,6 +107,7 @@ void main() {
         s.firstLookTitle,
         s.firstLookBody,
         s.firstMoreInSettings,
+        s.firstThen,
       ]) {
         expect(interpretive.hasMatch(w), isFalse, reason: w);
         expect(judged.hasMatch(w), isFalse, reason: w);

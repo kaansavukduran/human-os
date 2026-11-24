@@ -4,8 +4,10 @@ import '../../app/app_services.dart';
 import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
@@ -100,8 +102,13 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
         onPlan: () => area.openSheet(
           (_) => _PlanSheet(svc: _svc, me: _me, itemRootId: m.rootId),
         ),
-        onDose: () => area.openSheet(
-          (_) => _DoseSheet(svc: _svc, me: _me, itemRootId: m.rootId),
+        onDose: (status) => area.openSheet(
+          (_) => _DoseSheet(
+            svc: _svc,
+            me: _me,
+            itemRootId: m.rootId,
+            status: status,
+          ),
         ),
         onState: (state) => _setState(context, area, m.rootId, state),
       ),
@@ -109,6 +116,11 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
   }
 }
 
+/// One calm card per item (U037): the name, then today's recorded doses
+/// and the two ways to record one ("I took it", "I skipped it"), then the
+/// plan as written, in the quieter colour, with its own small actions.
+/// Each dose button only opens the dose sheet: nothing is recorded until
+/// Save, and the plan is never counted as a dose (planned ≠ taken).
 class _ItemCard extends StatelessWidget {
   const _ItemCard({
     required this.view,
@@ -119,7 +131,7 @@ class _ItemCard extends StatelessWidget {
 
   final MedicationView view;
   final VoidCallback onPlan;
-  final VoidCallback onDose;
+  final ValueChanged<IntakeStatus> onDose;
   final ValueChanged<PlanState> onState;
 
   @override
@@ -127,6 +139,7 @@ class _ItemCard extends StatelessWidget {
     final s = S.of(context);
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
+    final quiet = text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant);
     final item = view.item;
     final plan = view.plan;
     final facts = [
@@ -134,12 +147,19 @@ class _ItemCard extends StatelessWidget {
       if (item.form != null) item.form!,
       if (item.ingredients != null) item.ingredients!,
     ].join(' · ');
+    final now = DateTime.now();
+    final today = [
+      for (final d in view.doses)
+        if (_sameDay(d.observedAt.toLocal(), now))
+          (d.details! as MedicationIntakeDetails).status,
+    ];
+    final takenToday = today.where((t) => t == IntakeStatus.taken).length;
     return Card(
       key: ValueKey('meds-item-${view.rootId}'),
       semanticContainer: true,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: Space.item),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Space.card),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -152,8 +172,66 @@ class _ItemCard extends StatelessWidget {
                 style: text.titleMedium,
               ),
             ),
-            if (facts.isNotEmpty) Text(facts, style: text.bodyMedium),
-            const SizedBox(height: 8),
+            if (facts.isNotEmpty) Text(facts, style: quiet),
+            const SizedBox(height: Space.l),
+            // Today first: what was recorded today, and how to record a dose.
+            Text(
+              today.isEmpty
+                  ? s.medsTodayNone
+                  : s.medsToday(takenToday, today.length - takenToday),
+              key: ValueKey('meds-today-${view.rootId}'),
+              style: text.bodyLarge,
+            ),
+            const SizedBox(height: Space.s),
+            Wrap(
+              spacing: Space.s,
+              runSpacing: Space.s,
+              children: [
+                FilledButton.tonal(
+                  key: ValueKey('meds-dose-${view.rootId}'),
+                  onPressed: () => onDose(IntakeStatus.taken),
+                  child: Text(s.medsTookIt),
+                ),
+                OutlinedButton(
+                  key: ValueKey('meds-skip-${view.rootId}'),
+                  onPressed: () => onDose(IntakeStatus.skipped),
+                  child: Text(s.medsSkippedIt),
+                ),
+              ],
+            ),
+            const SizedBox(height: Space.m),
+            Text(
+              view.doses.isEmpty
+                  ? s.medsNoDoses
+                  : s.medsDoseCounts(
+                      view.count(IntakeStatus.taken),
+                      view.count(IntakeStatus.skipped),
+                    ),
+              key: ValueKey('meds-counts-${view.rootId}'),
+              style: quiet,
+            ),
+            for (final d in view.doses.take(3))
+              Text(
+                s.medsDoseLine(
+                  fmtWhen(d.observedAt),
+                  (d.details! as MedicationIntakeDetails).status ==
+                      IntakeStatus.taken,
+                  (d.details! as MedicationIntakeDetails).amount,
+                ),
+                style: quiet?.copyWith(
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            if (view.doses.length > 3)
+              Text(
+                s.medsMoreDoses(view.doses.length - 3),
+                key: ValueKey('meds-more-${view.rootId}'),
+                style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+              ),
+            const SizedBox(height: Space.m),
+            const Divider(height: 1),
+            const SizedBox(height: Space.m),
+            // The plan as written: secondary, with its own quiet actions.
             Text(
               plan == null
                   ? s.medsNoPlan
@@ -163,47 +241,15 @@ class _ItemCard extends StatelessWidget {
                       s.medsPlanStateLabel(plan.state),
                     ),
               key: ValueKey('meds-plan-${view.rootId}'),
+              style: quiet,
             ),
-            const SizedBox(height: 4),
-            Text(
-              view.doses.isEmpty
-                  ? s.medsNoDoses
-                  : s.medsDoseCounts(
-                      view.count(IntakeStatus.taken),
-                      view.count(IntakeStatus.skipped),
-                    ),
-              key: ValueKey('meds-counts-${view.rootId}'),
-              style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-            ),
-            for (final d in view.doses.take(5))
-              Text(
-                s.medsDoseLine(
-                  fmtWhen(d.observedAt),
-                  (d.details! as MedicationIntakeDetails).status ==
-                      IntakeStatus.taken,
-                  (d.details! as MedicationIntakeDetails).amount,
-                ),
-              ),
-            if (view.doses.length > 5)
-              Text(
-                s.medsMoreDoses(view.doses.length - 5),
-                key: ValueKey('meds-more-${view.rootId}'),
-                style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-              ),
-            const SizedBox(height: 8),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: Space.xs,
               children: [
-                OutlinedButton(
+                TextButton(
                   key: ValueKey('meds-plan-add-${view.rootId}'),
                   onPressed: onPlan,
-                  child: Text(s.medsPlanAdd),
-                ),
-                FilledButton.tonal(
-                  key: ValueKey('meds-dose-${view.rootId}'),
-                  onPressed: onDose,
-                  child: Text(s.medsDose),
+                  child: Text(plan == null ? s.medsPlanAdd : s.medsPlanChange),
                 ),
                 if (plan != null && plan.state == PlanState.active) ...[
                   TextButton(
@@ -232,7 +278,13 @@ class _ItemCard extends StatelessWidget {
   }
 }
 
-/// A form in a bottom sheet: fields, an error line and Save.
+bool _sameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+/// A form in a bottom sheet (U037): the title, the fields in small groups,
+/// one primary action (Save) and a quiet Cancel. An error about a field is
+/// said under that field and the field takes focus (FieldFocus); any other
+/// error is said above the buttons.
 class _FormSheet extends StatelessWidget {
   const _FormSheet({
     required this.title,
@@ -244,6 +296,8 @@ class _FormSheet extends StatelessWidget {
 
   final String title;
   final List<Widget> children;
+
+  /// An error about no single field.
   final String? error;
   final VoidCallback onSave;
   final String saveKey;
@@ -257,19 +311,10 @@ class _FormSheet extends StatelessWidget {
           header: true,
           child: Text(title, style: Theme.of(context).textTheme.titleLarge),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Space.l),
         ...children,
-        if (error != null) ...[
-          const SizedBox(height: 8),
-          Semantics(
-            liveRegion: true,
-            child: Text(
-              error!,
-              key: const ValueKey('meds-error'),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
+        if (error != null)
+          FieldError(error!, textKey: const ValueKey('meds-error')),
       ],
       // Save, and a visible way out without saving (mouse only).
       actions: [
@@ -288,14 +333,107 @@ class _FormSheet extends StatelessWidget {
   }
 }
 
-Widget _field(String key, String label, TextEditingController c) => Padding(
-  padding: const EdgeInsets.only(bottom: 8),
-  child: TextField(
-    key: ValueKey(key),
-    controller: c,
-    decoration: InputDecoration(
-      labelText: label,
-      border: const OutlineInputBorder(),
+/// The error state of a medication sheet: the code and the field it is
+/// about, and one focus node per field (G-73).
+mixin _SheetErrors<T extends StatefulWidget> on State<T> {
+  final focus = FieldFocus();
+  String? errorText;
+  String? errorField;
+
+  /// The error for the sheet's bottom line: only one about no field.
+  String? get looseError => errorField == null ? errorText : null;
+
+  void refused(S s, InputError e, {String? fallbackField}) {
+    setState(() {
+      errorText = s.inputError(e.code);
+      errorField = e.field ?? fallbackField;
+    });
+    focus.focusAfterFrame(this, errorField);
+  }
+
+  void clearError() {
+    if (errorText != null) {
+      setState(() => errorText = errorField = null);
+    }
+  }
+
+  @override
+  void dispose() {
+    focus.dispose();
+    super.dispose();
+  }
+
+  Widget field(
+    String key,
+    String name,
+    String label,
+    TextEditingController c, {
+    String? helper,
+    TextInputType keyboard = TextInputType.text,
+    bool autofocus = false,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: Space.m),
+    child: WholeLabelField(
+      label: label,
+      field: (labelText) => TextField(
+        key: ValueKey(key),
+        controller: c,
+        focusNode: focus[name],
+        autofocus: autofocus,
+        keyboardType: keyboard,
+        textCapitalization: keyboard == TextInputType.text
+            ? TextCapitalization.sentences
+            : TextCapitalization.none,
+        onChanged: (_) => clearError(),
+        decoration: InputDecoration(
+          labelText: labelText,
+          helperText: helper,
+          helperMaxLines: 20,
+          errorText: errorField == name ? errorText : null,
+          errorMaxLines: 4,
+          border: const OutlineInputBorder(),
+        ),
+      ),
+    ),
+  );
+}
+
+/// A labelled group of choices, read by a screen reader with its question.
+Widget _choices<T>({
+  required String label,
+  required List<T> values,
+  required T selected,
+  required String Function(T) word,
+  required String Function(T) key,
+  required ValueChanged<T> onPick,
+}) => Padding(
+  padding: const EdgeInsets.only(bottom: Space.m),
+  child: Semantics(
+    container: true,
+    label: label,
+    child: Builder(
+      builder: (context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ExcludeSemantics(
+            child: Text(label, style: Theme.of(context).textTheme.labelLarge),
+          ),
+          const SizedBox(height: Space.s),
+          Wrap(
+            spacing: Space.s,
+            runSpacing: Space.s,
+            children: [
+              for (final v in values)
+                ChoiceChip(
+                  key: ValueKey(key(v)),
+                  label: Text(word(v)),
+                  selected: v == selected,
+                  onSelected: (_) => onPick(v),
+                ),
+            ],
+          ),
+        ],
+      ),
     ),
   ),
 );
@@ -310,13 +448,13 @@ class _AddItemSheet extends StatefulWidget {
   State<_AddItemSheet> createState() => _AddItemSheetState();
 }
 
-class _AddItemSheetState extends State<_AddItemSheet> {
+class _AddItemSheetState extends State<_AddItemSheet>
+    with _SheetErrors<_AddItemSheet> {
   final _name = TextEditingController();
   final _ingredients = TextEditingController();
   final _strength = TextEditingController();
   final _form = TextEditingController();
   var _category = MedicationCategory.supplement;
-  String? _error;
 
   @override
   void dispose() {
@@ -339,7 +477,7 @@ class _AddItemSheetState extends State<_AddItemSheet> {
       );
       if (mounted) Navigator.of(context).pop(true);
     } on InputError catch (e) {
-      setState(() => _error = s.inputError(e.code));
+      refused(s, e);
     }
   }
 
@@ -348,33 +486,35 @@ class _AddItemSheetState extends State<_AddItemSheet> {
     final s = S.of(context);
     return _FormSheet(
       title: s.medsAdd,
-      error: _error,
+      error: looseError,
       onSave: _save,
       saveKey: 'meds-item-save',
       children: [
-        _field('meds-name', s.medsName, _name),
-        ExcludeSemantics(child: Text(s.medsCategory)),
-        const SizedBox(height: 4),
-        Semantics(
-          container: true,
+        SheetSection(s.medsSectionPack, first: true),
+        field('meds-name', 'name', s.medsName, _name),
+        _choices(
           label: s.medsCategory,
-          child: Wrap(
-            spacing: 8,
-            children: [
-              for (final c in MedicationCategory.values)
-                ChoiceChip(
-                  key: ValueKey('meds-category-${c.name}'),
-                  label: Text(s.medsCategoryLabel(c)),
-                  selected: c == _category,
-                  onSelected: (_) => setState(() => _category = c),
-                ),
-            ],
-          ),
+          values: MedicationCategory.values,
+          selected: _category,
+          word: s.medsCategoryLabel,
+          key: (c) => 'meds-category-${c.name}',
+          onPick: (c) => setState(() => _category = c),
         ),
-        const SizedBox(height: 8),
-        _field('meds-strength', s.medsStrength, _strength),
-        _field('meds-form', s.medsForm, _form),
-        _field('meds-ingredients', s.medsIngredients, _ingredients),
+        SheetSection(s.medsSectionMore),
+        field(
+          'meds-strength',
+          'strength',
+          s.medsStrength,
+          _strength,
+          helper: s.medsStrengthHelp,
+        ),
+        field('meds-form', 'form', s.medsForm, _form, helper: s.medsFormHelp),
+        field(
+          'meds-ingredients',
+          'ingredients',
+          s.medsIngredients,
+          _ingredients,
+        ),
       ],
     );
   }
@@ -395,10 +535,9 @@ class _PlanSheet extends StatefulWidget {
   State<_PlanSheet> createState() => _PlanSheetState();
 }
 
-class _PlanSheetState extends State<_PlanSheet> {
+class _PlanSheetState extends State<_PlanSheet> with _SheetErrors<_PlanSheet> {
   final _schedule = TextEditingController();
   var _source = PlanSource.unknown;
-  String? _error;
 
   @override
   void dispose() {
@@ -417,7 +556,7 @@ class _PlanSheetState extends State<_PlanSheet> {
       );
       if (mounted) Navigator.of(context).pop(true);
     } on InputError catch (e) {
-      setState(() => _error = s.inputError(e.code));
+      refused(s, e);
     }
   }
 
@@ -426,28 +565,24 @@ class _PlanSheetState extends State<_PlanSheet> {
     final s = S.of(context);
     return _FormSheet(
       title: s.medsPlanAdd,
-      error: _error,
+      error: looseError,
       onSave: _save,
       saveKey: 'meds-plan-save',
       children: [
-        _field('meds-schedule', s.medsPlanSchedule, _schedule),
-        ExcludeSemantics(child: Text(s.medsPlanSource)),
-        const SizedBox(height: 4),
-        Semantics(
-          container: true,
+        field(
+          'meds-schedule',
+          'schedule',
+          s.medsPlanSchedule,
+          _schedule,
+          helper: s.medsPlanScheduleHelp,
+        ),
+        _choices(
           label: s.medsPlanSource,
-          child: Wrap(
-            spacing: 8,
-            children: [
-              for (final p in PlanSource.values)
-                ChoiceChip(
-                  key: ValueKey('meds-source-${p.name}'),
-                  label: Text(s.medsPlanSourceLabel(p)),
-                  selected: p == _source,
-                  onSelected: (_) => setState(() => _source = p),
-                ),
-            ],
-          ),
+          values: PlanSource.values,
+          selected: _source,
+          word: s.medsPlanSourceLabel,
+          key: (p) => 'meds-source-${p.name}',
+          onPick: (p) => setState(() => _source = p),
         ),
       ],
     );
@@ -459,21 +594,24 @@ class _DoseSheet extends StatefulWidget {
     required this.svc,
     required this.me,
     required this.itemRootId,
+    this.status = IntakeStatus.taken,
   });
 
   final HeartbeatService svc;
   final String me;
   final String itemRootId;
 
+  /// Taken or skipped, as chosen on the card; changeable here.
+  final IntakeStatus status;
+
   @override
   State<_DoseSheet> createState() => _DoseSheetState();
 }
 
-class _DoseSheetState extends State<_DoseSheet> {
+class _DoseSheetState extends State<_DoseSheet> with _SheetErrors<_DoseSheet> {
   final _amount = TextEditingController();
   final _when = TextEditingController();
-  var _status = IntakeStatus.taken;
-  String? _error;
+  late var _status = widget.status;
 
   @override
   void dispose() {
@@ -494,7 +632,7 @@ class _DoseSheetState extends State<_DoseSheet> {
       );
       if (mounted) Navigator.of(context).pop(true);
     } on InputError catch (e) {
-      setState(() => _error = s.inputError(e.code));
+      refused(s, e);
     }
   }
 
@@ -503,34 +641,39 @@ class _DoseSheetState extends State<_DoseSheet> {
     final s = S.of(context);
     return _FormSheet(
       title: s.medsDose,
-      error: _error,
+      error: looseError,
       onSave: _save,
       saveKey: 'meds-dose-save',
       children: [
-        Wrap(
-          spacing: 8,
-          children: [
-            ChoiceChip(
-              key: const ValueKey('meds-status-taken'),
-              label: Text(s.medsDoseTaken),
-              selected: _status == IntakeStatus.taken,
-              onSelected: (_) => setState(() => _status = IntakeStatus.taken),
-            ),
-            ChoiceChip(
-              key: const ValueKey('meds-status-skipped'),
-              label: Text(s.medsDoseSkipped),
-              selected: _status == IntakeStatus.skipped,
-              onSelected: (_) => setState(() => _status = IntakeStatus.skipped),
-            ),
-          ],
+        _choices(
+          label: s.medsDoseStatusLabel,
+          values: const [IntakeStatus.taken, IntakeStatus.skipped],
+          selected: _status,
+          word: (t) =>
+              t == IntakeStatus.taken ? s.medsDoseTaken : s.medsDoseSkipped,
+          key: (t) => 'meds-status-${t.name}',
+          onPick: (t) => setState(() => _status = t),
         ),
-        const SizedBox(height: 8),
-        _field('meds-amount', s.medsDoseAmount, _amount),
-        _field('meds-when', s.medsDoseWhen, _when),
+        field(
+          'meds-amount',
+          'amount',
+          s.medsDoseAmount,
+          _amount,
+          helper: s.medsDoseAmountHelp,
+        ),
+        field(
+          'meds-when',
+          'when',
+          s.medsDoseWhen,
+          _when,
+          helper: s.medsDoseWhenHelp,
+          keyboard: TextInputType.datetime,
+        ),
         TimePicks(
           keyPrefix: 'meds-when',
           controller: _when,
           picks: TimePicks.recent(s),
+          onPicked: clearError,
         ),
       ],
     );

@@ -6,6 +6,7 @@ import '../../domain/guide/glossary.dart';
 import '../../domain/settings/appearance.dart';
 import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/number_pad.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../../presentation/widgets/sheet_parts.dart' show FieldFocus;
 import '../guide/glossary_screen.dart';
 import '../trends/trend_screen.dart';
@@ -583,35 +584,43 @@ class _EntrySheetState extends State<_EntrySheet> {
       onFocusChange: (has) {
         if (has) setState(() => _active = c);
       },
-      child: TextField(
-        key: ValueKey(key),
-        controller: c,
-        focusNode: _focus[field],
-        autofocus: autofocus,
-        keyboardType: number
-            ? const TextInputType.numberWithOptions(decimal: true)
-            : TextInputType.text,
-        textInputAction: last ? TextInputAction.done : TextInputAction.next,
-        onSubmitted: last ? (_) => _busy ? null : _save() : null,
-        inputFormatters: field == 'context'
-            ? const [ContextLengthFormatter()]
-            : null,
-        decoration: InputDecoration(
-          labelText: label,
-          helperText: hint,
-          helperMaxLines: 3,
-          errorText: _errorFor(s, field),
-          errorMaxLines: 3,
-          // The chosen unit sits inside the field (D-048), beside the
-          // number, so it is seen while typing even when the chips are
-          // under the keyboard.
-          suffix: suffix == null
-              ? null
-              : Text(
-                  suffix,
-                  key: ValueKey('$key-unit'),
-                  semanticsLabel: spokenSuffix,
-                ),
+      // The label is never cut at large text (U035, U037): it moves above
+      // the field when it does not fit inside.
+      child: WholeLabelField(
+        label: label,
+        reserve: suffix == null ? 0 : 72,
+        field: (labelText) => TextField(
+          key: ValueKey(key),
+          controller: c,
+          focusNode: _focus[field],
+          autofocus: autofocus,
+          keyboardType: number
+              ? const TextInputType.numberWithOptions(decimal: true)
+              : field == 'when'
+              ? TextInputType.datetime
+              : TextInputType.text,
+          textInputAction: last ? TextInputAction.done : TextInputAction.next,
+          onSubmitted: last ? (_) => _busy ? null : _save() : null,
+          inputFormatters: field == 'context'
+              ? const [ContextLengthFormatter()]
+              : null,
+          decoration: InputDecoration(
+            labelText: labelText,
+            helperText: hint,
+            helperMaxLines: 6,
+            errorText: _errorFor(s, field),
+            errorMaxLines: 3,
+            // The chosen unit sits inside the field (D-048), beside the
+            // number, so it is seen while typing even when the chips are
+            // under the keyboard.
+            suffix: suffix == null
+                ? null
+                : Text(
+                    suffix,
+                    key: ValueKey('$key-unit'),
+                    semanticsLabel: spokenSuffix,
+                  ),
+          ),
         ),
       ),
     ),
@@ -754,54 +763,41 @@ class _EntrySheetState extends State<_EntrySheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Semantics(
-              header: true,
-              child: Text(s.recordKind(kind), style: text.titleMedium),
-            ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                key: const ValueKey('measure-trend'),
-                icon: const Icon(Icons.show_chart_outlined),
-                label: Text(s.seeOverTime),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) =>
-                        TrendScreen(services: widget.services, kind: kind),
+            // The title, with "See over time" and "About" as two quiet icons
+            // beside it (U037): the first thing under the title is the
+            // field to type in, not two links.
+            Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: Text(s.recordKind(kind), style: text.titleMedium),
                   ),
                 ),
-              ),
-            ),
-            if (glossaryForKind(kind.code) case final entry?)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  key: const ValueKey('measure-about'),
-                  icon: const Icon(Icons.info_outline),
-                  label: Text(s.aboutMeasurement),
+                IconButton(
+                  key: const ValueKey('measure-trend'),
+                  tooltip: s.seeOverTime,
+                  icon: const Icon(Icons.show_chart_outlined),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => GlossaryEntryScreen(entry: entry),
+                      builder: (_) =>
+                          TrendScreen(services: widget.services, kind: kind),
                     ),
                   ),
                 ),
-              ),
-            if (notMeasuredKinds.contains(kind))
-              CheckboxListTile(
-                key: const ValueKey('measure-not-measured'),
-                contentPadding: EdgeInsets.zero,
-                controlAffinity: ListTileControlAffinity.leading,
-                value: _notMeasured,
-                onChanged: _busy
-                    ? null
-                    : (v) => setState(() {
-                        _notMeasured = v ?? false;
-                        _errorCode = null;
-                        _errorField = null;
-                      }),
-                title: Text(s.notMeasuredToggle),
-                subtitle: _notMeasured ? Text(s.notMeasuredHelp) : null,
-              ),
+                if (glossaryForKind(kind.code) case final entry?)
+                  IconButton(
+                    key: const ValueKey('measure-about'),
+                    tooltip: s.aboutMeasurement,
+                    icon: const Icon(Icons.info_outline),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => GlossaryEntryScreen(entry: entry),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             if (_notMeasured)
               const SizedBox.shrink()
             else if (kind.isStructured) ...[
@@ -840,6 +836,22 @@ class _EntrySheetState extends State<_EntrySheet> {
             if (!_notMeasured && kind.units.length > 1) _unitChoice(s, kind),
             if (!_notMeasured && kind == RecordKind.capillaryGlucose)
               _timingChoice(s),
+            if (notMeasuredKinds.contains(kind))
+              CheckboxListTile(
+                key: const ValueKey('measure-not-measured'),
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                value: _notMeasured,
+                onChanged: _busy
+                    ? null
+                    : (v) => setState(() {
+                        _notMeasured = v ?? false;
+                        _errorCode = null;
+                        _errorField = null;
+                      }),
+                title: Text(s.notMeasuredToggle),
+                subtitle: _notMeasured ? Text(s.notMeasuredHelp) : null,
+              ),
             if (!_notMeasured)
               Align(
                 alignment: Alignment.centerLeft,
@@ -889,6 +901,7 @@ class _EntrySheetState extends State<_EntrySheet> {
                     'measure-context',
                     'context',
                     number: false,
+                    hint: s.contextHelp,
                   ),
                   if (_notes.isNotEmpty)
                     Padding(

@@ -85,7 +85,6 @@ void main() {
     final disk = PrefsDisk();
     await launch(tester, disk);
     await tapKey(tester, 'first-next');
-    await tapKey(tester, 'first-next');
     await tapKey(tester, 'first-language-tr');
     await tapKey(tester, 'first-next');
     expect(disk.prefs, isNull, reason: 'nothing before the vault exists');

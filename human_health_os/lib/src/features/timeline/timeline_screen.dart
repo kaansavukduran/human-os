@@ -487,6 +487,7 @@ class _EntryDetailState extends State<_EntryDetail> {
           'correct-input-context',
           'context',
           number: false,
+          helper: s.contextHelp,
         ),
         ..._whenFields(s, head),
       ];
@@ -510,6 +511,7 @@ class _EntryDetailState extends State<_EntryDetail> {
           'correct-input-context',
           'context',
           number: false,
+          helper: s.contextHelp,
         ),
         ..._whenFields(s, head),
       ],

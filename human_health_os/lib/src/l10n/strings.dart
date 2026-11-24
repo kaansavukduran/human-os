@@ -726,11 +726,15 @@ class S {
   String get condNone => _t('Nothing recorded yet.', 'Henüz kayıt yok.');
   String get condName =>
       _t('What it is, in your words', 'Ne olduğu, kendi sözlerinle');
-  String get condSince => _t(
-    'Since when (optional, e.g. 2019)',
-    'Ne zamandan beri (isteğe bağlı, ör. 2019)',
-  );
-  String get condNatureLabel => _t('It is a', 'Bu bir');
+  String get condSince =>
+      _t('Since when (optional)', 'Ne zamandan beri (isteğe bağlı)');
+  String get condSinceHelp =>
+      _t('E.g. 2019 or 2024-05', 'Ör. 2019 ya da 2024-05');
+  // The sheet asks plain questions (U037); the saved line keeps its words.
+  String get condAskNature =>
+      _t('Condition or symptom?', 'Durum mu, belirti mi?');
+  String get condAskTime => _t('Is it still there?', 'Hâlâ sürüyor mu?');
+  String get condAskSource => _t('Where it comes from', 'Nereden geliyor');
   String condNature(ConditionType t) => switch (t) {
     ConditionType.condition => _t('condition', 'durum'),
     ConditionType.symptom => _t('symptom', 'belirti'),
@@ -741,7 +745,6 @@ class S {
     ConditionTime.past => _t('in the past', 'geçmişte kaldı'),
     ConditionTime.unsure => _t('not sure', 'emin değilim'),
   };
-  String get condSourceLabel => _t('It comes from', 'Kaynağı');
   String condSource(ConditionSource c) => switch (c) {
     ConditionSource.selfReported => _t('my own account', 'kendi anlatımım'),
     ConditionSource.toldByClinician => _t(
@@ -967,20 +970,23 @@ class S {
   };
   String get medsIngredients =>
       _t('Active ingredients (optional)', 'Etken maddeler (isteğe bağlı)');
-  String get medsStrength => _t(
-    'Strength as printed (optional, e.g. 500 mg)',
-    'Kutuda yazan güç (isteğe bağlı, ör. 500 mg)',
-  );
-  String get medsForm => _t(
-    'Form (optional, e.g. tablet, drops)',
-    'Şekil (isteğe bağlı, ör. tablet, damla)',
-  );
+  String get medsStrength => _t('Strength (optional)', 'Güç (isteğe bağlı)');
+  String get medsStrengthHelp =>
+      _t('As printed, e.g. 500 mg', 'Kutuda yazdığı gibi, ör. 500 mg');
+  String get medsForm => _t('Form (optional)', 'Şekil (isteğe bağlı)');
+  String get medsFormHelp => _t('E.g. tablet, drops', 'Ör. tablet, damla');
+  String get medsSectionPack => _t('From the pack', 'Kutudan');
+  String get medsSectionMore =>
+      _t('Details (optional)', 'Ayrıntılar (isteğe bağlı)');
   String get medsSave => _t('Save', 'Kaydet');
   String get medsPlanAdd => _t('Write the plan', 'Planı yaz');
-  String get medsPlanSchedule => _t(
-    'How it is meant to be taken (e.g. 1 tablet every morning)',
-    'Nasıl kullanılacağı (ör. her sabah 1 tablet)',
+  String get medsPlanSchedule =>
+      _t('How it is meant to be taken', 'Nasıl kullanılacağı');
+  String get medsPlanScheduleHelp => _t(
+    'In your words, e.g. 1 tablet every morning',
+    'Kendi sözlerinle, ör. her sabah 1 tablet',
   );
+  String get medsPlanChange => _t('Change the plan', 'Planı değiştir');
   String get medsPlanSource =>
       _t('Where the plan comes from', 'Planın kaynağı');
   String medsPlanSourceLabel(PlanSource p) => switch (p) {
@@ -1008,14 +1014,23 @@ class S {
   String get medsDose => _t('Record a dose', 'Doz kaydet');
   String get medsDoseTaken => _t('Taken', 'Alındı');
   String get medsDoseSkipped => _t('Skipped', 'Atlandı');
-  String get medsDoseAmount => _t(
-    'Amount (optional, e.g. 1 tablet)',
-    'Miktar (isteğe bağlı, ör. 1 tablet)',
+  String get medsDoseAmount => _t('Amount (optional)', 'Miktar (isteğe bağlı)');
+  String get medsDoseAmountHelp => _t('E.g. 1 tablet', 'Ör. 1 tablet');
+  String get medsDoseWhen => _t('When (optional)', 'Ne zaman (isteğe bağlı)');
+  String get medsDoseWhenHelp =>
+      _t('YYYY-MM-DD HH:MM · empty = now', 'YYYY-AA-GG SS:DD · boş = şimdi');
+  String get medsDoseStatusLabel => _t('This dose was', 'Bu doz');
+
+  // The calmer card (U037): today first, the plan after it. Each button
+  // only opens the dose sheet; nothing is recorded until Save.
+  String get medsTookIt => _t('I took it', 'Aldım');
+  String get medsSkippedIt => _t('I skipped it', 'Atladım');
+  String medsToday(int taken, int skipped) => _t(
+    'Today: $taken taken, $skipped skipped',
+    'Bugün: $taken alındı, $skipped atlandı',
   );
-  String get medsDoseWhen => _t(
-    'When (optional, YYYY-MM-DD HH:MM; empty = now)',
-    'Ne zaman (isteğe bağlı, YYYY-AA-GG SS:DD; boş = şimdi)',
-  );
+  String get medsTodayNone =>
+      _t('Today: no dose recorded yet', 'Bugün: henüz doz kaydı yok');
   String medsDoseCounts(int taken, int skipped) => _t(
     'Doses you recorded: $taken taken, $skipped skipped',
     'Kaydettiğin dozlar: $taken alındı, $skipped atlandı',
@@ -1132,8 +1147,8 @@ class S {
 
   String get whenField => _t('When (optional)', 'Ne zaman (isteğe bağlı)');
   String get whenHint => _t(
-    'YYYY-MM-DD HH:MM or HH:MM, your device\'s time. Empty = now.',
-    'YYYY-AA-GG SS:DD ya da SS:DD, cihazının saati. Boş = şimdi.',
+    'Device time, YYYY-MM-DD HH:MM or HH:MM; empty = now',
+    'Cihaz saati, YYYY-AA-GG SS:DD ya da SS:DD; boş = şimdi',
   );
   String measuredAtLabel(String when) => _t('measured $when', 'ölçüm: $when');
 
@@ -1169,10 +1184,9 @@ class S {
     '"Ölçülmedi" olarak, Daha fazla ayrıntı altındaki zamanla (boşsa şimdi) kaydedilir. Bir değer değildir, asla sıfır sayılmaz.',
   );
   String savedAtLabel(String when) => _t('saved $when', 'kayıt: $when');
-  String get contextField => _t(
-    'Note (optional), e.g. sitting, left arm',
-    'Not (isteğe bağlı), ör. oturarak, sol kol',
-  );
+  String get contextField => _t('Note (optional)', 'Not (isteğe bağlı)');
+  String get contextHelp =>
+      _t('E.g. sitting, left arm', 'Ör. oturarak, sol kol');
   String get saveMeasurement => _t('Save measurement', 'Ölçümü kaydet');
   String get measurementNotYet => _t('Not recorded yet', 'Henüz kayıt yok');
   String get addMeasurement => _t('Add a measurement', 'Ölçüm ekle');
@@ -1548,11 +1562,17 @@ class S {
     'You can change all of this later in Settings (top right).',
     'Bunların hepsini daha sonra Ayarlar\'dan (sağ üst) değiştirebilirsin.',
   );
+  String get firstThen => _t(
+    'Then type a first number on Today, for example your weight, and press Save.',
+    'Sonra Bugün ekranında ilk sayını, örneğin kilonu yaz ve Kaydet\'e bas.',
+  );
   String get firstMoreInSettings => _t(
     'Colour, text size, units and more are in Settings.',
     'Renk, yazı boyutu, birimler ve daha fazlası Ayarlar\'da.',
   );
   String get firstNext => _t('Next', 'İleri');
+  String get fieldDetailsShow => _t('What to type here', 'Ne yazılır?');
+  String get fieldDetailsHide => _t('Hide the details', 'Ayrıntıyı gizle');
   String get firstBack => _t('Back', 'Geri');
   String get firstSkip => _t('Skip', 'Atla');
   String get firstStart => _t('Start', 'Başla');
@@ -2165,17 +2185,27 @@ class S {
   String get labCorrectTitle =>
       _t('Correct this result (new version)', 'Bu sonucu düzelt (yeni sürüm)');
   String get labAnalyte => _t('Test name as printed', 'Raporda yazan test adı');
-  String get labAnalyteHelp => _t(
-    'Copy it exactly, e.g. "HbA1c". Similar names are kept apart.',
-    'Aynen yaz, ör. "HbA1c". Benzer adlar ayrı tutulur.',
+  String get labAnalyteHelp =>
+      _t('Copy it exactly, e.g. HbA1c', 'Aynen yaz, ör. HbA1c');
+  String get labAnalyteDetails => _t(
+    'Similar names are kept apart: Human OS never guesses that two different names are the same test.',
+    'Benzer adlar ayrı tutulur: Human OS farklı iki adın aynı test olduğunu tahmin etmez.',
   );
+
+  // Sections of the lab sheet (U037): small labels instead of paragraphs.
+  String get labSectionResult => _t('The result', 'Sonuç');
+  String get labSectionAlso =>
+      _t('Also on the report (optional)', 'Raporda ayrıca (isteğe bağlı)');
   String get labValue => _t('Value', 'Değer');
   String get labNotReported =>
       _t('The report gives no value', 'Raporda değer yok');
-  String get labUnit => _t('Unit as printed', 'Raporda yazan birim');
-  String get labUnitHelp => _t(
-    'Leave empty if the report prints none; it stays "not given", never guessed.',
-    'Raporda yoksa boş bırak; "verilmedi" olarak kalır, tahmin edilmez.',
+  String get labUnit =>
+      _t('Unit as printed (optional)', 'Raporda yazan birim (isteğe bağlı)');
+  String get labUnitHelp =>
+      _t('Empty if the report prints none', 'Raporda yoksa boş bırak');
+  String get labUnitDetails => _t(
+    'An empty unit stays "not given". Human OS never guesses a unit.',
+    'Boş birim "verilmedi" olarak kalır. Human OS birim tahmin etmez.',
   );
   String get labSampleDate => _t('Sample date', 'Numune tarihi');
   String get labSpecimen =>
@@ -2187,16 +2217,16 @@ class S {
     'Laboratuvarın işareti (isteğe bağlı)',
   );
   String get labFlagHelp => _t(
-    'Copy any mark next to the value, e.g. H, L or *.',
-    'Değerin yanındaki işareti aynen yaz, ör. H, L ya da *.',
+    'Any mark next to the value, e.g. H, L or *',
+    'Değerin yanındaki işaret, ör. H, L ya da *',
   );
   String get labRange => _t(
     'Reference range as printed (optional)',
     'Raporda yazan referans aralığı (isteğe bağlı)',
   );
   String get labRangeHelp => _t(
-    'Copy it as printed, e.g. "70 - 100". It is the lab\'s range, not a target.',
-    'Yazdığı gibi aktar, ör. "70 - 100". Laboratuvarın aralığıdır, hedef değildir.',
+    'As printed, e.g. 70 - 100; not a target',
+    'Yazdığı gibi, ör. 70 - 100; hedef değildir',
   );
   String labPrintedFlag(String f) =>
       _t('Lab flag: $f', 'Laboratuvar işareti: $f');
@@ -2290,18 +2320,32 @@ class S {
     ),
     LabValueKind.text => _t('Result as printed', 'Raporda yazan sonuç'),
   };
+
+  /// One short line under the value field (U037); [labValueDetails] has
+  /// the rest, on demand.
   String labValueHelp(LabValueKind k) => switch (k) {
     LabValueKind.number => _t(
-      'Only the number, e.g. 5,4, 91 or -2. Words or a sign such as <: choose another kind above.',
-      'Yalnız sayı, ör. 5,4, 91 ya da -2. Sözcük ya da < gibi bir işaret varsa yukarıdan başka bir tür seç.',
+      'Only the number, e.g. 5,4 or -2',
+      'Yalnız sayı, ör. 5,4 ya da -2',
+    ),
+    LabValueKind.censored => _t('E.g. < 5 or ≥ 90', 'Ör. < 5 ya da ≥ 90'),
+    LabValueKind.text => _t(
+      'Copy it exactly, e.g. Pozitif or 1+',
+      'Aynen yaz, ör. Pozitif ya da 1+',
+    ),
+  };
+  String labValueDetails(LabValueKind k) => switch (k) {
+    LabValueKind.number => _t(
+      'E.g. 5,4, 91 or -2. Words or a sign such as < next to the number: choose another kind above.',
+      'Ör. 5,4, 91 ya da -2. Sayının yanında sözcük ya da < gibi bir işaret varsa yukarıdan başka bir tür seç.',
     ),
     LabValueKind.censored => _t(
       'E.g. < 5, <=0,1, > 1000 or ≥ 90. It is kept as a limit, never as the number itself.',
       'Ör. < 5, <=0,1, > 1000 ya da ≥ 90. Sınır olarak saklanır, sayının kendisi sayılmaz.',
     ),
     LabValueKind.text => _t(
-      'Copy it exactly, e.g. Pozitif, Negatif, Reaktif değil, trace or 1+. Human OS gives it no meaning.',
-      'Aynen yaz, ör. Pozitif, Negatif, Reaktif değil, eser ya da 1+. Human OS ona bir anlam yüklemez.',
+      'E.g. Pozitif, Negatif, Reaktif değil, trace or 1+. Human OS gives it no meaning.',
+      'Ör. Pozitif, Negatif, Reaktif değil, eser ya da 1+. Human OS ona bir anlam yüklemez.',
     ),
   };
 
@@ -2355,16 +2399,20 @@ class S {
   String get labReportTime =>
       _t('Report time (optional)', 'Rapor zamanı (isteğe bağlı)');
   String get labReportTimeHelp => _t(
-    'When the lab reported the result, if printed, apart from the sample date: YYYY-MM-DD HH:MM.',
-    'Laboratuvarın sonucu raporladığı zaman, yazıyorsa; numune tarihinden ayrıdır: YYYY-AA-GG SS:DD.',
+    'YYYY-MM-DD HH:MM, apart from the sample date',
+    'YYYY-AA-GG SS:DD, numune tarihinden ayrı',
   );
   String get labMethod =>
       _t('Method as printed (optional)', 'Raporda yazan yöntem (isteğe bağlı)');
   String get labMethodHelp =>
-      _t('E.g. enzymatic or HPLC.', 'Ör. enzimatik ya da HPLC.');
+      _t('E.g. enzymatic or HPLC', 'Ör. enzimatik ya da HPLC');
   String get labIntervalTitle => _t(
     'Reference interval as printed (optional)',
     'Raporda yazan referans aralığı (isteğe bağlı)',
+  );
+  String get labIntervalShort => _t(
+    'A reference group\'s range: not a target, not a decision limit.',
+    'Bir referans grubunun aralığı: hedef değil, karar sınırı değil.',
   );
   String get labIntervalExplain => _t(
     'The lab\'s reference interval describes a reference group. It is not a target and not a limit for decisions. Human OS never compares your value with it.',
@@ -2378,8 +2426,8 @@ class S {
   String get labIntervalPartition =>
       _t('Group as printed (optional)', 'Raporda yazan grup (isteğe bağlı)');
   String get labIntervalPartitionHelp => _t(
-    'E.g. "Kadın 20-49 yaş" or "adult". Copied as printed; never taken from your profile.',
-    'Ör. "Kadın 20-49 yaş" ya da "yetişkin". Yazdığı gibi aktarılır; profilinden alınmaz.',
+    'As printed, e.g. adult; never from your profile',
+    'Yazdığı gibi, ör. yetişkin; profilinden alınmaz',
   );
 
   /// "Report time: 2026-11-03 14:20".

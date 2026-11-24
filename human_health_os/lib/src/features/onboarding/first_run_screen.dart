@@ -5,8 +5,11 @@ import '../../app/appearance_scope.dart';
 import '../../domain/settings/appearance.dart';
 import '../../l10n/strings.dart';
 
-/// A calm first run (U014): three short steps, each skippable, then Today.
-/// It explains, sets language and look, and asks for nothing else.
+/// A calm first run (U014, shortened by U037): two short steps, each
+/// skippable, then Today, where the first value is typed. Step 1 says what
+/// Human OS does and that it stays on this device; step 2 sets language
+/// and look. It asks for nothing else. In a build with an encrypted vault
+/// the vault is created after it, unchanged (F006).
 class FirstRunScreen extends StatefulWidget {
   const FirstRunScreen({super.key, required this.onDone});
 
@@ -47,12 +50,12 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
       ],
     );
 
+    const steps = 2;
     final (title, body) = switch (_step) {
       0 => (s.firstWelcomeTitle, s.firstWelcomeBody),
-      1 => (s.firstPrivateTitle, s.firstPrivateBody),
       _ => (s.firstLookTitle, s.firstLookBody),
     };
-    final last = _step == 2;
+    final last = _step == steps - 1;
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -76,7 +79,7 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    s.firstStep(_step + 1, 3),
+                    s.firstStep(_step + 1, steps),
                     key: const ValueKey('first-step'),
                     style: text.labelLarge?.copyWith(color: scheme.outline),
                   ),
@@ -90,6 +93,19 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
             ),
             const SizedBox(height: 12),
             Text(body, style: text.bodyLarge),
+            if (_step == 0) ...[
+              const SizedBox(height: 24),
+              Semantics(
+                header: true,
+                child: Text(s.firstPrivateTitle, style: text.titleMedium),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                s.firstPrivateBody,
+                key: const ValueKey('first-private'),
+                style: text.bodyLarge,
+              ),
+            ],
             if (last) ...[
               const SizedBox(height: 20),
               Text(s.settingsLanguage, style: text.titleSmall),
@@ -131,7 +147,18 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
                 (v) => set(a.copyWith(font: v)),
               ),
               const SizedBox(height: 8),
-              Text(s.firstMoreInSettings, style: text.bodySmall),
+              Text(
+                s.firstMoreInSettings,
+                style: text.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                s.firstThen,
+                key: const ValueKey('first-then'),
+                style: text.bodyLarge,
+              ),
             ],
             const SizedBox(height: 28),
             FilledButton(

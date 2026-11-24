@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/strings.dart';
+import '../theme/spacing.dart';
 
 /// A bottom-sheet form whose fields scroll while its buttons stay in view
 /// (G-74): Save and Cancel never scroll away under long forms, large text
@@ -156,6 +157,151 @@ class TimePicks extends StatelessWidget {
                     : null,
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A small section label inside a form sheet (U037): it groups the fields
+/// under it, so a sheet reads as two or three short parts instead of one
+/// long column, and no paragraph is needed to say what a group is for.
+class SheetSection extends StatelessWidget {
+  const SheetSection(this.label, {super.key, this.first = false});
+
+  final String label;
+
+  /// The first section sits right under the sheet's title.
+  final bool first;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: EdgeInsets.only(top: first ? 0 : Space.l, bottom: Space.s),
+      child: Semantics(
+        header: true,
+        child: Text(
+          label,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "What to type here" under a field (U037): the field's helper stays one
+/// short line; the longer explanation opens on demand, in place, and is
+/// read by a screen reader once opened. Nothing moves until it is tapped.
+/// Keys: `<id>-details` (the toggle) and `<id>-details-text`.
+class FieldDetails extends StatefulWidget {
+  const FieldDetails({
+    super.key,
+    required this.id,
+    required this.text,
+    this.textKey,
+  });
+
+  final String id;
+  final String text;
+
+  /// The key of the opened text; `<id>-details-text` by default.
+  final Key? textKey;
+
+  @override
+  State<FieldDetails> createState() => _FieldDetailsState();
+}
+
+class _FieldDetailsState extends State<FieldDetails> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          container: true,
+          button: true,
+          expanded: _open,
+          child: InkWell(
+            key: ValueKey('${widget.id}-details'),
+            borderRadius: BorderRadius.circular(Space.s),
+            onTap: () => setState(() => _open = !_open),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Space.s),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ExcludeSemantics(
+                      child: Icon(
+                        _open ? Icons.expand_less : Icons.help_outline,
+                        size: 16,
+                        color: scheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: Space.xs),
+                    Flexible(
+                      child: Text(
+                        _open ? s.fieldDetailsHide : s.fieldDetailsShow,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (_open)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Space.s, 0, Space.s, Space.s),
+            child: Text(
+              widget.text,
+              key: widget.textKey ?? ValueKey('${widget.id}-details-text'),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// An error in plain words right under the field it is about (U037), read
+/// out when it appears.
+class FieldError extends StatelessWidget {
+  const FieldError(this.text, {super.key, this.textKey});
+
+  final String text;
+
+  /// The key of the text itself (tests read it).
+  final Key? textKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Space.m, Space.xs, Space.m, Space.s),
+      child: Semantics(
+        liveRegion: true,
+        child: Text(
+          text,
+          key: textKey,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.error,
+          ),
         ),
       ),
     );

@@ -28,7 +28,13 @@ void main() {
 
     await tapKey(tester, 'meds-add');
     await tapKey(tester, 'meds-item-save');
-    expect(find.byKey(const ValueKey('meds-error')), findsOneWidget);
+    // U037: the error is said under the name field, which takes focus.
+    final name = tester.widget<TextField>(
+      find.byKey(const ValueKey('meds-name')),
+    );
+    expect(name.decoration!.errorText, en.inputError('EMPTY'));
+    expect(name.focusNode!.hasFocus, isTrue);
+    expect(find.byKey(const ValueKey('meds-error')), findsNothing);
     await type(tester, 'meds-name', 'Vitamin D3');
     await type(tester, 'meds-strength', '1000 IU');
     await tapKey(tester, 'meds-item-save');

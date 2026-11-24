@@ -67,3 +67,42 @@ What a first-time person sees above the fold, counted from the real web build (e
 What competed most: on Today, nine equal tiles (each with "Not recorded yet" and a "+") above sleep, feeling and tools; on the areas, the open introduction in full body colour; on a wide window, lines of 120+ characters.
 
 What U036 changed: one spacing scale (`lib/src/presentation/theme/spacing.dart`: 4/8/12/16/24/32, sections 32, cards 20, items 12); one centred reading column of at most 840 dp for every main screen, Settings and About; Today lists the kinds with a record plus the first kinds up to four, the rest behind "More measurements" / "Diğer ölçümler" (remembered as `moreMeasurementsOpen`, an additive appearance setting; a kind with a record is never behind it); the section note is one short line; secondary text (intro paragraphs, section notes, the Sleep intro, the Settings notes) uses onSurfaceVariant at the base size; list and history values use tabular figures; the expander has no animation (nothing moves under reduced motion), a 48 dp target and an expanded state for screen readers; Settings is built whole so Tab reaches every control. Area introductions stay open at first (U031) and say the same words.
+
+## U037 audit
+
+The screens people use to enter things, counted from the real web build (empty profile, dark, development build) at 390x844 (phone, touch) and 1440x900, in English and Turkish. Before = 1cab8d7, after = `reports/runtime/u037/`. "Fields" are the text fields in the sheet's first view (Save and Cancel stay pinned below them). "Helper lines" are the rendered lines of explanation under those fields. "Other buttons" are actions besides Save and Cancel. Counts are the same in EN and TR unless a row says otherwise.
+
+| Screen | Before | After |
+|---|---|---|
+| Labs add sheet, phone | 7 fields, 7 helper lines (three helpers ran to 2 lines), 0 other buttons, one long column | 4 fields under "The result" / "Sonuç", 3 one-line helpers, 3 small "What to type here" / "Ne yazılır?" toggles. Specimen, Laboratory, Flag and Range sit under "Also on the report (optional)", and Unit says "(optional)" |
+| Labs add sheet, 1440x900 | 8 fields, 5 helpers (two of them had two sentences) | 4 fields and the start of the optional group, 4 one-sentence helpers, 3 toggles |
+| "More from the report", phone | a 3-line interval paragraph, a 2-line report-time helper, 1 link | one short line ("not a target, not a decision limit"), the glossary link, and the whole paragraph behind "What to type here". Every helper is one line |
+| Blood pressure sheet | 2 fields and 4 other buttons. Two of them ("See over time", "About this measurement") sat between the title and the first field, and "I did not measure this" came above the numbers | the 2 fields come first under the title. "See over time" and "About" are two icons with tooltips beside the title, and "I did not measure this" comes after the numbers. The field labels move above the field when they do not fit (they were cut at 320 dp, 2× text) |
+| Weight entry (Today) | 1 field, Save, and 2 quiet links on one row (U036) | unchanged: already one field and one primary action |
+| Medications card | name, plan line, counts, up to 5 dose lines, then 2–4 buttons of similar weight in one row (Write the plan, Record a dose, Pause, Stop) | name and pack facts first. Then "Today: … taken, … skipped" with "I took it" / "I skipped it" (each only opens the dose sheet). Counts and the last 3 doses follow in the secondary colour. Under a divider comes the plan as written, quiet, with its own small text actions |
+| Medications add sheet | 4 fields whose labels carried examples in prose ("Strength as printed (optional, e.g. 500 mg)"); the error showed at the bottom of the sheet | two groups, "From the pack" (Name, Kind) and "Details (optional)". Labels are short ("Strength (optional)") and the example is a one-line helper. The error shows under its field, which takes focus |
+| Plan and dose sheets | the dose time format sat inside the label ("When (optional, YYYY-MM-DD HH:MM; empty = now)"), and Taken/Skipped had no label | "When (optional)" with a one-line helper and the date keyboard. "This dose was" sits over Taken/Skipped, preset from the card |
+| Conditions sheet | 2 fields and 3 choice groups titled "It is a", "It is" and "It comes from" | the same fields, with the groups asked as plain questions: "Condition or symptom?", "Is it still there?", "Where it comes from". "Since when (optional)" has a one-line example |
+| First run | 3 steps before Today, with 2–3 buttons each | 2 steps with 2 buttons each: what Human OS does and that it stays on this device, then language and look. The last step says where to type the first value. The vault creation that follows in encrypted builds is unchanged |
+
+Where a first-time person hesitated:
+- "Unit as printed" looked required.
+- Two-line helpers read like rules to learn.
+- The interval paragraph sat between the person and the fields.
+- "It is a" and "It is" were half-sentences.
+- "Write the plan" (outlined) and "Record a dose" (tonal) looked equally primary, with Pause and Stop right beside them.
+- Two links sat between a measurement's title and its first field.
+- The introduction had three steps before anyone could save a first value.
+
+What U037 changed:
+- Three shared pieces in `sheet_parts.dart`:
+  - `SheetSection`: a small label that groups fields.
+  - `FieldDetails`: "What to type here" / "Ne yazılır?" opens the long explanation in place. It is a 48 dp target with an expanded state for screen readers.
+  - `FieldError`: the error in plain words under its field, read out when it appears.
+- Every changed sheet keeps one filled Save and a text Cancel.
+- Helpers are one line: at most 56 characters, with no second sentence.
+- Optional fields say "(optional)" / "(isteğe bağlı)" in their label.
+- Dates use the date keyboard.
+- FieldFocus still moves focus to the field an error is about. Labs now shows the error under that field, and Medications now has this too.
+- Medications never counts the plan as a dose, and a dose button records nothing until Save (planned ≠ taken, reminder ≠ completion).
+- Keys used by tests and tools are kept. The new ones are `meds-skip-<id>`, `meds-today-<id>`, `<field>-details` and `lab-interval-short`.

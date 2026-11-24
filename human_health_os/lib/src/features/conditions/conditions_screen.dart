@@ -5,7 +5,9 @@ import '../../application/heartbeat_service.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/record_area_screen.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 
 /// Conditions and symptoms (F009 slice 1): as the person names them, with
@@ -122,25 +124,35 @@ class _ConditionSheetState extends State<_ConditionSheet> {
     }
   }
 
-  Widget _field(String key, String label, TextEditingController c, String f) =>
-      Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: TextField(
-          key: ValueKey(key),
-          controller: c,
-          focusNode: _focus[f],
-          textCapitalization: TextCapitalization.sentences,
-          onChanged: (_) {
-            if (_error != null) setState(() => _error = _errorField = null);
-          },
-          decoration: InputDecoration(
-            labelText: label,
-            errorText: _errorField == f ? _error : null,
-            errorMaxLines: 4,
-            border: const OutlineInputBorder(),
-          ),
+  Widget _field(
+    String key,
+    String label,
+    TextEditingController c,
+    String f, {
+    String? helper,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: Space.m),
+    child: WholeLabelField(
+      label: label,
+      field: (labelText) => TextField(
+        key: ValueKey(key),
+        controller: c,
+        focusNode: _focus[f],
+        textCapitalization: TextCapitalization.sentences,
+        onChanged: (_) {
+          if (_error != null) setState(() => _error = _errorField = null);
+        },
+        decoration: InputDecoration(
+          labelText: labelText,
+          helperText: helper,
+          helperMaxLines: 20,
+          errorText: _errorField == f ? _error : null,
+          errorMaxLines: 4,
+          border: const OutlineInputBorder(),
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _choice<T extends Enum>(
     String name,
@@ -150,18 +162,20 @@ class _ConditionSheetState extends State<_ConditionSheet> {
     String Function(T) word,
     ValueChanged<T> onPick,
   ) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.only(bottom: Space.l),
     child: Semantics(
       container: true,
       label: label,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ExcludeSemantics(child: Text(label)),
-          const SizedBox(height: 4),
+          ExcludeSemantics(
+            child: Text(label, style: Theme.of(context).textTheme.labelLarge),
+          ),
+          const SizedBox(height: Space.s),
           Wrap(
-            spacing: 8,
-            runSpacing: 4,
+            spacing: Space.s,
+            runSpacing: Space.s,
             children: [
               for (final v in values)
                 ChoiceChip(
@@ -189,11 +203,11 @@ class _ConditionSheetState extends State<_ConditionSheet> {
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Space.l),
         _field('cond-name', s.condName, _name, 'name'),
         _choice(
           'nature',
-          s.condNatureLabel,
+          s.condAskNature,
           ConditionType.values,
           _nature,
           s.condNature,
@@ -201,7 +215,7 @@ class _ConditionSheetState extends State<_ConditionSheet> {
         ),
         _choice(
           'time',
-          s.condTimeLabel,
+          s.condAskTime,
           ConditionTime.values,
           _time,
           s.condTime,
@@ -209,13 +223,19 @@ class _ConditionSheetState extends State<_ConditionSheet> {
         ),
         _choice(
           'source',
-          s.condSourceLabel,
+          s.condAskSource,
           ConditionSource.values,
           _source,
           s.condSource,
           (v) => _source = v,
         ),
-        _field('cond-since', s.condSince, _since, 'since'),
+        _field(
+          'cond-since',
+          s.condSince,
+          _since,
+          'since',
+          helper: s.condSinceHelp,
+        ),
         if (_error != null && _errorField != 'name' && _errorField != 'since')
           Semantics(
             liveRegion: true,

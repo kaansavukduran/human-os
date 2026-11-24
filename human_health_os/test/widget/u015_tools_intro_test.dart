@@ -83,7 +83,6 @@ void main() {
     expect(find.byKey(const ValueKey('screen-first-run')), findsOneWidget);
     expect(find.byKey(const ValueKey('vault-gate-create')), findsNothing);
     await tapKey(tester, 'first-next');
-    await tapKey(tester, 'first-next');
     await tapKey(tester, 'first-language-tr');
     await tapKey(tester, 'first-next');
     expect(disk.raw.text, isNull, reason: 'nothing written before the vault');

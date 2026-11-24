@@ -15,6 +15,7 @@ import '../../presentation/widgets/first_step.dart';
 import '../../presentation/widgets/loading_line.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/sheet_parts.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/status_chip.dart';
 import '../../presentation/widgets/term_link.dart';
 import '../../presentation/widgets/whole_label_field.dart';
@@ -420,6 +421,9 @@ class _LabSheet extends StatefulWidget {
 class _LabSheetState extends State<_LabSheet> {
   final _focus = FieldFocus();
   String? _errorCode;
+
+  /// The field the error is about; its words show right under it (U037).
+  String? _errorField;
   bool _busy = false;
 
   _LabForm get _f => widget.form;
@@ -465,6 +469,7 @@ class _LabSheetState extends State<_LabSheet> {
     setState(() {
       _busy = true;
       _errorCode = null;
+      _errorField = null;
     });
     var saved = false;
     String? field;
@@ -496,6 +501,7 @@ class _LabSheetState extends State<_LabSheet> {
         } else {
           setState(() {
             _busy = false;
+            _errorField = field;
             // An error in the collapsed section opens it, so the field it
             // is about can take focus.
             if (_moreFields.contains(field)) _f.moreOpen = true;
@@ -506,34 +512,61 @@ class _LabSheetState extends State<_LabSheet> {
     }
   }
 
+  /// A field with one short helper line, the longer explanation behind
+  /// "What to type here" ([details]), and the error about it, in words,
+  /// right under it (U037).
   Widget _field(
+    S s,
     TextEditingController c,
     String label,
     String key,
     String name, {
     String? helper,
+    String? details,
     bool number = false,
+    bool date = false,
     bool enabled = true,
   }) => Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: WholeLabelField(
-      label: label,
-      field: (labelText) => TextField(
-        key: ValueKey(key),
-        controller: c,
-        focusNode: _focus[name],
-        enabled: enabled,
-        // Lab numbers may be negative (base excess -2): ask for a minus key.
-        keyboardType: number
-            ? const TextInputType.numberWithOptions(decimal: true, signed: true)
-            : TextInputType.text,
-        decoration: InputDecoration(
-          labelText: labelText,
-          helperText: helper,
-          helperMaxLines: 20,
-          border: const OutlineInputBorder(),
+    padding: const EdgeInsets.only(bottom: Space.m),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        WholeLabelField(
+          label: label,
+          field: (labelText) => TextField(
+            key: ValueKey(key),
+            controller: c,
+            focusNode: _focus[name],
+            enabled: enabled,
+            // Lab numbers may be negative (base excess -2): ask for a minus
+            // key. Dates and times get the keyboard with digits and dashes.
+            keyboardType: number
+                ? const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  )
+                : date
+                ? TextInputType.datetime
+                : TextInputType.text,
+            decoration: InputDecoration(
+              labelText: labelText,
+              helperText: helper,
+              helperMaxLines: 20,
+              border: const OutlineInputBorder(),
+            ),
+          ),
         ),
-      ),
+        if (_errorCode != null && _errorField == name)
+          FieldError(
+            s.inputError(_errorCode!),
+            textKey: const ValueKey('lab-error'),
+          ),
+        if (details != null)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: FieldDetails(id: key, text: details),
+          ),
+      ],
     ),
   );
 
@@ -603,11 +636,13 @@ class _LabSheetState extends State<_LabSheet> {
       if (open) ...[
         const SizedBox(height: 8),
         _field(
+          s,
           _f.reportTime,
           s.labReportTime,
           'lab-report-time',
           'reportTime',
           helper: s.labReportTimeHelp,
+          date: true,
         ),
         TimePicks(
           keyPrefix: 'lab-report-time',
@@ -616,6 +651,7 @@ class _LabSheetState extends State<_LabSheet> {
           onPicked: () => setState(() {}),
         ),
         _field(
+          s,
           _f.method,
           s.labMethod,
           'lab-method',
@@ -627,15 +663,24 @@ class _LabSheetState extends State<_LabSheet> {
           header: true,
           child: Text(s.labIntervalTitle, style: text.titleSmall),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: Space.xs),
+        // One short line in view; the whole explanation on demand.
         Text(
-          s.labIntervalExplain,
-          key: const ValueKey('lab-interval-explain'),
-          style: text.bodySmall,
+          s.labIntervalShort,
+          key: const ValueKey('lab-interval-short'),
+          style: text.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const TermLink('reference_interval'),
-        const SizedBox(height: 6),
+        FieldDetails(
+          id: 'lab-interval',
+          text: s.labIntervalExplain,
+          textKey: const ValueKey('lab-interval-explain'),
+        ),
+        const SizedBox(height: Space.s),
         _field(
+          s,
           _f.refLow,
           s.labIntervalLow,
           'lab-ref-low',
@@ -644,6 +689,7 @@ class _LabSheetState extends State<_LabSheet> {
           number: true,
         ),
         _field(
+          s,
           _f.refHigh,
           s.labIntervalHigh,
           'lab-ref-high',
@@ -651,8 +697,9 @@ class _LabSheetState extends State<_LabSheet> {
           helper: s.labIntervalBoundHelp,
           number: true,
         ),
-        _field(_f.refUnit, s.labIntervalUnit, 'lab-ref-unit', 'refUnit'),
+        _field(s, _f.refUnit, s.labIntervalUnit, 'lab-ref-unit', 'refUnit'),
         _field(
+          s,
           _f.refPartition,
           s.labIntervalPartition,
           'lab-ref-partition',
@@ -679,13 +726,16 @@ class _LabSheetState extends State<_LabSheet> {
             style: text.titleLarge,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Space.l),
+        SheetSection(s.labSectionResult, first: true),
         _field(
+          s,
           _f.analyte,
           s.labAnalyte,
           'lab-analyte',
           'analyte',
           helper: s.labAnalyteHelp,
+          details: s.labAnalyteDetails,
         ),
         // How the value is printed (F004-S2): the field below changes with
         // it. Number is the default; nothing is guessed from the text.
@@ -701,11 +751,11 @@ class _LabSheetState extends State<_LabSheet> {
               ExcludeSemantics(
                 child: Text(s.labKindTitle, style: text.labelLarge),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: Space.s),
               Wrap(
                 key: const ValueKey('lab-kind'),
-                spacing: 8,
-                runSpacing: 6,
+                spacing: Space.s,
+                runSpacing: Space.s,
                 children: [
                   for (final k in LabValueKind.values)
                     ChoiceChip(
@@ -717,6 +767,7 @@ class _LabSheetState extends State<_LabSheet> {
                           : (_) => setState(() {
                               _f.kind = k;
                               _errorCode = null;
+                              _errorField = null;
                             }),
                     ),
                 ],
@@ -724,13 +775,15 @@ class _LabSheetState extends State<_LabSheet> {
             ],
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: Space.m),
         _field(
+          s,
           _f.value,
           s.labValueLabel(_f.kind),
           'lab-value',
           'value',
           helper: s.labValueHelp(_f.kind),
+          details: s.labValueDetails(_f.kind),
           number: _f.kind == LabValueKind.number,
           enabled: !_f.notReported,
         ),
@@ -742,18 +795,44 @@ class _LabSheetState extends State<_LabSheet> {
           value: _f.notReported,
           onChanged: (v) => setState(() => _f.notReported = v ?? false),
         ),
-        _field(_f.unit, s.labUnit, 'lab-unit', 'unit', helper: s.labUnitHelp),
+        const SizedBox(height: Space.s),
         _field(
+          s,
+          _f.unit,
+          s.labUnit,
+          'lab-unit',
+          'unit',
+          helper: s.labUnitHelp,
+          details: s.labUnitDetails,
+        ),
+        _field(
+          s,
           _f.date,
           s.labSampleDate,
           'lab-date',
           'date',
           helper: 'YYYY-MM-DD',
+          date: true,
         ),
-        _field(_f.specimen, s.labSpecimen, 'lab-specimen', 'specimen'),
-        _field(_f.laboratory, s.labLaboratory, 'lab-laboratory', 'laboratory'),
-        _field(_f.flag, s.labFlag, 'lab-flag', 'flag', helper: s.labFlagHelp),
+        SheetSection(s.labSectionAlso),
+        _field(s, _f.specimen, s.labSpecimen, 'lab-specimen', 'specimen'),
         _field(
+          s,
+          _f.laboratory,
+          s.labLaboratory,
+          'lab-laboratory',
+          'laboratory',
+        ),
+        _field(
+          s,
+          _f.flag,
+          s.labFlag,
+          'lab-flag',
+          'flag',
+          helper: s.labFlagHelp,
+        ),
+        _field(
+          s,
           _f.range,
           s.labRange,
           'lab-range',
@@ -761,16 +840,11 @@ class _LabSheetState extends State<_LabSheet> {
           helper: s.labRangeHelp,
         ),
         ..._moreSection(s, text),
-        if (_errorCode != null)
-          Semantics(
-            liveRegion: true,
-            child: Text(
-              s.inputError(_errorCode!),
-              key: const ValueKey('lab-error'),
-              style: text.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.error,
-              ),
-            ),
+        // An error about no single field (a storage refusal) is said here.
+        if (_errorCode != null && _errorField == null)
+          FieldError(
+            s.inputError(_errorCode!),
+            textKey: const ValueKey('lab-error'),
           ),
       ],
       actions: [

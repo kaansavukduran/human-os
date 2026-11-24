@@ -88,6 +88,15 @@ void main() {
       ),
       findsOneWidget,
     );
+    // U037: one short line in view, the whole note on demand.
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('lab-interval-short')))
+          .data,
+      contains('not a target, not a decision limit'),
+    );
+    expect(find.byKey(const ValueKey('lab-interval-explain')), findsNothing);
+    await tapKey(tester, 'lab-interval-details');
     final note = tester.widget<Text>(
       find.byKey(const ValueKey('lab-interval-explain')),
     );

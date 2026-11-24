@@ -82,12 +82,25 @@ void main() {
     expect(selected(tester, LabValueKind.number), isFalse);
     expect(labelOfValue(tester), 'Sign and number as printed');
     expect(helperOfValue(tester), contains('< 5'));
-    expect(helperOfValue(tester), contains('never as the number itself'));
+    // U037: the helper is one short line; the rest opens on demand.
+    expect(find.byKey(const ValueKey('lab-value-details-text')), findsNothing);
+    await tapKey(tester, 'lab-value-details');
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('lab-value-details-text')))
+          .data,
+      contains('never as the number itself'),
+    );
 
     await pick(tester, LabValueKind.text);
     expect(labelOfValue(tester), 'Result as printed');
     expect(helperOfValue(tester), contains('Pozitif'));
-    expect(helperOfValue(tester), contains('gives it no meaning'));
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('lab-value-details-text')))
+          .data,
+      contains('gives it no meaning'),
+    );
   });
 
   testWidgets('a censored result is saved and listed as printed: "below 5 '

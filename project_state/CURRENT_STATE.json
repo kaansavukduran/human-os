@@ -18150,7 +18150,7 @@
       "result": "Q003_COMPLETE",
       "limitations": [
         "Real Android, iOS, Windows and macOS devices, Firefox, Safari, and real screen readers (TalkBack, VoiceOver, NVDA) NOT TESTED in this Linux container",
-        "Google Drive backup (folder 1cZxRqTob2e53E6ilMkND782KhIwXnMVJ) pending: Drive plugin not connected in this environment"
+        "Google Drive backup (folder [private folder id removed, D-052]) pending: Drive plugin not connected in this environment"
       ],
       "depends_on": [
         "F005-S3"

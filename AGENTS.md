@@ -1,48 +1,23 @@
-# Human OS: Codex continuation
+# AGENTS.md: Human OS (Codex and other agents)
+Human OS is a local-first personal health app: one Flutter app in `human_health_os/` for six platforms; do not rebuild it as a separate site or extend the frozen `apps/client`.
 
-The owner's latest explicit request takes priority over attached planning documents.
-Read `CLAUDE.md`, the cursor fields of `project_state/CURRENT_STATE.json`, the latest
-entry of `project_state/FORGE_LOG.md`, and the relevant source/tests before changing
-code. This is the existing Flutter product in `human_health_os/`; do not rebuild
-it as a separate website or extend the frozen `apps/client` prototype.
+**First read `LORE/STATE.md`, then only the LORE file your task needs.** The owner's latest explicit request beats attached planning documents.
 
-## Owner's product requirements
+| Question | File |
+|---|---|
+| Where are we, what is next? | `LORE/STATE.md` |
+| Architecture, invariants, owner product requirements | `LORE/ARCH.md` |
+| Stack, versions, commands | `LORE/STACK.md` |
+| Record model, storage | `LORE/DATA.md` |
+| Workflow, gates, releases, owner process rules | `LORE/OPS.md` |
+| Decisions | `LORE/DECISIONS.md` |
+| Reading and updating LORE | `LORE/GENERATE.md` |
 
-- Complete each changed user flow in Turkish and English through `lib/src/l10n/strings.dart`.
-  Use a supported device language on first launch, otherwise Turkish. Preserve the
-  user's selection, typed text, records, settings and migration compatibility.
-- Keep Settings easy to reach. Appearance/accessibility includes light, dark,
-  system and high contrast, accent, independent text size, bundled Turkish-capable
-  reading/dyslexia fonts, motion, density and layout choices. Whole-interface scale
-  is independent: 80–200%, five-point slider, exact input, six presets and its own
-  reset. Never silently reduce a selected scale; reflow or allow scrolling.
-- Keyboard focus, screen-reader labels, touch targets, narrow layouts and 200%
-  scale are acceptance requirements. Check real rendered Turkish text.
-- Gamification is optional and calm. Reward no clinical value or risky behavior.
-  Count only explicit completed actions, deduplicate, retain access to records
-  when disabled, and never infer completion from a plan, retry or elapsed time.
-- The product targets Windows, Linux, macOS, Android, iPhone and web through its
-  existing shared core. Report each build, install, signing and runtime separately.
-  Never call an unsigned or untested candidate a stable release.
-- Keep all previous GitHub releases, tags and downloads. New ready versions get
-  separate versioned releases; do not overwrite old releases. Signed distribution,
-  Android signing continuity, Apple signing/notarization/store access and a real
-  two-package in-app update drill must be verified before claiming them complete.
-- After a successful code push, back up that exact commit's sources as ZIP and
-  all accessible Git refs/history as a bundle to the private Drive project folder
-  under `1cZxRqTob2e53E6ilMkND782KhIwXnMVJ`. Exclude credentials/signing keys and
-  check archives and uploaded metadata. If access is blocked, report pending.
-- Answer the owner in the language of their latest message. Explain what changed,
-  where to open it, executed checks and remaining blockers briefly. No prose em dashes.
+## Critical rules
+1. Every changed flow complete in Turkish and English; keep the user's records, settings and migration compatibility.
+2. Health semantics, append-only corrections, the encrypted-vault policy and the offline core stay as specified (`LORE/ARCH.md`, `LORE/DATA.md`).
+3. One bounded Forge; commit before `run_gate.py`; update state, log and gaps with real evidence; recommend one next Forge.
+4. Never publish a secret, a real health record or a private Drive source; keep all earlier releases and tags.
+5. Answer in the language of the owner's latest message; say what changed, which checks ran and what is blocked.
 
-## Forge and verification
-
-One bounded Forge at a time, preserve the repository's evidence receipts and
-uncompleted work. Commit source before formal `tools/evidence/run_gate.py` runs.
-Update the state, Forge log and gaps with actual evidence and one next Forge.
-Use `flutter analyze`, `flutter test`, a real web build and browser smoke for UI
-changes; CI is responsible for other hosts. Use existing `pubspec.lock`; a new
-dependency needs a recorded license/platform/privacy review. Health semantics,
-append-only corrections, encrypted-vault policy and the offline core remain as
-specified in `CLAUDE.md`. Never publish a secret, real health record or private
-Drive source into the repository.
+Privacy: LORE holds only rules, decisions and architecture. The owner's private backup-folder id is not kept in the repository; the owner gives it when needed (owner decision, 2026-11-25).

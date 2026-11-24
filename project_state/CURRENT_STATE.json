@@ -3,9 +3,48 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "U037",
+    "contract": "v0.32",
+    "run_id": "U037@v0.32",
+    "slice": "Airy and understandable forms and areas: the add sheets (labs, measurements, medications), Medications, the record areas and the first run, with the U036 spacing scale and one clear action each",
+    "goal": "Airy and understandable forms and areas: the add sheets (labs, measurements, medications), Medications, the record areas and the first run, with the U036 spacing scale and one clear action each",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "1cab8d7",
+    "app_revision": null,
+    "started_at": "2026-11-24T21:51:45Z",
+    "finished_at": null,
+    "scope": [
+      "human_health_os/lib",
+      "human_health_os/test",
+      "docs"
+    ],
+    "acceptance_criteria": [
+      "AC-1 each fix has a regression test",
+      "AC-2 full suites, web smoke, Linux build and runtime pass"
+    ],
+    "completed_steps": [
+      "U037 b9f45eb; Windows test wait 50ba9fa; lore docs a9d3a1f"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox, Safari, real screen readers NOT TESTED"
+    ],
+    "depends_on": [
+      "U036"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

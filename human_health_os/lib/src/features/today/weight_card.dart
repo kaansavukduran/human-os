@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../presentation/widgets/aion.dart';
 import '../../app/appearance_scope.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/number_pad.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/whole_label_field.dart';
@@ -168,7 +169,7 @@ class _WeightCardState extends State<WeightCard> {
       semanticContainer: false,
       key: const ValueKey('weight-card'),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Space.card),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -176,8 +177,7 @@ class _WeightCardState extends State<WeightCard> {
               header: true,
               child: Text(s.weightTitle, style: text.titleMedium),
             ),
-            const SizedBox(height: 8),
-            const SizedBox(height: 12),
+            const SizedBox(height: Space.m),
             if (_readFailed)
               ReadFailedNote(id: 'weight', onRetry: _retry)
             else if (conflict)
@@ -287,29 +287,31 @@ class _WeightCardState extends State<WeightCard> {
                 );
               },
             ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                key: const ValueKey('weight-trend'),
-                icon: const Icon(Icons.show_chart_outlined),
-                label: Text(s.seeOverTime),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => TrendScreen(
-                      services: widget.services,
-                      kind: RecordKind.bodyWeight,
+            const SizedBox(height: Space.xs),
+            // Save is the card's one primary action; the two quiet links
+            // share one row when they fit (U036).
+            Wrap(
+              spacing: Space.s,
+              children: [
+                TextButton.icon(
+                  key: const ValueKey('weight-trend'),
+                  icon: const Icon(Icons.show_chart_outlined),
+                  label: Text(s.seeOverTime),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => TrendScreen(
+                        services: widget.services,
+                        kind: RecordKind.bodyWeight,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                key: const ValueKey('weight-pad-toggle'),
-                onPressed: () => setState(() => _padChoice = !_pad),
-                child: Text(_pad ? s.numberPadHide : s.numberPadShow),
-              ),
+                TextButton(
+                  key: const ValueKey('weight-pad-toggle'),
+                  onPressed: () => setState(() => _padChoice = !_pad),
+                  child: Text(_pad ? s.numberPadHide : s.numberPadShow),
+                ),
+              ],
             ),
             if (_pad)
               NumberPad(
@@ -346,7 +348,12 @@ class _WeightCardState extends State<WeightCard> {
                         child: Text(_meta(s, w), style: text.bodyMedium),
                       ),
                       const SizedBox(width: 8),
-                      Text(_value(s, w), style: text.bodyMedium),
+                      Text(
+                        _value(s, w),
+                        style: text.bodyMedium?.copyWith(
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
                     ],
                   ),
                 ),

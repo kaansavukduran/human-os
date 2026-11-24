@@ -180,7 +180,8 @@ void main() {
     final row = find.byKey(const ValueKey('settings-about'));
     bool rowFocused() {
       final ctx = FocusManager.instance.primaryFocus?.context;
-      if (ctx == null) return false;
+      // The list builds the row once Tab has scrolled near it.
+      if (ctx == null || row.evaluate().isEmpty) return false;
       final rowElement = row.evaluate().single;
       var found = false;
       ctx.visitAncestorElements((e) {

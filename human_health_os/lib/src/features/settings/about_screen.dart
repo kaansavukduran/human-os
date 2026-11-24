@@ -4,6 +4,7 @@ import '../../app/app_services.dart';
 import '../../core/capabilities.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/status_chip.dart';
 
 /// Settings → About Human OS (U032): the facts about this build (version,
@@ -29,81 +30,89 @@ class AboutScreen extends StatelessWidget {
           child: Text(s.aboutTitle),
         ),
       ),
-      body: ListView(
-        key: const ValueKey('screen-about'),
-        padding: const EdgeInsets.all(16),
-        children: [
-          _Section(
-            key: const ValueKey('about-build'),
-            title: s.thisBuild,
-            child: Column(
-              children: [
-                _KeyValue(s.profile, s.profileName(services.config.profile)),
-                _KeyValue(s.version, services.config.version),
-                _KeyValue(s.platform, services.registry.platform.name),
-                _KeyValue(s.sourceRevision, services.config.shortRevision),
-                _KeyValue(s.flutterVersion, services.config.flutterVersion),
-                _KeyValue(s.dartVersion, services.config.dartVersion),
-                _KeyValue(
-                  s.recordSchema,
-                  'v${HealthRecord.currentSchemaVersion}',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          _Section(
-            key: const ValueKey('about-capabilities'),
-            title: s.capabilities,
-            child: Column(
-              children: [
-                for (final c in services.registry.capabilities)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(s.capText(c.label), style: text.titleMedium),
-                              Text(s.capText(c.detail), style: text.bodyMedium),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // May wrap: at 320 dp with 2x text a fixed chip
-                        // overflowed the row (found by the F007 layout test).
-                        Flexible(
-                          child: StatusChip(
-                            label: switch (c.status) {
-                              CapabilityStatus.available => s.available,
-                              CapabilityStatus.notImplemented =>
-                                s.notImplemented,
-                              CapabilityStatus.notRequired => s.notRequired,
-                              CapabilityStatus.off => s.savingOff,
-                              CapabilityStatus.unsupportedOnPlatform =>
-                                s.unsupported,
-                            },
-                            tone: switch (c.status) {
-                              CapabilityStatus.available => StatusTone.ok,
-                              CapabilityStatus.notImplemented =>
-                                StatusTone.muted,
-                              CapabilityStatus.notRequired => StatusTone.ok,
-                              CapabilityStatus.off => StatusTone.info,
-                              CapabilityStatus.unsupportedOnPlatform =>
-                                StatusTone.info,
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+      body: ReadingWidth(
+        child: ListView(
+          key: const ValueKey('screen-about'),
+          padding: const EdgeInsets.all(16),
+          children: [
+            _Section(
+              key: const ValueKey('about-build'),
+              title: s.thisBuild,
+              child: Column(
+                children: [
+                  _KeyValue(s.profile, s.profileName(services.config.profile)),
+                  _KeyValue(s.version, services.config.version),
+                  _KeyValue(s.platform, services.registry.platform.name),
+                  _KeyValue(s.sourceRevision, services.config.shortRevision),
+                  _KeyValue(s.flutterVersion, services.config.flutterVersion),
+                  _KeyValue(s.dartVersion, services.config.dartVersion),
+                  _KeyValue(
+                    s.recordSchema,
+                    'v${HealthRecord.currentSchemaVersion}',
                   ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            _Section(
+              key: const ValueKey('about-capabilities'),
+              title: s.capabilities,
+              child: Column(
+                children: [
+                  for (final c in services.registry.capabilities)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  s.capText(c.label),
+                                  style: text.titleMedium,
+                                ),
+                                Text(
+                                  s.capText(c.detail),
+                                  style: text.bodyMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // May wrap: at 320 dp with 2x text a fixed chip
+                          // overflowed the row (found by the F007 layout test).
+                          Flexible(
+                            child: StatusChip(
+                              label: switch (c.status) {
+                                CapabilityStatus.available => s.available,
+                                CapabilityStatus.notImplemented =>
+                                  s.notImplemented,
+                                CapabilityStatus.notRequired => s.notRequired,
+                                CapabilityStatus.off => s.savingOff,
+                                CapabilityStatus.unsupportedOnPlatform =>
+                                  s.unsupported,
+                              },
+                              tone: switch (c.status) {
+                                CapabilityStatus.available => StatusTone.ok,
+                                CapabilityStatus.notImplemented =>
+                                  StatusTone.muted,
+                                CapabilityStatus.notRequired => StatusTone.ok,
+                                CapabilityStatus.off => StatusTone.info,
+                                CapabilityStatus.unsupportedOnPlatform =>
+                                  StatusTone.info,
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

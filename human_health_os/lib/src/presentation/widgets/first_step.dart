@@ -30,7 +30,7 @@ class FirstStep extends StatelessWidget {
                 key: textKey,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
-              if (action != null) ...[const SizedBox(height: 4), action],
+              if (action != null) ...[const SizedBox(height: 8), action],
             ],
           ),
         ),

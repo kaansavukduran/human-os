@@ -26,7 +26,7 @@ class DiscoveryCard extends StatelessWidget {
     return Card(
       key: const ValueKey('discovery-card'),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

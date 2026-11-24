@@ -4,6 +4,7 @@ import '../../app/appearance_scope.dart';
 import '../../domain/guide/glossary.dart';
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
+import '../theme/spacing.dart';
 import 'term_link.dart';
 
 /// The top of every area (U031): its title, then three plain lines for
@@ -61,9 +62,15 @@ class _AreaIntroState extends State<AreaIntro> {
     final label = text.labelMedium?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
+    // The introduction is quieter than the person's data (U036): secondary
+    // colour, paragraph line height, one step of the spacing scale apart.
+    final body = text.bodyMedium?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+      height: text.bodyMedium?.height ?? 1.4,
+    );
 
-    Widget line(String key, String heading, String body) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+    Widget line(String key, String heading, String paragraph) => Padding(
+      padding: const EdgeInsets.only(bottom: Space.m),
       child: Semantics(
         container: true,
         child: Column(
@@ -71,8 +78,8 @@ class _AreaIntroState extends State<AreaIntro> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(heading, style: label),
-            const SizedBox(height: 2),
-            Text(body, style: text.bodyMedium),
+            const SizedBox(height: Space.xs),
+            Text(paragraph, style: body),
           ],
         ),
       ),
@@ -96,7 +103,7 @@ class _AreaIntroState extends State<AreaIntro> {
             style: text.headlineSmall,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: Space.m),
         if (closed)
           Align(
             alignment: Alignment.centerLeft,

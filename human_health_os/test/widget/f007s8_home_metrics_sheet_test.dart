@@ -23,6 +23,7 @@ import 'f007_measurements_test.dart'
         openSheet,
         openTimeline,
         settle,
+        showAllMeasurements,
         tapKey,
         textsUnder;
 
@@ -72,6 +73,7 @@ void main() {
         'is offered next time; no judgement', (tester) async {
       final s = await launch(tester, locale: Locale(lang.name));
       final strings = S(lang);
+      await showAllMeasurements(tester);
       expect(latestOf(tester, g), strings.measurementNotYet);
       await openSheet(tester, g);
       expect(

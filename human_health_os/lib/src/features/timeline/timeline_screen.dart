@@ -82,6 +82,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       ),
       header: [
         const AreaIntro(area: DestinationId.timeline, terms: ['correction']),
+        const SizedBox(height: 12),
         SwitchListTile(
           key: const ValueKey('timeline-show-hidden'),
           contentPadding: EdgeInsets.zero,
@@ -222,7 +223,7 @@ class _EntryTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -99,10 +99,30 @@ Future<AppServices> launch(
   return s;
 }
 
+/// Opens Today's "More measurements" when it is closed (U036): kinds
+/// without a record, beyond the first few, are listed under it.
+Future<void> showAllMeasurements(WidgetTester tester) async {
+  final more = find.byKey(const ValueKey('measurements-more'));
+  if (more.evaluate().isEmpty) return;
+  final label = tester
+      .widgetList<Text>(find.descendant(of: more, matching: find.byType(Text)))
+      .first
+      .data!;
+  if (!label.startsWith('More') && !label.startsWith('Diğer')) return;
+  await tester.ensureVisible(more);
+  await tester.pumpAndSettle();
+  await tester.tap(more);
+  await tester.pumpAndSettle();
+}
+
 Future<void> tapKey(WidgetTester tester, String key) async {
   final f = find.byKey(ValueKey(key));
   FocusManager.instance.primaryFocus?.unfocus();
   await tester.pumpAndSettle();
+  // A measurement kind without a record may sit under "More measurements".
+  if (key.startsWith('measure-tile-') && f.evaluate().isEmpty) {
+    await showAllMeasurements(tester);
+  }
   await tester.ensureVisible(f);
   await tester.pumpAndSettle();
   await tester.tap(f);
@@ -186,6 +206,7 @@ void main() {
   testWidgets('nothing yet: each kind says so, never 0; the note says values '
       'are kept as typed with the time Save is pressed', (tester) async {
     await launch(tester);
+    await showAllMeasurements(tester);
     for (final k in MeasurementsCard.kinds) {
       expect(latestOf(tester, k), 'Not recorded yet', reason: k.code);
       expect(find.byKey(ValueKey('measure-tile-${k.code}')), findsOneWidget);

@@ -23,6 +23,7 @@ import '../features/nutrition/nutrition_screen.dart';
 import '../features/timeline/timeline_screen.dart';
 import '../features/today/today_screen.dart';
 import '../l10n/strings.dart';
+import '../presentation/theme/spacing.dart';
 import '../presentation/widgets/build_profile_banner.dart';
 import 'destination_switch.dart';
 import 'destinations.dart';
@@ -142,18 +143,12 @@ class _AppShellState extends State<AppShell> {
                   services: widget.services,
                 ),
                 const VerticalDivider(width: 1),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 960),
-                      child: body,
-                    ),
-                  ),
-                ),
+                // One centred reading column (U036), not text from edge
+                // to edge.
+                Expanded(child: ReadingWidth(child: body)),
               ],
             )
-          : body,
+          : ReadingWidth(child: body),
     );
   }
 }

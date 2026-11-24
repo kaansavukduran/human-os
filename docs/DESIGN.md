@@ -48,3 +48,22 @@ Accent teal `#1F6F78` (dark mode `#7FC4CB`); surface `#F6F8F8` / card `#FFFFFF` 
 
 ## Brainstorm and backlog
 Ideas that fit the invariants (planned is not completed; missing is not zero; no diagnosis) are collected in `docs/BRAINSTORM.md`.
+
+## U036 audit
+
+What a first-time person sees above the fold, counted from the real web build (empty profile, dark, development build; before = `reports/runtime/screen-matrix/e717d6c5aa22/` at e717d6c, after = `reports/runtime/u036/`). Headings count the screen title and section titles; the app bar, the build strip and the navigation are not counted. "Helper lines" are rendered lines of explanatory text.
+
+| Screen, size | Before | After |
+|---|---|---|
+| Today 390x844 | 3 headings, weight card + 2 of 9 tiles, 6 actions (Save, See over time and Show number pad on two lines, 2 tiles, settings), 1 chip, 6 helper lines; 9 tiles in the section | 3 headings, weight card + 2 of 4 tiles, 6 actions (the two links share one row), 1 chip, 5 helper lines; 4 tiles in the section, 5 under "More measurements (5)" |
+| Today 1440x900 | 3 headings, 10 containers (weight + 9 tiles), 12 actions, 1 chip, 3 helper lines; content 928 dp wide | 4 headings (Sleep now reaches the fold), 6 containers (weight + 4 tiles + Sleep), 8 actions (Save, 2 links, 4 tiles, More), 1 chip, 4 helper lines; one centred 840 dp column |
+| Labs 390x844 | 1 title + 3 intro labels, 3 intro paragraphs (11 lines), 5 actions (Close, 3 terms, Add), 2-line note in small text | same content (nothing removed), intro and note in the secondary colour, 12/24 dp steps between them |
+| Labs 1440x900 | as phone, lines up to 928 dp long | as phone, lines at most 808 dp long, centred |
+| Timeline 390x844 / 1440x900 | 1 title + 3 intro labels, 3 paragraphs, 3 actions (Close, term, Go to Today), 1 switch | same, quieter intro; 12 dp before the switch |
+| Medications 390x844 / 1440x900 | 1 title + 3 intro labels, 3 paragraphs (7 lines phone), 2 actions | same, quieter intro |
+| Settings 390x844 | 1 title, 3 sections, 2 notes in small text, 1 slider, 6 scale chips, 1 field, 2 buttons, 6 choice chips | same controls, notes and scale help in the secondary colour at base size; sections 32 dp apart |
+| Settings 1440x900 | text and the field run edge to edge (1408 dp) | one centred 840 dp column |
+
+What competed most: on Today, nine equal tiles (each with "Not recorded yet" and a "+") above sleep, feeling and tools; on the areas, the open introduction in full body colour; on a wide window, lines of 120+ characters.
+
+What U036 changed: one spacing scale (`lib/src/presentation/theme/spacing.dart`: 4/8/12/16/24/32, sections 32, cards 20, items 12); one centred reading column of at most 840 dp for every main screen, Settings and About; Today lists the kinds with a record plus the first kinds up to four, the rest behind "More measurements" / "Diğer ölçümler" (remembered as `moreMeasurementsOpen`, an additive appearance setting; a kind with a record is never behind it); the section note is one short line; secondary text (intro paragraphs, section notes, the Sleep intro, the Settings notes) uses onSurfaceVariant at the base size; list and history values use tabular figures; the expander has no animation (nothing moves under reduced motion), a 48 dp target and an expanded state for screen readers; Settings is built whole so Tab reaches every control. Area introductions stay open at first (U031) and say the same words.

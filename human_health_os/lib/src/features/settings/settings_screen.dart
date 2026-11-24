@@ -10,6 +10,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../today/measurements_card.dart';
 import '../../presentation/theme/human_os_theme.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/whole_label_field.dart';
 import '../onboarding/first_run_screen.dart';
 import 'about_screen.dart';
@@ -35,10 +36,13 @@ class SettingsScreen extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final controller = AppearanceScope.maybeOf(context);
     final a = controller?.value ?? const AppearanceSettings();
+    final quiet = text.bodyMedium?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
     void set(AppearanceSettings next) => controller?.update(next);
 
     Widget section(String title, Widget child) => Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: Space.section),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -51,7 +55,7 @@ class SettingsScreen extends StatelessWidget {
             container: true,
             child: Text(title, style: text.titleMedium),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: Space.m),
           child,
         ],
       ),
@@ -86,311 +90,325 @@ class SettingsScreen extends StatelessWidget {
           child: Text(s.settingsTitle),
         ),
       ),
-      body: ListView(
-        key: const ValueKey('screen-settings'),
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(s.settingsDeviceScope, style: text.bodySmall),
-          const SizedBox(height: 8),
-          Text(
-            controller?.saveFailed == true
-                ? s.settingsSaveFailed
-                : (controller?.store.persistent ?? false)
-                ? s.settingsSaved
-                : s.settingsSessionOnly,
-            key: const ValueKey('settings-persistence'),
-            style: text.bodySmall,
-          ),
-          // One heading level (U035): each section's title is the only
-          // heading in it; the controls' own names are plain labels.
-          const SizedBox(height: 24),
-          section(
-            s.settingsInterfaceScale,
-            _ScaleControl(
-              percent: a.interfacePercent,
-              onChange: (v) => set(a.copyWith(interfacePercent: v)),
-            ),
-          ),
-          section(
-            s.settingsLanguage,
-            choices(
-              'set-language',
-              [
-                (LanguageChoice.tr, 'Türkçe'),
-                (LanguageChoice.en, 'English'),
-                (LanguageChoice.system, s.settingsSystem),
-              ],
-              a.language,
-              (v) => set(a.copyWith(language: v)),
-            ),
-          ),
-          section(
-            s.settingsTheme,
-            choices(
-              'set-theme',
-              [
-                (ThemeChoice.light, s.settingsLight),
-                (ThemeChoice.dark, s.settingsDark),
-                (ThemeChoice.system, s.settingsSystem),
-              ],
-              a.theme,
-              (v) => set(a.copyWith(theme: v)),
-            ),
-          ),
-          section(
-            s.settingsPalette,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      // One centred reading column on a wide window (U036).
+      body: ReadingWidth(
+        // Built whole, not lazily: a short, fixed page, so Tab reaches
+        // every control even where the next one is far below the window.
+        child: SingleChildScrollView(
+          key: const ValueKey('screen-settings'),
+          padding: kPagePadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(s.settingsDeviceScope, style: quiet),
+              const SizedBox(height: Space.xs),
+              Text(
+                controller?.saveFailed == true
+                    ? s.settingsSaveFailed
+                    : (controller?.store.persistent ?? false)
+                    ? s.settingsSaved
+                    : s.settingsSessionOnly,
+                key: const ValueKey('settings-persistence'),
+                style: quiet,
+              ),
+              // One heading level (U035): each section's title is the only
+              // heading in it; the controls' own names are plain labels.
+              const SizedBox(height: 24),
+              section(
+                s.settingsInterfaceScale,
+                _ScaleControl(
+                  percent: a.interfacePercent,
+                  onChange: (v) => set(a.copyWith(interfacePercent: v)),
+                ),
+              ),
+              section(
+                s.settingsLanguage,
+                choices(
+                  'set-language',
+                  [
+                    (LanguageChoice.tr, 'Türkçe'),
+                    (LanguageChoice.en, 'English'),
+                    (LanguageChoice.system, s.settingsSystem),
+                  ],
+                  a.language,
+                  (v) => set(a.copyWith(language: v)),
+                ),
+              ),
+              section(
+                s.settingsTheme,
+                choices(
+                  'set-theme',
+                  [
+                    (ThemeChoice.light, s.settingsLight),
+                    (ThemeChoice.dark, s.settingsDark),
+                    (ThemeChoice.system, s.settingsSystem),
+                  ],
+                  a.theme,
+                  (v) => set(a.copyWith(theme: v)),
+                ),
+              ),
+              section(
+                s.settingsPalette,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        for (final p in PaletteChoice.values)
+                          _PaletteSwatch(
+                            choice: p,
+                            label: s.paletteName(p),
+                            sample: s.paletteSample,
+                            tokens:
+                                tokensFor(p, highContrast: a.highContrast) ??
+                                standardTokens(
+                                  _standardBrightness(context, a.theme),
+                                  a.accent,
+                                  highContrast: a.highContrast,
+                                ),
+                            selected: a.palette == p,
+                            onTap: () => set(a.copyWith(palette: p)),
+                          ),
+                      ],
+                    ),
+                    if (a.palette != PaletteChoice.standard) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        s.paletteNote(s.paletteName(a.palette)),
+                        key: const ValueKey('palette-note'),
+                        style: text.bodySmall,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              section(
+                s.settingsAccent,
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    for (final p in PaletteChoice.values)
-                      _PaletteSwatch(
-                        choice: p,
-                        label: s.paletteName(p),
-                        sample: s.paletteSample,
-                        tokens:
-                            tokensFor(p, highContrast: a.highContrast) ??
-                            standardTokens(
-                              _standardBrightness(context, a.theme),
-                              a.accent,
-                              highContrast: a.highContrast,
-                            ),
-                        selected: a.palette == p,
-                        onTap: () => set(a.copyWith(palette: p)),
+                    for (final c in AccentChoice.values)
+                      _AccentSwatch(
+                        choice: c,
+                        label: s.accentName(c),
+                        selected: a.accent == c,
+                        onTap: () => set(a.copyWith(accent: c)),
                       ),
                   ],
                 ),
-                if (a.palette != PaletteChoice.standard) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    s.paletteNote(s.paletteName(a.palette)),
-                    key: const ValueKey('palette-note'),
-                    style: text.bodySmall,
-                  ),
-                ],
-              ],
-            ),
-          ),
-          section(
-            s.settingsAccent,
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                for (final c in AccentChoice.values)
-                  _AccentSwatch(
-                    choice: c,
-                    label: s.accentName(c),
-                    selected: a.accent == c,
-                    onTap: () => set(a.copyWith(accent: c)),
-                  ),
-              ],
-            ),
-          ),
-          section(
-            s.settingsTextSize,
-            choices(
-              'set-text',
-              [
-                (TextSizeChoice.system, s.settingsSystem),
-                (TextSizeChoice.larger, s.settingsLarger),
-                (TextSizeChoice.largest, s.settingsLargest),
-              ],
-              a.textSize,
-              (v) => set(a.copyWith(textSize: v)),
-            ),
-          ),
-          section(
-            s.settingsFont,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              ),
+              section(
+                s.settingsTextSize,
                 choices(
-                  'set-font',
+                  'set-text',
                   [
-                    (FontChoice.system, s.settingsSystem),
-                    (FontChoice.legible, s.fontLegible),
-                    (FontChoice.dyslexic, s.fontDyslexic),
-                    (FontChoice.lexend, s.fontLexend),
+                    (TextSizeChoice.system, s.settingsSystem),
+                    (TextSizeChoice.larger, s.settingsLarger),
+                    (TextSizeChoice.largest, s.settingsLargest),
                   ],
-                  a.font,
-                  (v) => set(a.copyWith(font: v)),
-                ),
-                const SizedBox(height: 12),
-                Text(s.fontPreviewNote, style: text.bodySmall),
-                const SizedBox(height: 4),
-                for (final (f, label) in [
-                  (FontChoice.system, s.settingsSystem),
-                  (FontChoice.legible, s.fontLegible),
-                  (FontChoice.dyslexic, s.fontDyslexic),
-                  (FontChoice.lexend, s.fontLexend),
-                ])
-                  _FontPreview(choice: f, label: label),
-                SwitchListTile(
-                  key: const ValueKey('set-wide-spacing'),
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(s.settingsWideSpacing),
-                  value: a.wideSpacing,
-                  onChanged: (on) => set(a.copyWith(wideSpacing: on)),
-                ),
-                SwitchListTile(
-                  key: const ValueKey('set-reduce-motion'),
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(s.settingsReduceMotion),
-                  value: a.reduceMotion,
-                  onChanged: (on) => set(a.copyWith(reduceMotion: on)),
-                ),
-                SwitchListTile(
-                  key: const ValueKey('set-show-aion'),
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(s.settingsShowAion),
-                  value: a.showAion,
-                  onChanged: (on) => set(a.copyWith(showAion: on)),
-                ),
-              ],
-            ),
-          ),
-          section(
-            s.settingsUnits,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                choices(
-                  'set-units',
-                  [
-                    (UnitSystem.metric, s.unitsMetric),
-                    (UnitSystem.us, s.unitsUs),
-                  ],
-                  a.units,
-                  (v) => set(a.copyWith(units: v)),
-                ),
-                const SizedBox(height: 4),
-                Text(s.unitsNote, style: text.bodySmall),
-              ],
-            ),
-          ),
-          section(
-            s.settingsDates,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                choices(
-                  'set-date',
-                  [
-                    (DateOrder.iso, '2026-11-08'),
-                    (DateOrder.dayMonth, '08.11.2026'),
-                    (DateOrder.monthDay, '11/08/2026'),
-                  ],
-                  a.dateOrder,
-                  (v) => set(a.copyWith(dateOrder: v)),
-                ),
-                const SizedBox(height: 8),
-                choices(
-                  'set-clock',
-                  [
-                    (ClockStyle.h24, '20:05'),
-                    (ClockStyle.h12, s.clock12Sample),
-                  ],
-                  a.clock,
-                  (v) => set(a.copyWith(clock: v)),
-                ),
-                const SizedBox(height: 4),
-                Text(s.datesNote, style: text.bodySmall),
-              ],
-            ),
-          ),
-          section(
-            s.settingsSpacing,
-            choices(
-              'set-density',
-              [
-                (Density.comfortable, s.settingsComfortable),
-                (Density.compact, s.settingsCompact),
-              ],
-              a.density,
-              (v) => set(a.copyWith(density: v)),
-            ),
-          ),
-          section(
-            s.settingsContrast,
-            SwitchListTile(
-              key: const ValueKey('set-high-contrast'),
-              contentPadding: EdgeInsets.zero,
-              title: Text(s.settingsHighContrast),
-              value: a.highContrast,
-              onChanged: (on) => set(a.copyWith(highContrast: on)),
-            ),
-          ),
-          section(
-            s.settingsStart,
-            choices(
-              'set-start',
-              [
-                (StartScreen.today, s.startScreenName(StartScreen.today)),
-                (StartScreen.timeline, s.startScreenName(StartScreen.timeline)),
-                (StartScreen.labs, s.startScreenName(StartScreen.labs)),
-              ],
-              a.startScreen,
-              (v) => set(a.copyWith(startScreen: v)),
-            ),
-          ),
-          section(s.settingsToday, _TodayLayout(settings: a, onChange: set)),
-          section(
-            s.discoveryTitle,
-            SwitchListTile(
-              key: const ValueKey('set-discovery'),
-              contentPadding: EdgeInsets.zero,
-              title: Text(s.discoveryEnabled),
-              subtitle: Text(s.discoveryNote),
-              value: a.discoveryEnabled,
-              onChanged: (v) => set(a.copyWith(discoveryEnabled: v)),
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton(
-              key: const ValueKey('set-first-run'),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (ctx) =>
-                      FirstRunScreen(onDone: () => Navigator.of(ctx).pop()),
+                  a.textSize,
+                  (v) => set(a.copyWith(textSize: v)),
                 ),
               ),
-              child: Text(s.firstShowAgain),
-            ),
-          ),
-          const SizedBox(height: 24),
-          section(
-            s.lockTitle,
-            _AppLockSettings(
-              settings: a,
-              availability: AppLockScope.of(context),
-              onChange: set,
-            ),
-          ),
-          section(
-            s.settingsUpdatesTitle,
-            _UpdatesAndAbout(config: config ?? services?.config),
-          ),
-          if (services case final services?)
-            // Near the end: the facts about this build, for support and the
-            // curious, not for every day (U032).
-            ListTile(
-              key: const ValueKey('settings-about'),
-              contentPadding: EdgeInsets.zero,
-              title: Text(s.aboutTitle),
-              subtitle: Text(s.aboutHint),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => AboutScreen(services: services),
+              section(
+                s.settingsFont,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    choices(
+                      'set-font',
+                      [
+                        (FontChoice.system, s.settingsSystem),
+                        (FontChoice.legible, s.fontLegible),
+                        (FontChoice.dyslexic, s.fontDyslexic),
+                        (FontChoice.lexend, s.fontLexend),
+                      ],
+                      a.font,
+                      (v) => set(a.copyWith(font: v)),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(s.fontPreviewNote, style: text.bodySmall),
+                    const SizedBox(height: 4),
+                    for (final (f, label) in [
+                      (FontChoice.system, s.settingsSystem),
+                      (FontChoice.legible, s.fontLegible),
+                      (FontChoice.dyslexic, s.fontDyslexic),
+                      (FontChoice.lexend, s.fontLexend),
+                    ])
+                      _FontPreview(choice: f, label: label),
+                    SwitchListTile(
+                      key: const ValueKey('set-wide-spacing'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(s.settingsWideSpacing),
+                      value: a.wideSpacing,
+                      onChanged: (on) => set(a.copyWith(wideSpacing: on)),
+                    ),
+                    SwitchListTile(
+                      key: const ValueKey('set-reduce-motion'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(s.settingsReduceMotion),
+                      value: a.reduceMotion,
+                      onChanged: (on) => set(a.copyWith(reduceMotion: on)),
+                    ),
+                    SwitchListTile(
+                      key: const ValueKey('set-show-aion'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(s.settingsShowAion),
+                      value: a.showAion,
+                      onChanged: (on) => set(a.copyWith(showAion: on)),
+                    ),
+                  ],
                 ),
               ),
-            ),
-        ],
+              section(
+                s.settingsUnits,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    choices(
+                      'set-units',
+                      [
+                        (UnitSystem.metric, s.unitsMetric),
+                        (UnitSystem.us, s.unitsUs),
+                      ],
+                      a.units,
+                      (v) => set(a.copyWith(units: v)),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(s.unitsNote, style: text.bodySmall),
+                  ],
+                ),
+              ),
+              section(
+                s.settingsDates,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    choices(
+                      'set-date',
+                      [
+                        (DateOrder.iso, '2026-11-08'),
+                        (DateOrder.dayMonth, '08.11.2026'),
+                        (DateOrder.monthDay, '11/08/2026'),
+                      ],
+                      a.dateOrder,
+                      (v) => set(a.copyWith(dateOrder: v)),
+                    ),
+                    const SizedBox(height: 8),
+                    choices(
+                      'set-clock',
+                      [
+                        (ClockStyle.h24, '20:05'),
+                        (ClockStyle.h12, s.clock12Sample),
+                      ],
+                      a.clock,
+                      (v) => set(a.copyWith(clock: v)),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(s.datesNote, style: text.bodySmall),
+                  ],
+                ),
+              ),
+              section(
+                s.settingsSpacing,
+                choices(
+                  'set-density',
+                  [
+                    (Density.comfortable, s.settingsComfortable),
+                    (Density.compact, s.settingsCompact),
+                  ],
+                  a.density,
+                  (v) => set(a.copyWith(density: v)),
+                ),
+              ),
+              section(
+                s.settingsContrast,
+                SwitchListTile(
+                  key: const ValueKey('set-high-contrast'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(s.settingsHighContrast),
+                  value: a.highContrast,
+                  onChanged: (on) => set(a.copyWith(highContrast: on)),
+                ),
+              ),
+              section(
+                s.settingsStart,
+                choices(
+                  'set-start',
+                  [
+                    (StartScreen.today, s.startScreenName(StartScreen.today)),
+                    (
+                      StartScreen.timeline,
+                      s.startScreenName(StartScreen.timeline),
+                    ),
+                    (StartScreen.labs, s.startScreenName(StartScreen.labs)),
+                  ],
+                  a.startScreen,
+                  (v) => set(a.copyWith(startScreen: v)),
+                ),
+              ),
+              section(
+                s.settingsToday,
+                _TodayLayout(settings: a, onChange: set),
+              ),
+              section(
+                s.discoveryTitle,
+                SwitchListTile(
+                  key: const ValueKey('set-discovery'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(s.discoveryEnabled),
+                  subtitle: Text(s.discoveryNote),
+                  value: a.discoveryEnabled,
+                  onChanged: (v) => set(a.copyWith(discoveryEnabled: v)),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton(
+                  key: const ValueKey('set-first-run'),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (ctx) =>
+                          FirstRunScreen(onDone: () => Navigator.of(ctx).pop()),
+                    ),
+                  ),
+                  child: Text(s.firstShowAgain),
+                ),
+              ),
+              const SizedBox(height: 24),
+              section(
+                s.lockTitle,
+                _AppLockSettings(
+                  settings: a,
+                  availability: AppLockScope.of(context),
+                  onChange: set,
+                ),
+              ),
+              section(
+                s.settingsUpdatesTitle,
+                _UpdatesAndAbout(config: config ?? services?.config),
+              ),
+              if (services case final services?)
+                // Near the end: the facts about this build, for support and the
+                // curious, not for every day (U032).
+                ListTile(
+                  key: const ValueKey('settings-about'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(s.aboutTitle),
+                  subtitle: Text(s.aboutHint),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => AboutScreen(services: services),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -550,7 +568,12 @@ class _ScaleControlState extends State<_ScaleControl> {
           // A value, not a heading under the section's title (U035).
           style: Theme.of(context).textTheme.bodyLarge,
         ),
-        Text(s.interfaceScaleNote),
+        const SizedBox(height: 4),
+        Text(
+          s.interfaceScaleNote,
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
         Slider(
           key: const ValueKey('set-interface-slider'),
           focusNode: _sliderFocus,

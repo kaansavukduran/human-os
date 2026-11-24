@@ -85,7 +85,9 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     final page = find.byKey(const ValueKey('screen-settings'));
-    expect(tester.getTopLeft(page).dx, 0, reason: 'no slide in');
+    // The page itself, not its centred reading column (U036).
+    final scaffold = find.ancestor(of: page, matching: find.byType(Scaffold));
+    expect(tester.getTopLeft(scaffold.first).dx, 0, reason: 'no slide in');
     await tester.pumpAndSettle();
     await tester.dragFrom(const Offset(5, 400), const Offset(900, 0));
     await tester.pumpAndSettle();

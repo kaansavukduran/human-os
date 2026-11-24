@@ -124,15 +124,23 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
     try {
       await page.getByRole('button', { name: 'Settings', exact: true }).first().click({ timeout: 15_000 });
       await heading('Settings').waitFor({ timeout: 15_000 });
-      // Settings is a lazy list: wheel down until the About row is built.
+      // Settings is built whole (U036), so the About row exists at once:
+      // wheel down until it is on screen (Flutter hit-tests by position).
       const aboutRow = page.getByRole('button', { name: /^About Human OS/ }).or(page.getByText('About Human OS', { exact: true })).first();
-      for (let i = 0; i < 40 && (await aboutRow.count()) === 0; i++) {
+      const onScreen = async () => {
+        const b = await aboutRow.boundingBox().catch(() => null);
+        return !!b && b.y >= 0 && b.y + b.height <= viewport.height;
+      };
+      for (let i = 0; i < 40 && !(await onScreen()); i++) {
         await page.mouse.move(viewport.width / 2, viewport.height / 2);
         await page.mouse.wheel(0, 600);
         await page.waitForTimeout(200);
       }
-      await aboutRow.scrollIntoViewIfNeeded().catch(() => {});
-      await aboutRow.click({ timeout: 10_000 });
+      // A click at the row's position, as a person's mouse does (Flutter
+      // hit-tests by position). An empty, full-window semantics node sits
+      // above the Settings route in the DOM (seen in U036) and fails
+      // Playwright's actionability check, although the click reaches the row.
+      await aboutRow.click({ timeout: 10_000, force: true });
       await heading('About Human OS').waitFor({ timeout: 15_000 });
       aboutOpen = true;
     } catch (e) {
@@ -342,6 +350,14 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
     check(`${label}: blood pressure saved as typed (spoken summary 118/76)`, await scrollTo(tile('Blood pressure').filter({ hasText: spokenBp }), todayX));
     // Slice 2: a height typed with a time (a measurement of an earlier day).
     try {
+      // U036: kinds without a record beyond the first few sit under "More
+      // measurements"; open it (it stays open, a saved choice).
+      const more = page.getByRole('button', { name: /^More measurements/ }).first();
+      if ((await tile('Height').count()) === 0 && (await more.count()) > 0) {
+        await scrollTo(more, todayX);
+        await more.click({ timeout: 10_000 });
+        await page.waitForTimeout(500);
+      }
       await scrollTo(tile('Height'), todayX);
       await tile('Height').click({ timeout: 10_000 });
       await page.waitForTimeout(500);

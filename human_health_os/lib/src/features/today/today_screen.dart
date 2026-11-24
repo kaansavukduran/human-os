@@ -8,6 +8,7 @@ import '../../domain/settings/appearance.dart';
 import '../../core/ids.dart' show Clock;
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/tool_row.dart';
 import '../derived/derived_screen.dart';
 import '../genetics/genetics_screen.dart';
@@ -94,25 +95,31 @@ class _TodayScreenState extends State<TodayScreen> {
     bool show(TodaySection x) => !hidden.contains(x);
     // Sleep and How you feel, together; placed first when chosen.
     final checkIns = [
-      if (show(TodaySection.sleep)) ...[_sleep, const SizedBox(height: 28)],
-      if (show(TodaySection.feeling)) ...[_feeling, const SizedBox(height: 28)],
+      if (show(TodaySection.sleep)) ...[
+        _sleep,
+        const SizedBox(height: Space.section),
+      ],
+      if (show(TodaySection.feeling)) ...[
+        _feeling,
+        const SizedBox(height: Space.section),
+      ],
     ];
     return ListView(
       key: const ValueKey('screen-today'),
-      padding: const EdgeInsets.all(16),
+      padding: kPagePadding,
       children: [
         Semantics(
           header: true,
           child: Text(today.label(s.lang), style: text.headlineSmall),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: Space.xs),
         _DateLine(clock: services.heartbeat.clock),
-        const SizedBox(height: 20),
+        const SizedBox(height: Space.xl),
         if (look.checkInsFirst) ...checkIns,
         look.measurementsFirst ? measurements : weight,
-        const SizedBox(height: 28),
+        const SizedBox(height: Space.section),
         look.measurementsFirst ? weight : measurements,
-        const SizedBox(height: 28),
+        const SizedBox(height: Space.section),
         if (!look.checkInsFirst) ...checkIns,
         if (show(TodaySection.tools)) ...[
           Semantics(
@@ -120,7 +127,7 @@ class _TodayScreenState extends State<TodayScreen> {
             header: true,
             child: Text(s.geneticsToolsTitle, style: text.titleMedium),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: Space.m),
           _ToolGroup(s.toolsGroupApp),
           // Settings is not repeated here: the app bar and the rail or More
           // sheet already open it (U030, one entry less). The glossary, the
@@ -167,15 +174,15 @@ class _TodayScreenState extends State<TodayScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: Space.section),
         ],
         if (show(TodaySection.yourData)) ...[
           _yourData,
-          const SizedBox(height: 28),
+          const SizedBox(height: Space.section),
         ],
         if (look.discoveryEnabled) ...[
           DiscoveryCard(services: services),
-          const SizedBox(height: 28),
+          const SizedBox(height: Space.section),
         ],
       ],
     );

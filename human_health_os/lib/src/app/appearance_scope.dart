@@ -93,7 +93,8 @@ enum AppearanceAspect {
   /// measurements first, and the discovery card.
   todayLayout,
 
-  /// Which measurement tiles show, in which order.
+  /// Which measurement tiles show, in which order, and whether "More
+  /// measurements" is open.
   tiles,
 
   /// Whether the number pad starts open.
@@ -123,7 +124,8 @@ bool _aspectChanged(
         a.discoveryEnabled != b.discoveryEnabled,
   AppearanceAspect.tiles =>
     !listEquals(a.tileOrder, b.tileOrder) ||
-        !setEquals(a.hiddenTiles, b.hiddenTiles),
+        !setEquals(a.hiddenTiles, b.hiddenTiles) ||
+        a.moreMeasurementsOpen != b.moreMeasurementsOpen,
   AppearanceAspect.pad => a.padOpen != b.padOpen,
   AppearanceAspect.aion => a.showAion != b.showAion,
   AppearanceAspect.explained => !setEquals(a.explainedAreas, b.explainedAreas),

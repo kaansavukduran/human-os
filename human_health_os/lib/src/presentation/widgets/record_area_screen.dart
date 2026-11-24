@@ -136,7 +136,7 @@ class _RecordAreaScreenState<T> extends State<RecordAreaScreen<T>>
       itemBuilder: (context, i) => w.rowBuilder(context, shown![i], this),
       header: [
         AreaIntro(area: w.area, title: w.title, what: w.what),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         // One Add action on the screen: in the first step when there is
         // nothing yet, otherwise here, above the list. Not shown until the
         // first read is done, so it never jumps from here into the first

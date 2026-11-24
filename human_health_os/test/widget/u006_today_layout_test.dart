@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
 import 'package:human_health_os/src/domain/settings/appearance.dart';
 
-import 'f007_measurements_test.dart' show settle, tapKey;
+import 'f007_measurements_test.dart' show settle, showAllMeasurements, tapKey;
 import 'u005_settings_test.dart' show launchWith;
 
 const defaults = ['a', 'b', 'c', 'd'];
@@ -108,6 +108,9 @@ void main() {
     await tapKey(tester, 'set-section-tools');
     expect(store.saved?.hiddenTiles, {'vital.blood_pressure'});
     await back(tester);
+    // Kinds without a record beyond the first few are under "More
+    // measurements" (U036).
+    await showAllMeasurements(tester);
     final order = tileOrderOnToday(tester);
     expect(order, isNot(contains('vital.blood_pressure')));
     expect(

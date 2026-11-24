@@ -1247,10 +1247,14 @@ class S {
     );
   }
 
+  // One short line for the whole section (U036), not a sentence per tile.
   String get measurementsNote => _t(
-    'Saved exactly as typed, with its time and source. Human OS does not judge these values. An empty field is never saved as 0.',
-    'Yazdığın gibi, zamanı ve kaynağıyla saklanır. Human OS bu değerleri yorumlamaz. Boş alan asla 0 olarak kaydedilmez.',
+    'Tap one to add a value. Kept as typed, with its time; never judged, and an empty field is never saved as 0.',
+    'Eklemek için birine dokun. Yazdığın gibi, zamanıyla saklanır; yorumlanmaz, boş alan asla 0 sayılmaz.',
   );
+  String moreMeasurements(int n) =>
+      _t('More measurements ($n)', 'Diğer ölçümler ($n)');
+  String get fewerMeasurements => _t('Fewer measurements', 'Daha az ölçüm');
   String checkpointSaved(String where, {String? value}) => _t(
     '${value == null ? 'Saved' : 'Saved: $value'}. Before saving this entry, a backup of your earlier data was saved at $where: older versions of Human OS cannot open the new record format.',
     '${value == null ? 'Kaydedildi' : 'Kaydedildi: $value'}. Kaydetmeden önce eski verilerinin yedeği şuraya alındı: $where. Uygulamanın eski sürümleri yeni kayıt biçimini açamaz.',

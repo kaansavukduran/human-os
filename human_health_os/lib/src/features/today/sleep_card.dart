@@ -72,7 +72,7 @@ class _SleepCardState extends State<SleepCard> {
     return Card(
       key: const ValueKey('sleep-card'),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -81,7 +81,12 @@ class _SleepCardState extends State<SleepCard> {
               child: Text(s.sleepTitle, style: text.titleMedium),
             ),
             const SizedBox(height: 4),
-            Text(s.sleepIntro, style: text.bodyMedium),
+            Text(
+              s.sleepIntro,
+              style: text.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: 12),
             if (_readFailed)
               ReadFailedNote(id: 'sleep', onRetry: _retry)

@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../theme/spacing.dart';
+
 /// An area screen's scroll view (U031-S4): its introduction and controls
 /// first, then its entries, built only as they scroll into view, so a long
 /// history costs no more to open than a short one.
@@ -9,7 +11,7 @@ class EntryList extends StatelessWidget {
     required this.header,
     required this.itemCount,
     required this.itemBuilder,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = kPagePadding,
   });
 
   /// The introduction, controls and any note above the entries.

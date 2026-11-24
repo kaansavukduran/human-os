@@ -82,7 +82,12 @@ class AppearanceSettings {
     this.explainedAreas = const {},
     this.lockAfterMinutes = 0,
     this.lockWhenHidden = false,
+    this.moreMeasurementsOpen = false,
   });
+
+  /// Today's "More measurements" is open (U036): the measurement kinds
+  /// without a record, beyond the first few, are listed. A display choice
+  /// only; which kinds have records is never saved here.
 
   /// The app lock of an encrypted vault (G-36, D-046): minutes without
   /// use before the vault locks itself; 0 is off (the default). Only the
@@ -91,6 +96,8 @@ class AppearanceSettings {
 
   /// Lock as soon as the app is hidden or paused (off by default).
   final bool lockWhenHidden;
+
+  final bool moreMeasurementsOpen;
 
   /// The choices offered for [lockAfterMinutes].
   static const List<int> lockMinuteChoices = [0, 1, 5, 15, 30];
@@ -271,6 +278,7 @@ class AppearanceSettings {
     bool? firstRunDone,
     int? lockAfterMinutes,
     bool? lockWhenHidden,
+    bool? moreMeasurementsOpen,
   }) => AppearanceSettings(
     interfacePercent: interfacePercent ?? this.interfacePercent,
     discoveryEnabled: discoveryEnabled ?? this.discoveryEnabled,
@@ -300,6 +308,7 @@ class AppearanceSettings {
     firstRunDone: firstRunDone ?? this.firstRunDone,
     lockAfterMinutes: lockAfterMinutes ?? this.lockAfterMinutes,
     lockWhenHidden: lockWhenHidden ?? this.lockWhenHidden,
+    moreMeasurementsOpen: moreMeasurementsOpen ?? this.moreMeasurementsOpen,
   );
 
   Map<String, Object?> toJson() => {
@@ -333,6 +342,7 @@ class AppearanceSettings {
     'firstRunDone': firstRunDone,
     'lockAfterMinutes': lockAfterMinutes,
     'lockWhenHidden': lockWhenHidden,
+    'moreMeasurementsOpen': moreMeasurementsOpen,
   };
 
   /// Reads saved settings; anything unknown or missing falls back to the
@@ -407,6 +417,7 @@ class AppearanceSettings {
       firstRunDone: json['firstRunDone'] == true,
       lockAfterMinutes: parseLockMinutes(json['lockAfterMinutes']),
       lockWhenHidden: json['lockWhenHidden'] == true,
+      moreMeasurementsOpen: json['moreMeasurementsOpen'] == true,
     );
   }
 
@@ -440,7 +451,8 @@ class AppearanceSettings {
       other.clock == clock &&
       other.firstRunDone == firstRunDone &&
       other.lockAfterMinutes == lockAfterMinutes &&
-      other.lockWhenHidden == lockWhenHidden;
+      other.lockWhenHidden == lockWhenHidden &&
+      other.moreMeasurementsOpen == moreMeasurementsOpen;
 
   @override
   int get hashCode => Object.hash(
@@ -473,6 +485,7 @@ class AppearanceSettings {
       explainedAreas.length,
       lockAfterMinutes,
       lockWhenHidden,
+      moreMeasurementsOpen,
     ),
   );
 }

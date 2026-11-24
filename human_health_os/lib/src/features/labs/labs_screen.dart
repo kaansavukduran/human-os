@@ -329,13 +329,15 @@ class _LabsScreenState extends State<LabsScreen> {
           area: DestinationId.labs,
           terms: ['reference_interval', 'flag', 'unit'],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Text(
           s.labsNoInterpretation,
           key: const ValueKey('labs-no-interpretation'),
-          style: text.bodySmall,
+          style: text.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         // One add action on the screen (R016): with no results it sits in
         // the first step, under the sentence that says what to type;
         // otherwise here, above the list.
@@ -809,7 +811,7 @@ class _LabTile extends StatelessWidget {
     return Card(
       semanticContainer: false,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -4,6 +4,7 @@ import '../../app/app_services.dart';
 import '../../app/appearance_scope.dart';
 import '../../domain/guide/glossary.dart';
 import '../../domain/settings/appearance.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/number_pad.dart';
 import '../../presentation/widgets/sheet_parts.dart' show FieldFocus;
 import '../guide/glossary_screen.dart';
@@ -40,12 +41,56 @@ class MeasurementsCard extends StatefulWidget {
     RecordKind.bodyFatPercentage,
   ];
 
+  /// How many kinds Today shows at first glance when fewer have records
+  /// (U036): one row on a wide window, two on a phone.
+  static const firstGlance = 4;
+
+  /// Splits [shown] (the person's order) into the kinds listed at first
+  /// glance and the ones under "More measurements": every kind with a
+  /// record is listed first, never hidden behind the expander; kinds
+  /// without one fill the first glance up to [firstGlance], in order.
+  static ({List<RecordKind> first, List<RecordKind> more}) split(
+    List<RecordKind> shown,
+    Set<RecordKind> withRecords,
+  ) {
+    final chosen = {
+      for (final k in shown)
+        if (withRecords.contains(k)) k,
+    };
+    for (final k in shown) {
+      if (chosen.length >= firstGlance) break;
+      chosen.add(k);
+    }
+    return (
+      first: [
+        for (final k in shown)
+          if (chosen.contains(k)) k,
+      ],
+      more: [
+        for (final k in shown)
+          if (!chosen.contains(k)) k,
+      ],
+    );
+  }
+
   @override
   State<MeasurementsCard> createState() => _MeasurementsCardState();
 }
 
 class _MeasurementsCardState extends State<MeasurementsCard> {
   Map<RecordKind, List<TimelineEntry>> _entries = const {};
+
+  /// Used only where no settings are kept (a card shown on its own).
+  bool _openHere = false;
+
+  void _toggleMore(bool open) {
+    final scope = AppearanceScope.read(context);
+    if (scope == null) {
+      setState(() => _openHere = open);
+      return;
+    }
+    scope.update(scope.value.copyWith(moreMeasurementsOpen: open));
+  }
 
   HeartbeatService get _svc => widget.services.heartbeat;
 
@@ -179,6 +224,15 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
       for (final c in codes)
         MeasurementsCard.kinds.firstWhere((k) => k.code == c),
     ];
+    final split = MeasurementsCard.split(shown, {
+      for (final e in _entries.entries)
+        if (e.value.isNotEmpty) e.key,
+    });
+    final open = AppearanceScope.read(context) == null
+        ? _openHere
+        : prefs.moreMeasurementsOpen;
+    final listed = [...split.first, if (open) ...split.more];
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       key: const ValueKey('measurements-card'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,15 +241,13 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
           header: true,
           child: Text(s.measurementsTitle, style: text.titleMedium),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: Space.xs),
         Text(
           s.measurementsNote,
           key: const ValueKey('measurements-note'),
-          style: text.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.outline,
-          ),
+          style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Space.m),
         if (shown.isEmpty)
           Text(
             s.allTilesHidden,
@@ -208,13 +260,13 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
               box.maxWidth,
               MediaQuery.textScalerOf(context).scale(14) / 14,
             );
-            const gap = 12.0;
+            const gap = Space.item;
             final width = (box.maxWidth - gap * (columns - 1)) / columns;
             return Wrap(
               spacing: gap,
               runSpacing: gap,
               children: [
-                for (final k in shown)
+                for (final k in listed)
                   ConstrainedBox(
                     constraints: BoxConstraints(
                       minWidth: width,
@@ -231,6 +283,24 @@ class _MeasurementsCardState extends State<MeasurementsCard> {
             );
           },
         ),
+        if (split.more.isNotEmpty) ...[
+          const SizedBox(height: Space.s),
+          // One plain control, its state said to a screen reader; no
+          // animation, so nothing slides under reduced motion (U036).
+          Semantics(
+            expanded: open,
+            child: TextButton.icon(
+              key: const ValueKey('measurements-more'),
+              onPressed: () => _toggleMore(!open),
+              icon: Icon(open ? Icons.expand_less : Icons.expand_more),
+              label: Text(
+                open
+                    ? s.fewerMeasurements
+                    : s.moreMeasurements(split.more.length),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -311,7 +381,7 @@ class _Tile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           onTap: onAdd,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+            padding: const EdgeInsets.fromLTRB(16, 12, 12, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -18,6 +18,8 @@ TypeScript workspace targets:
 | Shared UI | `packages/ui` | Design tokens (light, dark, high clarity), ResultCard, MetricValue (missing ≠ 0), HowCalculated, NumField, TrendChart, EN/TR strings |
 | Contracts | `contracts/golden_vectors` | 73 golden vectors executed by TypeScript **and** by an independent Python port |
 
+**Lore:** `docs/lore/` is the canonical home of Human OS lore (Aion, the owner's AIONIA universe, voice, art direction); it never enters the product's medical content (D-051).
+
 `docs/PARITY.md` shows how the targets stay connected. `docs/RELEASE_STATUS.md` lists what is proven and what is blocked.
 
 ## Commands

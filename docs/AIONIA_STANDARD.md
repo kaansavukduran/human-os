@@ -10,7 +10,7 @@ Human OS is a **health application** (Flutter: Android, iOS, web, Windows, macOS
 |---|---|---|
 | §11 universal product rules (usability for everyone, accessibility, honest states, technical quality, privacy) | **Yes** | Already the method in `docs/DESIGN.md` and the invariants in `CLAUDE.md`. |
 | §14 v1.2 UI/UX, information architecture, visual consistency, platform adaptation, accessibility, interaction states, anti-AI-slop, tokens, measurable quality, design regression, quality gates | **Yes** | Implemented through `docs/DESIGN_BRIEF.md`, the theme tokens and the U030 Forge. |
-| §1–§4 universe, canon, pixel art, sprite sheets | **No** (§11: no forced mascot, pixel art or lore in health apps) | Aion, the owner's own character, appears only where the owner asked (D-029), from the approved Drive reference, and can be hidden in Settings. |
+| §1–§4 universe, canon, pixel art, sprite sheets | **No** (§11: no forced mascot, pixel art or lore in health apps) | Aion, the owner's own character, appears only where the owner asked (D-029), from the approved Drive reference, and can be hidden in Settings. The lore record (canon status, Aion, art direction) is `docs/lore/` (D-051). |
 | §5–§6, §12, §13, §15–§18, §20 mobile-game HUD: game play, gamepad, portrait/landscape play, touch game controls, control-scheme choice, Fragaria pixel-art loading screen | **No** (games only; §18: the retro game splash is not required for general apps) | Keyboard and mouse use stay required by the owner's own rules. No control-scheme question applies. |
 | §19 v1.4 appearance rule | **Yes** | First run is dark with the device's system font; Settings offers dark, light or system and other fonts; choices are saved (U030). |
 | §21 v1.6 cross-browser and hosting | **Partly** | The web build is checked in Chromium (Playwright); Firefox, Safari and real devices are NOT TESTED here; no Vercel deployment exists for this app. |
@@ -24,3 +24,4 @@ Every check is reported as **PASS / FAIL / NOT TESTED** with its evidence and ve
 
 - 2026-11-12: first record, standard v1.2 (U030).
 - 2026-11-19: updated to the live v1.7 (owner asked for v1.4); dark default and system font applied.
+- 2026-11-24: lore record moved to `docs/lore/` (D-051); the product boundary is unchanged.

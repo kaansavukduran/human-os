@@ -14,7 +14,13 @@ class HowToScreen extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final steps = s.howToSteps;
     return Scaffold(
-      appBar: AppBar(title: Text(s.howToTitle)),
+      appBar: AppBar(
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(s.howToTitle),
+        ),
+      ),
       body: ListView(
         key: const ValueKey('screen-howto'),
         padding: const EdgeInsets.all(16),
@@ -43,6 +49,7 @@ class HowToScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Semantics(
+                          container: true,
                           header: true,
                           child: Text(steps[i].$1, style: text.titleSmall),
                         ),

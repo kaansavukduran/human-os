@@ -160,6 +160,26 @@ List<double> timePositions(List<TrendPoint> points, double left, double right) {
   ];
 }
 
+/// Date labels under the horizontal axis: the first and last days, or one
+/// centred label when all plotted points fall on the same day (Q003: avoids
+/// painting two touching copies of the same date).
+///
+/// Each entry gives its anchor [x], its [text] and its horizontal [align]
+/// (`0.0` left-aligned, `0.5` centred, `1.0` right-aligned).
+List<({double x, String text, double align})> axisDateLabels(
+  List<double> xs,
+  List<String> days,
+) {
+  if (xs.isEmpty || days.isEmpty) return const [];
+  if (days.length == 1 || days.first == days.last) {
+    return [(x: (xs.first + xs.last) / 2, text: days.first, align: 0.5)];
+  }
+  return [
+    (x: xs.first, text: days.first, align: 0.0),
+    (x: xs.last, text: days.last, align: 1.0),
+  ];
+}
+
 /// The earliest time a range shows, counted back from [now]; null shows all.
 DateTime? rangeStart(int? days, DateTime now) =>
     days == null ? null : now.subtract(Duration(days: days));

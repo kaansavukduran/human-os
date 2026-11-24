@@ -17,6 +17,7 @@ import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/status_chip.dart';
 import '../../presentation/widgets/term_link.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../measurements/measurement_format.dart' show labReportLines;
 import '../timeline/timeline_screen.dart' show fmtValue, fmtWhen;
 import 'lab_group_screen.dart';
@@ -358,6 +359,7 @@ class _LabsScreenState extends State<LabsScreen> {
         const SizedBox(height: 16),
         if (!_readFailed && _loaded && _groups.isNotEmpty) ...[
           Semantics(
+            container: true,
             header: true,
             child: Text(s.labGroupsTitle, style: text.titleSmall),
           ),
@@ -512,20 +514,23 @@ class _LabSheetState extends State<_LabSheet> {
     bool enabled = true,
   }) => Padding(
     padding: const EdgeInsets.only(bottom: 10),
-    child: TextField(
-      key: ValueKey(key),
-      controller: c,
-      focusNode: _focus[name],
-      enabled: enabled,
-      // Lab numbers may be negative (base excess -2): ask for a minus key.
-      keyboardType: number
-          ? const TextInputType.numberWithOptions(decimal: true, signed: true)
-          : TextInputType.text,
-      decoration: InputDecoration(
-        labelText: label,
-        helperText: helper,
-        helperMaxLines: 3,
-        border: const OutlineInputBorder(),
+    child: WholeLabelField(
+      label: label,
+      field: (labelText) => TextField(
+        key: ValueKey(key),
+        controller: c,
+        focusNode: _focus[name],
+        enabled: enabled,
+        // Lab numbers may be negative (base excess -2): ask for a minus key.
+        keyboardType: number
+            ? const TextInputType.numberWithOptions(decimal: true, signed: true)
+            : TextInputType.text,
+        decoration: InputDecoration(
+          labelText: labelText,
+          helperText: helper,
+          helperMaxLines: 20,
+          border: const OutlineInputBorder(),
+        ),
       ),
     ),
   );
@@ -616,6 +621,7 @@ class _LabSheetState extends State<_LabSheet> {
           helper: s.labMethodHelp,
         ),
         Semantics(
+          container: true,
           header: true,
           child: Text(s.labIntervalTitle, style: text.titleSmall),
         ),
@@ -664,6 +670,7 @@ class _LabSheetState extends State<_LabSheet> {
       key: const ValueKey('lab-form'),
       fields: [
         Semantics(
+          container: true,
           header: true,
           child: Text(
             correcting ? s.labCorrectTitle : s.labAddTitle,

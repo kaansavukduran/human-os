@@ -5,6 +5,7 @@ import '../../domain/guide/glossary.dart';
 import '../../l10n/strings.dart';
 import '../../app/appearance_scope.dart';
 import '../../domain/settings/appearance.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 
 String _pick(S s, Bilingual b) => s.lang == AppLang.tr ? b.$2 : b.$1;
 
@@ -58,18 +59,28 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
           e,
     ];
     return Scaffold(
-      appBar: AppBar(title: Text(s.glossaryTitle)),
+      appBar: AppBar(
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(s.glossaryTitle),
+        ),
+      ),
       body: ListView(
         key: const ValueKey('screen-glossary'),
         padding: const EdgeInsets.all(16),
         children: [
-          TextField(
-            key: const ValueKey('glossary-search'),
-            decoration: InputDecoration(
-              labelText: s.glossarySearch,
-              prefixIcon: const Icon(Icons.search),
+          WholeLabelField(
+            label: s.glossarySearch,
+            reserve: 48,
+            field: (labelText) => TextField(
+              key: const ValueKey('glossary-search'),
+              decoration: InputDecoration(
+                labelText: labelText,
+                prefixIcon: const Icon(Icons.search),
+              ),
+              onChanged: (v) => setState(() => _q = v),
             ),
-            onChanged: (v) => setState(() => _q = v),
           ),
           const SizedBox(height: 8),
           if (shown.isEmpty)
@@ -82,11 +93,7 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
               key: ValueKey('glossary-${e.id}'),
               contentPadding: EdgeInsets.zero,
               title: Text(_pick(s, e.term), style: text.titleSmall),
-              subtitle: Text(
-                _pick(s, e.what),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+              subtitle: Text(_pick(s, e.what)),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 AppearanceScope.read(context)?.visit(DiscoveryStep.glossary);
@@ -121,7 +128,13 @@ class GlossaryEntryScreen extends StatelessWidget {
     final unit = entry.unit;
     final source = entry.source;
     return Scaffold(
-      appBar: AppBar(title: Text(_pick(s, entry.term))),
+      appBar: AppBar(
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(_pick(s, entry.term)),
+        ),
+      ),
       body: ListView(
         key: ValueKey('screen-glossary-${entry.id}'),
         padding: const EdgeInsets.all(16),
@@ -135,6 +148,7 @@ class GlossaryEntryScreen extends StatelessWidget {
           if (entry.howToMeasure.isNotEmpty) ...[
             const SizedBox(height: 16),
             Semantics(
+              container: true,
               header: true,
               child: Text(s.glossaryHow, style: text.titleMedium),
             ),

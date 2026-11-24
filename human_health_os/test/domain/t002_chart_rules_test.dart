@@ -75,4 +75,32 @@ void main() {
       1,
     );
   });
+
+  test('axis date labels: one centred label for one day, two for distinct days', () {
+    expect(axisDateLabels(const [], const []), isEmpty);
+    // Single point: one centred date.
+    expect(axisDateLabels([200], ['2025-01-10']), [
+      (x: 200.0, text: '2025-01-10', align: 0.5),
+    ]);
+    // Two readings on the same day (same instant, e.g. two lab results): one
+    // centred date, never two colliding copies (Q003).
+    expect(axisDateLabels([200, 200], ['2025-01-10', '2025-01-10']), [
+      (x: 200.0, text: '2025-01-10', align: 0.5),
+    ]);
+    // Two readings on the same day at different hours: still one centred date.
+    expect(axisDateLabels([44, 276], ['2025-01-10', '2025-01-10']), [
+      (x: 160.0, text: '2025-01-10', align: 0.5),
+    ]);
+    // Distinct first and last days: left-aligned start and right-aligned end.
+    expect(
+      axisDateLabels(
+        [44, 160, 276],
+        ['2025-01-10', '2025-06-01', '2026-10-03'],
+      ),
+      [
+        (x: 44.0, text: '2025-01-10', align: 0.0),
+        (x: 276.0, text: '2026-10-03', align: 1.0),
+      ],
+    );
+  });
 }

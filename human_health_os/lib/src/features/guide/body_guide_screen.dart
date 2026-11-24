@@ -19,7 +19,13 @@ class BodyGuideScreen extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: Text(s.guideTitle)),
+      appBar: AppBar(
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(s.guideTitle),
+        ),
+      ),
       body: ListView(
         key: const ValueKey('screen-guide'),
         padding: const EdgeInsets.all(16),
@@ -121,10 +127,20 @@ class BodySystemScreen extends StatelessWidget {
     ];
     Widget heading(String t) => Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 8),
-      child: Semantics(header: true, child: Text(t, style: text.titleMedium)),
+      child: Semantics(
+        container: true,
+        header: true,
+        child: Text(t, style: text.titleMedium),
+      ),
     );
     return Scaffold(
-      appBar: AppBar(title: Text(_pick(s, system.name))),
+      appBar: AppBar(
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(_pick(s, system.name)),
+        ),
+      ),
       body: ListView(
         key: ValueKey('screen-guide-${system.id}'),
         padding: const EdgeInsets.all(16),

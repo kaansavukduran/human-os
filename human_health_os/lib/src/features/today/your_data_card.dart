@@ -262,6 +262,7 @@ class _YourDataCardState extends State<YourDataCard> {
           var recovery = false;
           return StatefulBuilder(
             builder: (c, setDialog) => AlertDialog(
+              scrollable: true,
               title: Text(s.openBackupTitle),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -313,6 +314,7 @@ class _YourDataCardState extends State<YourDataCard> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
+        scrollable: true,
         title: Text(s.restoreTitle),
         content: Text(s.restoreExplain),
         actions: [
@@ -392,30 +394,29 @@ class _YourDataCardState extends State<YourDataCard> {
         return StatefulBuilder(
           builder: (c, setDialog) => AlertDialog(
             key: const ValueKey('export-warning'),
+            scrollable: true,
             title: Text(s.exportWarningTitle),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    s.exportWarning,
-                    key: const ValueKey('export-warning-text'),
-                    style: Theme.of(c).textTheme.bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(s.exportWhere),
-                  CheckboxListTile(
-                    key: const ValueKey('export-understand'),
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    value: understood,
-                    onChanged: (v) => setDialog(() => understood = v ?? false),
-                    title: Text(s.exportUnderstand),
-                  ),
-                ],
-              ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s.exportWarning,
+                  key: const ValueKey('export-warning-text'),
+                  style: Theme.of(c).textTheme.bodyLarge
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Text(s.exportWhere),
+                CheckboxListTile(
+                  key: const ValueKey('export-understand'),
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  value: understood,
+                  onChanged: (v) => setDialog(() => understood = v ?? false),
+                  title: Text(s.exportUnderstand),
+                ),
+              ],
             ),
             actions: [
               TextButton(
@@ -526,35 +527,34 @@ class _YourDataCardState extends State<YourDataCard> {
       context: context,
       builder: (c) => AlertDialog(
         key: const ValueKey('restore-preview'),
+        scrollable: true,
         title: Text(s.restoreTitle),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                s.restorePreview(
-                  picked!.name,
-                  st.state!.records.length,
-                  st.state!.profiles.length,
-                  fmtWhen(m.createdAt),
-                  m.sourceAppVersion,
-                ),
-                key: const ValueKey('restore-preview-text'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              s.restorePreview(
+                picked!.name,
+                st.state!.records.length,
+                st.state!.profiles.length,
+                fmtWhen(m.createdAt),
+                m.sourceAppVersion,
               ),
+              key: const ValueKey('restore-preview-text'),
+            ),
+            const SizedBox(height: 8),
+            Text(s.restoreKeepsCurrent),
+            if (files.sessionOnly) ...[
               const SizedBox(height: 8),
-              Text(s.restoreKeepsCurrent),
-              if (files.sessionOnly) ...[
-                const SizedBox(height: 8),
-                Text(
-                  s.sessionRestoreNotice,
-                  key: const ValueKey('restore-preview-session'),
-                  style: Theme.of(c).textTheme.bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
-                ),
-              ],
+              Text(
+                s.sessionRestoreNotice,
+                key: const ValueKey('restore-preview-session'),
+                style: Theme.of(c).textTheme.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
             ],
-          ),
+          ],
         ),
         actions: [
           TextButton(
@@ -647,49 +647,48 @@ class _YourDataCardState extends State<YourDataCard> {
         return StatefulBuilder(
           builder: (c, setDialog) => AlertDialog(
             key: const ValueKey('import-preview'),
+            scrollable: true,
             title: Text(s.importTitle),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    s.importPreview(
-                      name: picked!.name,
-                      export: imp.source == ImportSource.jsonExport,
-                      records: imp.recordCount,
-                      profiles: imp.profileCount,
-                      made: imp.madeAt == null ? null : fmtWhen(imp.madeAt!),
-                      version: imp.sourceAppVersion,
-                    ),
-                    key: const ValueKey('import-preview-text'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s.importPreview(
+                    name: picked!.name,
+                    export: imp.source == ImportSource.jsonExport,
+                    records: imp.recordCount,
+                    profiles: imp.profileCount,
+                    made: imp.madeAt == null ? null : fmtWhen(imp.madeAt!),
+                    version: imp.sourceAppVersion,
                   ),
-                  if (imp.skippedEntries > 0) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      s.importSkipped(imp.skippedEntries),
-                      key: const ValueKey('import-skipped'),
-                    ),
-                  ],
+                  key: const ValueKey('import-preview-text'),
+                ),
+                if (imp.skippedEntries > 0) ...[
                   const SizedBox(height: 8),
                   Text(
-                    s.importWarning,
-                    key: const ValueKey('import-warning-text'),
-                    style: Theme.of(c).textTheme.bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(s.importHow),
-                  CheckboxListTile(
-                    key: const ValueKey('import-understand'),
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    value: understood,
-                    onChanged: (v) => setDialog(() => understood = v ?? false),
-                    title: Text(s.importUnderstand),
+                    s.importSkipped(imp.skippedEntries),
+                    key: const ValueKey('import-skipped'),
                   ),
                 ],
-              ),
+                const SizedBox(height: 8),
+                Text(
+                  s.importWarning,
+                  key: const ValueKey('import-warning-text'),
+                  style: Theme.of(c).textTheme.bodyLarge
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Text(s.importHow),
+                CheckboxListTile(
+                  key: const ValueKey('import-understand'),
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  value: understood,
+                  onChanged: (v) => setDialog(() => understood = v ?? false),
+                  title: Text(s.importUnderstand),
+                ),
+              ],
             ),
             actions: [
               TextButton(

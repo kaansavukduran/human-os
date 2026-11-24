@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/settings/date_style.dart';
@@ -73,7 +75,13 @@ class _TrendScreenState extends State<TrendScreen> {
     final otherUnits = listed.length - points.length;
     final picked = _picked;
     return Scaffold(
-      appBar: AppBar(title: Text(s.trendTitle(s.recordKind(widget.kind)))),
+      appBar: AppBar(
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(s.trendTitle(s.recordKind(widget.kind))),
+        ),
+      ),
       body: ListView(
         key: const ValueKey('screen-trend'),
         padding: const EdgeInsets.all(16),
@@ -297,24 +305,29 @@ class TrendPainter extends CustomPainter {
       )..layout();
       tp.paint(canvas, Offset(0, y(v) - tp.height / 2));
     }
-    // First and last dates under the axis.
+    // First and last dates under the axis (one centred date when every point
+    // falls on the same day; Q003).
     String day(DateTime t) {
       if (dayLabel case final f?) return f(t);
       final l = t.toLocal();
       return formatDay(l.year, l.month, l.day, displayDateOrder);
     }
 
-    for (final (i, align) in [(0, 0.0), (points.length - 1, 1.0)]) {
+    final dates = axisDateLabels(xs, [for (final p in points) day(p.at)]);
+    double? rightEdge;
+    for (final d in dates) {
       final tp = TextPainter(
         text: TextSpan(
-          text: day(points[i].at),
+          text: d.text,
           style: textStyle.copyWith(color: label),
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      final x = (xs[i] - tp.width * align).clamp(0.0, size.width - tp.width);
+      final maxX = math.max(0.0, size.width - tp.width);
+      final x = (d.x - tp.width * d.align).clamp(0.0, maxX);
+      if (rightEdge != null && x < rightEdge + 6) continue;
       tp.paint(canvas, Offset(x, size.height - tp.height));
-      if (points.length == 1) break;
+      rightEdge = x + tp.width;
     }
 
     final series = points.first.values.length;

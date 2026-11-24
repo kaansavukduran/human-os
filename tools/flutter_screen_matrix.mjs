@@ -31,7 +31,10 @@ const gitDirty = (() => { try { return execFileSync('git', ['status', '--porcela
 const releaseRoot = resolve(arg('--build', 'human_health_os/build/web'));
 const debugRoot = arg('--debug-build', null) ? resolve(arg('--debug-build')) : null;
 const out = resolve(arg('--out', `reports/runtime/screen-matrix/${gitRev.slice(0, 12)}`));
+const cacheDir = arg('--cache', null) ? resolve(arg('--cache')) : null;
+const sha256 = async (f) => createHash('sha256').update(await readFile(f)).digest('hex');
 await mkdir(out, { recursive: true });
+if (cacheDir) await mkdir(cacheDir, { recursive: true });
 
 // ---- static server (same as flutter_web_smoke.mjs) -------------------------
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.wasm': 'application/wasm', '.png': 'image/png', '.otf': 'font/otf', '.ttf': 'font/ttf', '.css': 'text/css', '.symbols': 'application/octet-stream', '.frag': 'application/octet-stream' };
@@ -108,12 +111,20 @@ for (const palette of ['Matrix', 'Axolotl', 'Trans']) for (const vp of ['phone',
 // 2× text through the browser's font size (the root font size Flutter web
 // reads as its text scale), as a person with a large browser font gets.
 for (const locale of LOCALES) GROUPS.push({ variant: 'text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: ALL });
-// Q002: sheets and deep sections that a screen's first view does not show:
-// the Labs add sheet and its "More from the report" section, Settings
-// scrolled to the palettes and to the app lock, and the restore-from-file
-// entry of Today's "Your data" card. At 320x640 (1× and 2× text) and on the
-// desktop, in both languages.
-const EXTRA_IDS = ['Labs: add sheet', 'Labs: more from the report', 'Settings: palettes', 'Settings: app lock', 'Today: restore from file'];
+// Q002/Q003: sheets, sub-pages and deep sections that a screen's first view
+// does not show: the Labs add sheet, "More from the report", "Same test over
+// time" (F004-S4), Settings palettes, app lock and About Human OS (U032), and
+// the restore-from-file entry of Today's "Your data" card. At 320x640 (1× and
+// 2× text) and on the desktop, in both languages.
+const EXTRA_IDS = [
+  'Labs: add sheet',
+  'Labs: more from the report',
+  'Labs: same test over time',
+  'Settings: palettes',
+  'Settings: app lock',
+  'Settings: about',
+  'Today: restore from file',
+];
 for (const locale of LOCALES) {
   GROUPS.push({ variant: 'sheets', vp: 'small-phone', locale, screens: EXTRA_IDS });
   GROUPS.push({ variant: 'sheets', vp: 'desktop', locale, screens: EXTRA_IDS });
@@ -123,15 +134,27 @@ for (const locale of LOCALES) {
 const X_TEXT = {
   'en-US': {
     labAdd: 'Add a result', labAddTitle: 'Add a result from a report', labMore: 'More from the report',
-    labInterval: 'Reference interval as printed (optional)', palette: 'Palette', lock: 'Lock after inactivity',
+    labInterval: 'Reference interval as printed (optional)',
+    labAnalyte: /^Test name as printed/, labValue: /^Value/, labUnit: /^Unit as printed/, labDate: /^Sample date/, save: 'Save',
+    labGroupsTitle: 'Same test over time', labGroupBtn: 'HbA1c · %: 2 results', labGroupTitle: 'HbA1c over time', labGroupEvery: 'Every result, newest first',
+    labGroupChartSpoken: /^Chart of 2 number results in percent/,
+    palette: 'Palette', lock: 'Lock after inactivity',
     lockReason: 'Not available in this build: it saves without encryption (a development build), so there is no key to drop. The lock works in builds with an encrypted vault.',
-    lockControls: /^(Off|\d+ min|Lock when the app is hidden)/, restore: 'Restore from a backup file', noFile: 'No file chosen. Nothing was changed.',
+    lockControls: /^(Off|\d+ min|Lock when the app is hidden)/,
+    about: 'About Human OS', aboutBuild: 'This build', aboutCaps: 'Capabilities on this device',
+    restore: 'Restore from a backup file', noFile: 'No file chosen. Nothing was changed.',
   },
   'tr-TR': {
     labAdd: 'Sonuç ekle', labAddTitle: 'Rapordan sonuç ekle', labMore: 'Rapordaki diğer bilgiler',
-    labInterval: 'Raporda yazan referans aralığı (isteğe bağlı)', palette: 'Renk paleti', lock: 'Kullanılmayınca kilitle',
+    labInterval: 'Raporda yazan referans aralığı (isteğe bağlı)',
+    labAnalyte: /^Raporda yazan test adı/, labValue: /^Değer/, labUnit: /^Raporda yazan birim/, labDate: /^Numune tarihi/, save: 'Kaydet',
+    labGroupsTitle: 'Aynı test, zaman içinde', labGroupBtn: 'HbA1c · %: 2 sonuç', labGroupTitle: 'HbA1c, zaman içinde', labGroupEvery: 'Tüm sonuçlar, yeniden eskiye',
+    labGroupChartSpoken: /^yüzde cinsinden 2 sayısal sonucun grafiği/,
+    palette: 'Renk paleti', lock: 'Kullanılmayınca kilitle',
     lockReason: 'Bu sürümde yok: kayıtlar şifresiz tutuluyor (geliştirme sürümü), bu yüzden bellekten silinecek bir anahtar yok. Kilit, şifreli kasası olan sürümlerde çalışır.',
-    lockControls: /^(Kapalı|\d+ dk|Uygulama gizlenince kilitle)/, restore: 'Bir yedek dosyasından geri yükle', noFile: 'Dosya seçilmedi. Hiçbir şey değişmedi.',
+    lockControls: /^(Kapalı|\d+ dk|Uygulama gizlenince kilitle)/,
+    about: 'Human OS hakkında', aboutBuild: 'Bu sürüm', aboutCaps: 'Bu cihazda neler çalışıyor',
+    restore: 'Bir yedek dosyasından geri yükle', noFile: 'Dosya seçilmedi. Hiçbir şey değişmedi.',
   },
 };
 
@@ -155,8 +178,27 @@ const cellId = (g, screen) => `${g.variant}|${g.vp}|${g.locale}|${screen}`;
 
 async function runPass(root, mode) {
   const { server, base } = await serve(root);
+  const buildHash = await sha256(join(root, 'main.dart.js')).catch(() => 'missing');
   const cells = {};
   for (const g of GROUPS) {
+    const cacheFile = cacheDir ? join(cacheDir, `${mode}_${g.variant}_${g.vp}_${g.locale}_${buildHash.slice(0, 12)}.json`) : null;
+    if (cacheFile) {
+      const raw = await readFile(cacheFile, 'utf8').catch(() => null);
+      if (raw) {
+        try {
+          const cached = JSON.parse(raw);
+          const shotsOk = mode !== 'release' || (await Promise.all(
+            Object.values(cached.cells ?? {}).map((c) => !c.screenshot || stat(join(out, c.screenshot)).then(() => true, () => false)),
+          )).every(Boolean);
+          if (cached.gitRev === gitRev && cached.buildHash === buildHash && cached.browser === browserVersion && shotsOk) {
+            Object.assign(cells, cached.cells);
+            process.stdout.write(`${mode} ${g.variant} ${g.vp} ${g.locale} cached\n`);
+            continue;
+          }
+        } catch {}
+      }
+    }
+    const groupKeys = [];
     const vp = VIEWPORTS[g.vp];
     const ctx = await browser.newContext({
       viewport: { width: vp.width, height: vp.height },
@@ -214,10 +256,19 @@ async function runPass(root, mode) {
       }
     };
     const back = async () => {
-      const b = page.getByRole('button', { name: BACK[g.locale] }).first();
-      if ((await b.count()) > 0) { await tap(b, 5_000).catch((e) => log('back', e.message.split('\n')[0])); await page.waitForTimeout(500); }
+      const b = page.getByRole('button', { name: BACK[g.locale] }).last();
+      if ((await b.count()) === 0) return false;
+      await tap(b, 5_000).catch((e) => log('back', e.message.split('\n')[0]));
+      // Move pointer off the top-left Back button so its tooltip does not
+      // linger over the underlying route's Back button or screenshots.
+      await page.mouse.move(vp.width - 4, vp.height - 4).catch(() => {});
+      await page.waitForTimeout(800);
+      return true;
     };
     let inSettings = false;
+    // Pushed routes above the shell (Settings = 1, Settings -> About = 2,
+    // Labs -> LabGroup = 1).
+    let pushed = 0;
     // A modal sheet (the Labs add sheet) closes with Escape, as a keyboard
     // or the system back gesture closes it.
     let sheetOpen = false;
@@ -227,10 +278,29 @@ async function runPass(root, mode) {
       await page.waitForTimeout(700);
       sheetOpen = false;
     };
+    const pop = async () => {
+      if (pushed <= 0) return;
+      await back();
+      pushed--;
+      if (pushed === 0) inSettings = false;
+    };
+    const popAll = async () => {
+      for (let i = 0; i < 6; i++) {
+        if ((await page.getByRole('button', { name: BACK[g.locale] }).count()) === 0) break;
+        await back();
+      }
+      pushed = 0;
+      inSettings = false;
+    };
     const open = async (id) => {
       const { nav, kind } = names[id];
       await closeSheet();
-      if (inSettings) { await back(); inSettings = false; }
+      if (kind === 'settings' && inSettings) {
+        while (pushed > 1) await pop();
+        await page.waitForTimeout(400);
+        return;
+      }
+      await popAll();
       if (kind === 'tab') {
         await tap(navItem(nav));
       } else if (kind === 'area') {
@@ -244,7 +314,11 @@ async function runPass(root, mode) {
         // The top-bar button (a rail also has a Settings item; either opens it).
         await tap(page.getByRole('button', { name: nav, exact: true }).first());
         inSettings = true;
+        pushed = 1;
       }
+      // Move pointer off nav tabs / top-bar icons so tooltips never linger
+      // over screen buttons or screenshots.
+      await page.mouse.move(vp.width - 4, vp.height / 2).catch(() => {});
       await page.waitForTimeout(700);
     };
     // Wheel over the list padding: left of the heading (inside the content
@@ -269,18 +343,50 @@ async function runPass(root, mode) {
       }
       for (let i = 0; i < 30; i++) {
         const b = await locator.boundingBox({ timeout: 1_000 }).catch(() => null);
-        if (b && b.y >= (inSheet ? 0 : 64) && b.y + b.height <= vp.height - (vp.touch && !inSheet ? 90 : 10)) return true;
+        if (b && b.y >= (inSheet ? 0 : 64) && b.y + b.height <= vp.height - (vp.touch && !inSheet ? 85 : 10)) return true;
         await page.mouse.move(x, vp.height / 2);
         await page.mouse.wheel(0, b ? Math.max(-400, Math.min(400, b.y - vp.height / 3)) : 300);
         await page.waitForTimeout(200);
       }
       return false;
     };
-    // The extra cells (Q002): how each is reached, what it must show
+    // The extra cells (Q002/Q003): how each is reached, what it must show
     // (target), what is measured for 2x text (probe) and where to wheel.
     const T = X_TEXT[g.locale];
     let sheetX = 6;
+    let labGroupsHeadingSeen = false;
     const xh = (name) => page.getByRole('heading', { name, exact: true }).first();
+    const fillInSheet = async (pattern, text, replace = false) => {
+      const box = page.getByRole('textbox', { name: pattern }).first();
+      await reveal(box, sheetX, true);
+      await tap(box);
+      await page.waitForTimeout(350);
+      if (replace) {
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.press('Backspace');
+        await page.waitForTimeout(150);
+      }
+      await page.keyboard.type(text, { delay: 40 });
+      await page.waitForTimeout(150);
+    };
+    const addLab = async (analyte, value, unit, date) => {
+      const add = page.getByRole('button', { name: T.labAdd, exact: true }).first();
+      await reveal(add, await wheelX('Labs'));
+      await tap(add);
+      sheetOpen = true;
+      await xh(T.labAddTitle).waitFor({ timeout: 15_000 });
+      await page.waitForTimeout(500);
+      const b = await xh(T.labAddTitle).boundingBox({ timeout: 2_000 }).catch(() => null);
+      sheetX = b ? Math.max(2, b.x - 8) : 6;
+      await fillInSheet(T.labAnalyte, analyte);
+      await fillInSheet(T.labValue, value);
+      await fillInSheet(T.labUnit, unit);
+      if (date) await fillInSheet(T.labDate, date, true);
+      await tap(page.getByRole('button', { name: T.save, exact: true }).first());
+      await xh(T.labAddTitle).waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {});
+      sheetOpen = false;
+      await page.waitForTimeout(600);
+    };
     const EXTRA = {
       'Labs: add sheet': {
         label: T.labAddTitle,
@@ -314,17 +420,57 @@ async function runPass(root, mode) {
           await page.waitForTimeout(700);
         },
       },
+      'Labs: same test over time': {
+        label: T.labGroupEvery,
+        target: () => xh(T.labGroupEvery),
+        x: () => 6,
+        go: async () => {
+          await open('Labs');
+          // Previous Labs cells may have scrolled the lazy list past its heading.
+          await toTop(vp.touch ? 6 : Math.round(vp.width / 2));
+          await H(names.Labs.heading).waitFor({ timeout: 15_000 });
+          const lx = await wheelX('Labs');
+          const btn = page.getByRole('button', { name: T.labGroupBtn, exact: true }).first();
+          if ((await btn.count()) === 0) {
+            await addLab('HbA1c', '5,4', '%', '2025-01-10');
+            await toTop(lx);
+            await addLab('HbA1c', '5,6', '%', '2026-10-03');
+          }
+          await toTop(lx);
+          await reveal(btn, lx);
+          labGroupsHeadingSeen = (await xh(T.labGroupsTitle).count()) > 0;
+          await tap(btn);
+          pushed = 1;
+          await xh(T.labGroupTitle).waitFor({ timeout: 15_000 });
+          await page.waitForTimeout(600);
+        },
+      },
       'Settings: palettes': {
         label: T.palette,
         target: () => xh(T.palette),
         x: () => 6,
-        go: async () => { if (!inSettings) await open('Settings'); await H(names.Settings.heading).waitFor({ timeout: 15_000 }); },
+        go: async () => { await open('Settings'); await H(names.Settings.heading).waitFor({ timeout: 15_000 }); },
       },
       'Settings: app lock': {
         label: T.lock,
         target: () => xh(T.lock),
         x: () => 6,
-        go: async () => { if (!inSettings) await open('Settings'); await H(names.Settings.heading).waitFor({ timeout: 15_000 }); },
+        go: async () => { await open('Settings'); await H(names.Settings.heading).waitFor({ timeout: 15_000 }); },
+      },
+      'Settings: about': {
+        label: T.aboutBuild,
+        target: () => xh(T.aboutBuild),
+        x: () => 6,
+        go: async () => {
+          await open('Settings');
+          await H(names.Settings.heading).waitFor({ timeout: 15_000 });
+          const row = page.getByRole('button', { name: new RegExp(`^${esc(T.about)}`) }).or(page.getByText(T.about, { exact: true })).first();
+          await reveal(row, 6);
+          await tap(row);
+          pushed = 2;
+          await xh(T.about).waitFor({ timeout: 15_000 });
+          await page.waitForTimeout(600);
+        },
       },
       'Today: restore from file': {
         label: T.restore,
@@ -369,6 +515,7 @@ async function runPass(root, mode) {
       first = false;
       const cell = { id: key, variant: g.variant, viewport: g.vp, size: `${vp.width}x${vp.height}`, locale: g.locale, screen: id, checks: {} };
       cells[key] = cell;
+      groupKeys.push(key);
       const set = (name, status, detail = '') => { cell.checks[name] = { status, detail }; };
       let reached = false;
       log('cell', key);
@@ -418,6 +565,8 @@ async function runPass(root, mode) {
       // the viewport and clips semantics rects at the list's edges, so each
       // control is measured at the largest size seen while scrolling.
       const seen = new Map();
+      const headingsSeen = new Set();
+      const labelsSeen = new Set();
       let hscroll = { max: 0, width: vp.width };
       if (reached && ex) await toTop(x);
       if (reached) {
@@ -433,6 +582,24 @@ async function runPass(root, mode) {
               return (e.textContent ?? '').replace(/\s+/g, ' ').trim();
             };
             const nodes = [];
+            const headings = [];
+            const labels = [];
+            const visible = [];
+            for (const e of document.querySelectorAll('flt-semantics-host [role="heading"], flt-semantics-host h1, flt-semantics-host h2, flt-semantics-host h3, flt-semantics-host h4, flt-semantics-host h5, flt-semantics-host h6')) {
+              const n = nameOf(e);
+              if (n) headings.push(n);
+            }
+            for (const e of document.querySelectorAll('flt-semantics-host [aria-label]')) {
+              const l = e.getAttribute('aria-label')?.trim();
+              if (l) labels.push(l);
+            }
+            for (const e of document.querySelectorAll('flt-semantics-host flt-semantics')) {
+              const n = nameOf(e);
+              if (n) labels.push(n);
+              const r = e.getBoundingClientRect();
+              if (r.width <= 0 || r.height <= 0 || r.bottom <= 0 || r.top >= vh || r.right <= 0 || r.left >= vw) continue;
+              if (n) visible.push(`${n.slice(0, 40)}@${Math.round(r.top)}`);
+            }
             for (const e of document.querySelectorAll('flt-semantics-host [role], flt-semantics-host a, flt-semantics-host [flt-tappable]')) {
               const role = e.tagName === 'A' ? 'link' : (e.getAttribute('role') ?? '');
               const tappable = e.hasAttribute('flt-tappable');
@@ -450,22 +617,24 @@ async function runPass(root, mode) {
             window.scrollTo(100000, y);
             const sx = window.scrollX;
             window.scrollTo(0, y);
-            return { nodes, sw: Math.max(de.scrollWidth, window.innerWidth + sx), iw: window.innerWidth };
+            return { nodes, headings, labels, visible, sw: Math.max(de.scrollWidth, window.innerWidth + sx), iw: window.innerWidth };
           }, { TARGET_ROLES, vw: vp.width, vh: vp.height });
           hscroll = { max: Math.max(hscroll.max, snap.sw), width: snap.iw };
+          for (const h of snap.headings) headingsSeen.add(h);
+          for (const l of snap.labels) labelsSeen.add(l);
           for (const n of snap.nodes) {
             const k = `${n.role}|${n.name}|${n.x}`;
             const prev = seen.get(k);
             if (!prev) seen.set(k, { ...n });
             else { prev.w = Math.max(prev.w, n.w); prev.h = Math.max(prev.h, n.h); }
           }
-          const sig = snap.nodes.map((n) => `${n.name}@${n.y}`).join('|');
+          const sig = snap.visible.length ? snap.visible.join('|') : snap.nodes.map((n) => `${n.name}@${n.y}`).join('|');
           if (sig === lastSig) { if (++same >= 2) break; } else same = 0;
           lastSig = sig;
           log('sweep', i, snap.nodes.length);
           await page.mouse.move(x, vp.height / 2);
-          await page.mouse.wheel(0, Math.round(vp.height * 0.3));
-          await page.waitForTimeout(mode === 'debug' ? 450 : 250);
+          await page.mouse.wheel(0, Math.round(vp.height * (mode === 'debug' ? 0.65 : 0.3)));
+          await page.waitForTimeout(mode === 'debug' ? 300 : 250);
         }
         await toTop(x);
       }
@@ -477,6 +646,21 @@ async function runPass(root, mode) {
         const enabled = ctl.filter((n) => !n.disabled);
         set('lock_state_clear', reason > 0 && ctl.length >= 2 && enabled.length === 0 ? 'PASS' : 'FAIL',
           `reason shown: ${reason > 0}; ${ctl.length} lock controls, ${enabled.length} enabled${enabled.length ? ` (${enabled.map((n) => n.name.slice(0, 30)).join(', ')})` : ''}`);
+      }
+      // Settings -> About Human OS (U032/Q003): both section titles are
+      // standalone headings, not merged with their card bodies.
+      if (mode === 'release' && reached && id === 'Settings: about') {
+        const hasBuild = headingsSeen.has(T.aboutBuild);
+        const hasCaps = headingsSeen.has(T.aboutCaps);
+        set('about_sections_clear', hasBuild && hasCaps ? 'PASS' : 'FAIL',
+          `headings "${T.aboutBuild}": ${hasBuild}, "${T.aboutCaps}": ${hasCaps}`);
+      }
+      // Labs -> Same test over time (F004-S4/Q003): the section heading on
+      // Labs is its own heading and the chart carries its spoken summary.
+      if (mode === 'release' && reached && id === 'Labs: same test over time') {
+        const spoken = [...labelsSeen].find((l) => T.labGroupChartSpoken.test(l));
+        set('lab_group_chart_spoken', labGroupsHeadingSeen && !!spoken ? 'PASS' : 'FAIL',
+          `labs group heading: ${labGroupsHeadingSeen}; spoken chart: ${spoken ? `"${spoken.slice(0, 70)}"` : 'missing'}`);
       }
       // The restore entry opens the system file chooser; a chooser closed
       // without a file says so and changes nothing.
@@ -547,6 +731,10 @@ async function runPass(root, mode) {
       }
     }
     await ctx.close();
+    if (cacheFile) {
+      const groupCells = Object.fromEntries(groupKeys.map((k) => [k, cells[k]]));
+      await writeFile(cacheFile, JSON.stringify({ gitRev, buildHash, browser: browserVersion, cells: groupCells }, null, 2));
+    }
     process.stdout.write(`${mode} ${g.variant} ${g.vp} ${g.locale} done\n`);
   }
   server.close();
@@ -588,7 +776,6 @@ const NOT_TESTED_PLATFORMS = [
   'Firefox', 'Safari', 'Screen readers: TalkBack', 'Screen readers: VoiceOver', 'Screen readers: NVDA',
 ].map((what) => ({ what, status: 'NOT_TESTED', reason: 'not available in this container' }));
 
-const sha256 = async (f) => createHash('sha256').update(await readFile(f)).digest('hex');
 const counts = { cells: cells.length, PASS: cells.filter((c) => c.status === 'PASS').length, FAIL: cells.filter((c) => c.status === 'FAIL').length, PASS_WITH_NOT_TESTED: cells.filter((c) => c.status === 'PASS_WITH_NOT_TESTED').length };
 const meta = {
   tool: 'tools/flutter_screen_matrix.mjs',
@@ -614,6 +801,8 @@ const meta = {
     no_flutter_overflow: 'debug build of the same revision: the console has no "overflowed by N pixels" report while the screen is opened and scrolled',
     no_flutter_exceptions: 'debug build: no other Flutter framework exception report',
     lock_state_clear: 'Settings: app lock: in a build without an encrypted vault the reason text is shown and every lock control (minute chips, lock-when-hidden switch) is disabled',
+    about_sections_clear: 'Settings: about: both section titles ("This build" and "Capabilities on this device", EN/TR) are exposed as standalone headings, not merged with their cards',
+    lab_group_chart_spoken: 'Labs: same test over time: "Same test over time" is exposed as its own heading on Labs and the group chart carries its spoken dated-values summary',
     restore_chooser_opens: 'Today: restore from file: tapping the entry opens the browser file chooser',
     restore_cancel_reported: 'Today: restore from file: closing the chooser without a file shows "No file chosen. Nothing was changed." on screen within 1 s',
     text_scaled_2x: '2× text cells only: the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app',

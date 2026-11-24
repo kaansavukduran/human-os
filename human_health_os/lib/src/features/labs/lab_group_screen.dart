@@ -38,7 +38,13 @@ class LabGroupScreen extends StatelessWidget {
       for (final p in points) '${labDay(p.at)}: ${fmtValue(s, p.record)}',
     ].join('; ');
     return Scaffold(
-      appBar: AppBar(title: Text(s.trendTitle(group.label))),
+      appBar: AppBar(
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(s.trendTitle(group.label)),
+        ),
+      ),
       body: ListView(
         key: const ValueKey('screen-lab-group'),
         padding: const EdgeInsets.all(16),
@@ -126,6 +132,7 @@ class LabGroupScreen extends StatelessWidget {
             ),
           const SizedBox(height: 16),
           Semantics(
+            container: true,
             header: true,
             child: Text(s.labGroupEvery, style: text.titleSmall),
           ),

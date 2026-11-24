@@ -20,7 +20,15 @@ class AboutScreen extends StatelessWidget {
     final s = S.of(context);
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: Text(s.aboutTitle)),
+      // Drawn smaller rather than ellipsized when the top bar is too narrow
+      // for the title at the person's text size (Q003, matching U035).
+      appBar: AppBar(
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(s.aboutTitle),
+        ),
+      ),
       body: ListView(
         key: const ValueKey('screen-about'),
         padding: const EdgeInsets.all(16),
@@ -118,6 +126,7 @@ class _Section extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Semantics(
+              container: true,
               header: true,
               child: Text(
                 title,

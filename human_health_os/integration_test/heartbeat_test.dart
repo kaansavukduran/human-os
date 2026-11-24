@@ -872,6 +872,14 @@ void main() {
     // Slice 2: a height with a time typed on the screen; the first schema-5
     // record makes the second checkpoint, of the vault as it was then.
     final beforeHeight = vault.readAsStringSync();
+    // Height sits under "More measurements" until it has a record (U036).
+    if (find
+        .byKey(const ValueKey('measure-tile-body.height'))
+        .evaluate()
+        .isEmpty) {
+      await tapKey(tester, 'measurements-more');
+      await tester.pumpAndSettle();
+    }
     await tapKey(tester, 'measure-tile-body.height');
     await tester.pumpAndSettle();
     await fillKey(tester, 'measure-value', '172,5');

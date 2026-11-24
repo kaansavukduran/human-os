@@ -11,12 +11,14 @@ class ToolRow extends StatelessWidget {
   const ToolRow({
     super.key,
     required this.title,
-    required this.hint,
+    this.hint,
     required this.onTap,
   });
 
   final String title;
-  final String hint;
+
+  /// One line on what it is for; none when the title says it all.
+  final String? hint;
   final VoidCallback onTap;
 
   @override
@@ -45,12 +47,13 @@ class ToolRow extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(title, style: text.titleMedium),
-                        Text(
-                          hint,
-                          style: text.bodyMedium?.copyWith(
-                            color: scheme.onSurfaceVariant,
+                        if (hint case final hint?)
+                          Text(
+                            hint,
+                            style: text.bodyMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),

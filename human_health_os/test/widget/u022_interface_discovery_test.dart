@@ -233,7 +233,15 @@ void main() {
       expect(c.value.discovered, {
         DiscoveryStep.settings,
       }, reason: 'list is not an entry');
-      final entry = find.byType(ListTile).first;
+      // The first term row (U038: plain rows, keyed glossary-<id>).
+      final entry = find
+          .byWidgetPredicate(
+            (w) =>
+                w.key is ValueKey<String> &&
+                (w.key! as ValueKey<String>).value.startsWith('glossary-') &&
+                (w.key! as ValueKey<String>).value != 'glossary-search',
+          )
+          .first;
       await tester.tap(entry);
       await settle(tester);
       expect(c.value.discovered, {

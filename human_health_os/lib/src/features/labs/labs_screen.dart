@@ -14,10 +14,12 @@ import '../../presentation/widgets/entry_list.dart';
 import '../../presentation/widgets/first_step.dart';
 import '../../presentation/widgets/loading_line.dart';
 import '../../presentation/widgets/read_failed_note.dart';
+import '../../presentation/widgets/record_row.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/status_chip.dart';
 import '../../presentation/widgets/term_link.dart';
+import '../../presentation/widgets/tool_row.dart';
 import '../../presentation/widgets/whole_label_field.dart';
 import '../measurements/measurement_format.dart' show labReportLines;
 import '../timeline/timeline_screen.dart' show fmtValue, fmtWhen;
@@ -366,28 +368,32 @@ class _LabsScreenState extends State<LabsScreen> {
             header: true,
             child: Text(s.labGroupsTitle, style: text.titleSmall),
           ),
-          Text(
-            s.labGroupsRule,
-            key: const ValueKey('labs-group-rule'),
-            style: text.bodySmall,
-          ),
+          // Each group is one plain row that opens it (U038); how groups
+          // are formed is behind "Details".
           for (final g in _groups)
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: TextButton.icon(
-                key: ValueKey('lab-group-${g.rows.first.record.id}'),
-                icon: const Icon(Icons.show_chart_outlined),
-                label: Text(
-                  s.labGroupLine(g.label, g.unit, g.specimen, g.length),
-                ),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => LabGroupScreen(group: g),
-                  ),
+            ToolRow(
+              key: ValueKey('lab-group-${g.rows.first.record.id}'),
+              title: s.labGroupLine(g.label, g.unit, g.specimen, g.length),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => LabGroupScreen(group: g),
                 ),
               ),
             ),
-          const SizedBox(height: 16),
+          DetailsDisclosure(
+            id: 'labs-groups',
+            about: s.labGroupsTitle,
+            children: [
+              Text(
+                s.labGroupsRule,
+                key: const ValueKey('labs-group-rule'),
+                style: text.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Space.xl),
         ],
         if (_readFailed)
           ReadFailedNote(id: 'labs', onRetry: _retry)
@@ -884,81 +890,58 @@ class _LabTile extends StatelessWidget {
     final lab = record.lab!;
     final day = record.observedAt;
     final date = formatDay(day.year, day.month, day.day, displayDateOrder);
-    return Card(
-      semanticContainer: false,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: Text(lab.analyteLabel, style: text.titleSmall)),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    fmtValue(s, record),
-                    textAlign: TextAlign.end,
-                    style: text.titleMedium,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              [
-                '${s.labSampleDate}: $date',
-                if (lab.specimen != null) lab.specimen!,
-                if (lab.laboratory != null) lab.laboratory!,
-                s.provenanceKind(record.provenance.kind),
-              ].join(' · '),
-              style: text.bodySmall,
-            ),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 6,
-              runSpacing: 4,
-              children: [
-                if (lab.sourceFlag != null)
-                  StatusChip(
-                    key: ValueKey('lab-flag-${record.id}'),
-                    label: s.labPrintedFlag(lab.sourceFlag!),
-                    tone: StatusTone.muted,
-                  ),
-                if (conflict)
-                  StatusChip(
-                    label: s.entryStatus(EntryStatus.conflict),
-                    tone: StatusTone.warn,
-                  ),
-              ],
-            ),
-            Text(
-              lab.referenceText == null
-                  ? s.labNoRangePrinted
-                  : s.labPrintedRange(lab.referenceText!),
-              key: ValueKey('lab-range-${record.id}'),
-              style: text.bodySmall,
-            ),
-            // What else the report printed (D-045): restated, never
-            // compared with the value.
-            for (final (i, line) in labReportLines(s, lab, fmtWhen).indexed)
-              Text(
-                line,
-                key: ValueKey('lab-report-$i-${record.id}'),
-                style: text.bodySmall,
-              ),
-            Align(
-              alignment: AlignmentDirectional.centerEnd,
-              child: TextButton.icon(
-                key: ValueKey('lab-correct-${record.id}'),
-                onPressed: onCorrect,
-                icon: const Icon(Icons.edit_outlined),
-                label: Text(s.amendAction(AmendReason.correction)),
-              ),
-            ),
-          ],
+    final scheme = Theme.of(context).colorScheme;
+    // One row (U038), as on the Timeline: the test and its value as
+    // printed, then the sample date and specimen; the lab's own flag and
+    // range stay in view (they were printed with the value). The
+    // laboratory, the source and the report's other lines sit behind
+    // "Details", beside Correct.
+    return RecordRow(
+      title: lab.analyteLabel,
+      value: fmtValue(s, record),
+      when: [
+        '${s.labSampleDate}: $date',
+        if (lab.specimen != null) lab.specimen!,
+      ].join(' · '),
+      chips: [
+        if (lab.sourceFlag != null)
+          StatusChip(
+            key: ValueKey('lab-flag-${record.id}'),
+            label: s.labPrintedFlag(lab.sourceFlag!),
+            tone: StatusTone.muted,
+          ),
+        if (conflict)
+          StatusChip(
+            label: s.entryStatus(EntryStatus.conflict),
+            tone: StatusTone.warn,
+          ),
+      ],
+      lines: [
+        Text(
+          lab.referenceText == null
+              ? s.labNoRangePrinted
+              : s.labPrintedRange(lab.referenceText!),
+          key: ValueKey('lab-range-${record.id}'),
+          style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
         ),
+      ],
+      footer: DetailsDisclosure(
+        id: 'lab-${record.id}',
+        about: lab.analyteLabel,
+        trailing: TextButton.icon(
+          key: ValueKey('lab-correct-${record.id}'),
+          onPressed: onCorrect,
+          icon: const Icon(Icons.edit_outlined),
+          label: Text(s.amendAction(AmendReason.correction)),
+        ),
+        children: [
+          if (lab.laboratory != null) DetailLine(lab.laboratory!),
+          DetailLine(s.provenanceKind(record.provenance.kind)),
+          // What else the report printed (D-045): restated, never
+          // compared with the value.
+          for (final (i, line) in labReportLines(s, lab, fmtWhen).indexed)
+            DetailLine(line, key: ValueKey('lab-report-$i-${record.id}')),
+        ],
       ),
     );
   }

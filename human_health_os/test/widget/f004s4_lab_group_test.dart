@@ -131,6 +131,9 @@ void main() {
     await tester.runAsync(() async => r = await _seed(s));
     await go(tester, s, 'Labs');
     expect(find.text('Same test over time'), findsOneWidget);
+    // How groups are formed is said under the section's Details (U038).
+    await tester.tap(find.byKey(const ValueKey('details-labs-groups')));
+    await tester.pumpAndSettle();
     expect(
       find.text(
         'Grouped only by the same test name, unit and specimen as typed; a '
@@ -179,6 +182,15 @@ void main() {
     expect(find.text('Hemolizli % (text as printed)'), findsOneWidget);
     expect(find.text('Name as typed: hba1c'), findsOneWidget);
     expect(find.text('Lab flag: H'), findsOneWidget);
+    // Each result's laboratory is under its Details (U038).
+    expect(find.text('Laboratory: Lab A'), findsNothing);
+    for (final id in ids) {
+      final toggle = find.byKey(ValueKey('details-lab-group-$id'));
+      await tester.ensureVisible(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+    }
     expect(find.text('Laboratory: Lab A'), findsOneWidget);
     expect(find.text('Laboratory: Lab B'), findsNWidgets(2));
     // Each result keeps its own printed range; none is merged.

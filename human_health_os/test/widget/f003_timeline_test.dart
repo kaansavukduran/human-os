@@ -90,9 +90,14 @@ void main() {
     final yOlder = tester.getTopLeft(entry(older.id)).dy;
     expect(yNewer, lessThan(yOlder));
     expect(inEntry(newer.id, '80.5 kg'), findsOneWidget);
+    // The source and state are in the entry's sheet, under Details (U038).
+    await tester.tap(entry(newer.id));
+    await settle(tester);
+    await tester.tap(find.byKey(ValueKey('details-timeline-${newer.id}')));
+    await tester.pumpAndSettle();
     expect(
       find.descendant(
-        of: entry(newer.id),
+        of: find.byKey(const ValueKey('timeline-detail')),
         matching: find.textContaining('Observed · Manual entry'),
       ),
       findsOneWidget,

@@ -22,6 +22,47 @@ import 'f004_labs_test.dart'
         tapKey,
         textsIn;
 
+/// Opens every result's Details on Labs (U038: the report's other lines,
+/// the laboratory and the source sit behind it).
+Future<void> openLabDetails(WidgetTester tester) async {
+  final toggles = find.byWidgetPredicate(
+    (w) =>
+        w.key is ValueKey<String> &&
+        RegExp(r'^details-lab-[0-9a-f-]+$')
+            .hasMatch((w.key! as ValueKey<String>).value),
+  );
+  for (final k in [
+    for (final w in tester.widgetList(toggles)) w.key! as ValueKey<String>,
+  ]) {
+    await tester.ensureVisible(find.byKey(k));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(k));
+    await tester.pumpAndSettle();
+  }
+}
+
+/// Opens the Timeline entry [rootId] and its Details; returns the texts
+/// of the versions' details (U038: the report's lines are restated there).
+Future<List<String>> timelineDetails(WidgetTester tester, String rootId) async {
+  await tester.tap(find.byKey(ValueKey('timeline-entry-$rootId')));
+  await settle(tester);
+  await tester.tap(find.byKey(ValueKey('details-timeline-$rootId')));
+  await tester.pumpAndSettle();
+  return [
+    for (final t in tester.widgetList<Text>(
+      find.descendant(
+        of: find.byWidgetPredicate(
+          (w) =>
+              w.key is ValueKey<String> &&
+              (w.key! as ValueKey<String>).value.startsWith('version-details-'),
+        ),
+        matching: find.byType(Text),
+      ),
+    ))
+      ?t.data,
+  ];
+}
+
 /// Words that would relate a value to its interval (G-28 brief).
 final RegExp comparing = RegExp(
   r'(?<!\p{L})(within|inside|outside|normal|abnormal|in range|'
@@ -132,6 +173,8 @@ void main() {
     expect(r.lab!.referenceText, '4,0 - 6,0');
     expect(r.lab!.method, 'HPLC');
     expect(r.lab!.referenceInterval!.partition, 'Kadın 20-49 yaş');
+    expect(find.text('Method as printed: HPLC'), findsNothing);
+    await openLabDetails(tester);
     expect(find.text('Method as printed: HPLC'), findsOneWidget);
     expect(
       find.text('Reference interval as printed: 4,0–6,0 % (Kadın 20-49 yaş)'),
@@ -145,9 +188,7 @@ void main() {
     expect(screenTexts(tester).where(interpretive.hasMatch), isEmpty);
 
     await go(tester, s, 'Timeline');
-    final line = find.byKey(ValueKey('timeline-lab-report-${r.id}'));
-    expect(line, findsOneWidget);
-    final t = tester.widget<Text>(line).data!;
+    final t = (await timelineDetails(tester, r.id)).join('\n');
     expect(t, contains('Method as printed: HPLC'));
     expect(t, contains('Reference interval as printed: 4,0–6,0 %'));
     expect(comparing.hasMatch(t), isFalse);
@@ -229,6 +270,7 @@ void main() {
       );
     });
     await go(tester, s, 'Labs');
+    await openLabDetails(tester);
     expect(
       find.text('Reference interval as printed: upper bound 130 mg/dL'),
       findsOneWidget,
@@ -240,6 +282,7 @@ void main() {
     expect(textOf(tester, 'lab-ref-low'), '');
     await fill(tester, 'lab-ref-low', '0');
     await tapKey(tester, 'lab-save');
+    await openLabDetails(tester);
     expect(
       find.text('Reference interval as printed: 0–130 mg/dL'),
       findsOneWidget,
@@ -402,6 +445,7 @@ void main() {
         );
       });
       await go(tester, s, labs);
+      await openLabDetails(tester);
       expect(find.text(interval), findsOneWidget);
       expect(find.text(method), findsOneWidget);
       final rows = textsIn(tester, 'lab-row-');
@@ -409,7 +453,10 @@ void main() {
       expect(rows.where(judged.hasMatch), isEmpty, reason: '$rows');
       expect(screenTexts(tester).where(interpretive.hasMatch), isEmpty);
       await go(tester, s, timeline);
-      final entries = textsIn(tester, 'timeline-');
+      final id = (await tester.runAsync(
+        () => s.heartbeat.labTimeline(s.self.id),
+      ))!.single.rootId;
+      final entries = await timelineDetails(tester, id);
       expect(entries.any((t) => t.contains(interval)), isTrue);
       expect(entries.where(comparing.hasMatch), isEmpty, reason: '$entries');
     });

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../domain/guide/body_guide.dart';
 import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/theme/spacing.dart';
+import '../../presentation/widgets/tool_row.dart';
 
 String _pick(S s, Bilingual b) => s.lang == AppLang.tr ? b.$2 : b.$1;
 
@@ -26,85 +28,45 @@ class BodyGuideScreen extends StatelessWidget {
           child: Text(s.guideTitle),
         ),
       ),
-      body: ListView(
-        key: const ValueKey('screen-guide'),
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(s.guideIntro, style: text.bodyLarge),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, box) {
-              final columns = box.maxWidth >= 720
-                  ? 3
-                  : (box.maxWidth >= 420 ? 2 : 1);
-              const gap = 12.0;
-              final width = (box.maxWidth - gap * (columns - 1)) / columns;
-              return Wrap(
-                spacing: gap,
-                runSpacing: gap,
-                children: [
-                  for (final b in bodySystems)
-                    SizedBox(
-                      width: width,
-                      child: Semantics(
-                        container: true,
-                        button: true,
-                        child: Material(
-                          color: scheme.surfaceContainerLowest,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: scheme.outlineVariant),
-                          ),
-                          child: InkWell(
-                            key: ValueKey('guide-system-${b.id}'),
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () => Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => BodySystemScreen(system: b),
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _pick(s, b.name),
-                                    style: text.titleSmall,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    b.parts.map((p) => _pick(s, p)).join(' · '),
-                                    style: text.bodySmall?.copyWith(
-                                      color: scheme.outline,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 24),
-          Semantics(
-            header: true,
-            child: Text(s.guideSourcesTitle, style: text.titleSmall),
-          ),
-          const SizedBox(height: 4),
-          for (final src in guideSources)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text(
-                _pick(s, src),
-                style: text.bodySmall?.copyWith(color: scheme.outline),
-              ),
+      // One centred reading column on a wide window; the systems are
+      // plain rows like Learn's, not a grid of cards (U038).
+      body: ReadingWidth(
+        child: ListView(
+          key: const ValueKey('screen-guide'),
+          padding: kPagePadding,
+          children: [
+            Text(
+              s.guideIntro,
+              style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
             ),
-        ],
+            const SizedBox(height: Space.m),
+            for (final b in bodySystems)
+              ToolRow(
+                key: ValueKey('guide-system-${b.id}'),
+                title: _pick(s, b.name),
+                hint: b.parts.map((p) => _pick(s, p)).join(' · '),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => BodySystemScreen(system: b),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 24),
+            Semantics(
+              header: true,
+              child: Text(s.guideSourcesTitle, style: text.titleSmall),
+            ),
+            const SizedBox(height: 4),
+            for (final src in guideSources)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  _pick(s, src),
+                  style: text.bodySmall?.copyWith(color: scheme.outline),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -141,64 +103,66 @@ class BodySystemScreen extends StatelessWidget {
           child: Text(_pick(s, system.name)),
         ),
       ),
-      body: ListView(
-        key: ValueKey('screen-guide-${system.id}'),
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(_pick(s, system.what), style: text.bodyLarge),
-          heading(s.guideParts),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final p in system.parts) Chip(label: Text(_pick(s, p))),
-            ],
-          ),
-          heading(s.guideWhoCares),
-          for (final id in system.specialties)
-            Container(
-              key: ValueKey('guide-specialty-$id'),
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: scheme.outlineVariant),
+      body: ReadingWidth(
+        child: ListView(
+          key: ValueKey('screen-guide-${system.id}'),
+          padding: kPagePadding,
+          children: [
+            Text(_pick(s, system.what), style: text.bodyLarge),
+            heading(s.guideParts),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final p in system.parts) Chip(label: Text(_pick(s, p))),
+              ],
+            ),
+            heading(s.guideWhoCares),
+            for (final id in system.specialties)
+              Container(
+                key: ValueKey('guide-specialty-$id'),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: scheme.outlineVariant),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _pick(s, specialtyById(id).name),
+                      style: text.titleSmall,
+                    ),
+                    Text(
+                      _pick(s, specialtyById(id).what),
+                      style: text.bodyMedium,
+                    ),
+                  ],
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _pick(s, specialtyById(id).name),
-                    style: text.titleSmall,
-                  ),
-                  Text(
-                    _pick(s, specialtyById(id).what),
-                    style: text.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 8),
-          Text(
-            s.guideFirstStop,
-            key: const ValueKey('guide-first-stop'),
-            style: text.bodyMedium,
-          ),
-          if (kinds.isNotEmpty) ...[
-            heading(s.guideInHumanOs),
+            const SizedBox(height: 8),
             Text(
-              kinds.map(s.recordKind).join(' · '),
-              key: const ValueKey('guide-measurements'),
+              s.guideFirstStop,
+              key: const ValueKey('guide-first-stop'),
               style: text.bodyMedium,
             ),
+            if (kinds.isNotEmpty) ...[
+              heading(s.guideInHumanOs),
+              Text(
+                kinds.map(s.recordKind).join(' · '),
+                key: const ValueKey('guide-measurements'),
+                style: text.bodyMedium,
+              ),
+            ],
+            const SizedBox(height: 20),
+            Text(
+              s.guideNotAdvice,
+              key: const ValueKey('guide-not-advice'),
+              style: text.bodySmall?.copyWith(color: scheme.outline),
+            ),
           ],
-          const SizedBox(height: 20),
-          Text(
-            s.guideNotAdvice,
-            key: const ValueKey('guide-not-advice'),
-            style: text.bodySmall?.copyWith(color: scheme.outline),
-          ),
-        ],
+        ),
       ),
     );
   }

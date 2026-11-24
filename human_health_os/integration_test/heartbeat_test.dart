@@ -453,6 +453,13 @@ void main() {
           matching: find.byType(Scrollable),
         )
         .first;
+    // The report's other lines sit under the result's Details (U038).
+    final details = find.byKey(ValueKey('details-lab-${detailed.id}'));
+    await tester.scrollUntilVisible(details, 200, scrollable: list);
+    await tester.ensureVisible(details);
+    await tester.pumpAndSettle();
+    await tester.tap(details);
+    await tester.pumpAndSettle();
     for (final t in [
       'Method as printed: HPLC',
       'Reference interval as printed: 4,0–6,0 % (Kadın 20-49 yaş)',

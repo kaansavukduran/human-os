@@ -1579,6 +1579,16 @@ class S {
   /// What a screen reader says for a details toggle: the toggle and the
   /// field it belongs to (several toggles on one sheet stay apart).
   String fieldDetailsFor(String toggle, String field) => '$toggle: $field';
+
+  // U038: the machinery of a record (where it came from, when it was
+  // saved, what else the report printed) sits behind a quiet "Details".
+  String get detailsShow => _t('Details', 'Ayrıntılar');
+  String get detailsHide => _t('Hide details', 'Ayrıntıları gizle');
+
+  /// Day headers on the Timeline (U038), in plain words.
+  String get dayToday => _t('Today', 'Bugün');
+  String get dayYesterday => _t('Yesterday', 'Dün');
+  String get fontPreviewShow => _t('See each font', 'Her yazı tipini gör');
   String get firstBack => _t('Back', 'Geri');
   String get firstSkip => _t('Skip', 'Atla');
   String get firstStart => _t('Start', 'Başla');

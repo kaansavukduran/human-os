@@ -229,7 +229,9 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
       await navItem(timelineLabel).click({ timeout: 10_000 });
       await heading(timelineLabel).waitFor({ timeout: 15_000 });
       await page.getByText(timelineText).first().waitFor({ timeout: 15_000 });
-      onTimelineScreen = !(await heading(todayLabel).isVisible().catch(() => false));
+      // Today's weight field, not a "Today" heading: the Timeline has
+      // its own "Today" day header (U038).
+      onTimelineScreen = (await page.getByRole('textbox', { name: /Weight \(kg\)/ }).count()) === 0;
     } catch {
       onTimelineScreen = false;
     }
@@ -388,7 +390,9 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
       await navItem(timelineLabel).click({ timeout: 10_000 });
       await heading(timelineLabel).waitFor({ timeout: 15_000 });
       await page.getByText(timelineText).first().waitFor({ timeout: 15_000 });
-      bpOnTimeline = !(await heading(todayLabel).isVisible().catch(() => false));
+      // Today's weight field, not a "Today" heading: the Timeline has
+      // its own "Today" day header (U038).
+      bpOnTimeline = (await page.getByRole('textbox', { name: /Weight \(kg\)/ }).count()) === 0;
     } catch {
       bpOnTimeline = false;
     }

@@ -7,6 +7,8 @@ import '../../domain/records/health_record.dart';
 import '../../domain/settings/date_style.dart';
 import '../../domain/trends/trend.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/theme/spacing.dart';
+import '../../presentation/widgets/record_row.dart';
 import '../../presentation/widgets/status_chip.dart';
 import '../measurements/measurement_format.dart' show labReportLines;
 import '../timeline/timeline_screen.dart' show fmtValue, fmtWhen;
@@ -34,6 +36,9 @@ class LabGroupScreen extends StatelessWidget {
     final points = group.chartPoints;
     final unit = group.unit;
     final muted = text.bodySmall?.copyWith(color: scheme.outline);
+    final quietMedium = text.bodyMedium?.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
     final spokenValues = [
       for (final p in points) '${labDay(p.at)}: ${fmtValue(s, p.record)}',
     ].join('; ');
@@ -45,106 +50,117 @@ class LabGroupScreen extends StatelessWidget {
           child: Text(s.trendTitle(group.label)),
         ),
       ),
-      body: ListView(
-        key: const ValueKey('screen-lab-group'),
-        padding: const EdgeInsets.all(16),
-        children: [
-          // The full name, which the app bar may cut short at 320 dp.
-          Text(
-            s.labGroupNameAsTyped(group.label),
-            key: const ValueKey('lab-group-name'),
-            style: text.bodyMedium,
-          ),
-          Text(s.labGroupUnit(unit), style: text.bodyMedium),
-          if (group.specimen case final sp?)
-            Text(s.labGroupSpecimen(sp), style: text.bodyMedium),
-          const SizedBox(height: 4),
-          Text(
-            s.labGroupsRule,
-            key: const ValueKey('lab-group-rule'),
-            style: muted,
-          ),
-          const SizedBox(height: 16),
-          if (points.isEmpty)
+      // One centred reading column on a wide window (U036, U038).
+      body: ReadingWidth(
+        child: ListView(
+          key: const ValueKey('screen-lab-group'),
+          padding: kPagePadding,
+          children: [
+            // The full name, which the app bar may cut short at 320 dp; then
+            // unit and specimen as typed, quieter. How a group is formed is
+            // behind "Details" (U038).
             Text(
-              s.labGroupNoChart,
-              key: const ValueKey('lab-group-no-chart'),
-              style: text.bodyMedium,
-            )
-          else ...[
-            ExcludeSemantics(
-              child: Text(
-                unit == null ? s.labGroupAxisNoUnit : s.trendAxisUnit(unit),
-                key: const ValueKey('lab-group-axis-unit'),
-                style: muted,
-              ),
+              s.labGroupNameAsTyped(group.label),
+              key: const ValueKey('lab-group-name'),
+              style: text.titleMedium,
             ),
-            const SizedBox(height: 4),
-            Semantics(
-              key: const ValueKey('lab-group-chart-summary'),
-              container: true,
-              label: s.labGroupChartSpoken(
-                points.length,
-                unit == null ? null : s.spokenUnit(unit),
-                spokenValues,
+            const SizedBox(height: Space.xs),
+            Text(s.labGroupUnit(unit), style: quietMedium),
+            if (group.specimen case final sp?)
+              Text(s.labGroupSpecimen(sp), style: quietMedium),
+            DetailsDisclosure(
+              id: 'lab-group',
+              about: group.label,
+              children: [
+                Text(
+                  s.labGroupsRule,
+                  key: const ValueKey('lab-group-rule'),
+                  style: muted,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (points.isEmpty)
+              Text(
+                s.labGroupNoChart,
+                key: const ValueKey('lab-group-no-chart'),
+                style: text.bodyMedium,
+              )
+            else ...[
+              ExcludeSemantics(
+                child: Text(
+                  unit == null ? s.labGroupAxisNoUnit : s.trendAxisUnit(unit),
+                  key: const ValueKey('lab-group-axis-unit'),
+                  style: muted,
+                ),
               ),
-              child: SizedBox(
-                key: const ValueKey('lab-group-chart'),
-                height: 200,
-                child: LayoutBuilder(
-                  builder: (context, box) => CustomPaint(
-                    size: box.biggest,
-                    painter: TrendPainter(
-                      points: points,
-                      minSpan: _minSpan(points),
-                      decimal: s.lang == AppLang.tr ? ',' : '.',
-                      line: scheme.primary,
-                      second: scheme.onSurface,
-                      grid: scheme.outlineVariant,
-                      label: scheme.outline,
-                      picked: null,
-                      textStyle: text.labelSmall ?? const TextStyle(),
-                      join: false,
-                      dayLabel: labDay,
-                      decimalsFromSpan: true,
+              const SizedBox(height: 4),
+              Semantics(
+                key: const ValueKey('lab-group-chart-summary'),
+                container: true,
+                label: s.labGroupChartSpoken(
+                  points.length,
+                  unit == null ? null : s.spokenUnit(unit),
+                  spokenValues,
+                ),
+                child: SizedBox(
+                  key: const ValueKey('lab-group-chart'),
+                  height: 200,
+                  child: LayoutBuilder(
+                    builder: (context, box) => CustomPaint(
+                      size: box.biggest,
+                      painter: TrendPainter(
+                        points: points,
+                        minSpan: _minSpan(points),
+                        decimal: s.lang == AppLang.tr ? ',' : '.',
+                        line: scheme.primary,
+                        second: scheme.onSurface,
+                        grid: scheme.outlineVariant,
+                        label: scheme.outline,
+                        picked: null,
+                        textStyle: text.labelSmall ?? const TextStyle(),
+                        join: false,
+                        dayLabel: labDay,
+                        decimalsFromSpan: true,
+                      ),
                     ),
                   ),
                 ),
               ),
+              const SizedBox(height: 8),
+              Text(s.labGroupLegend, style: muted),
+              if (group.sameDayDrawn)
+                Text(
+                  s.labGroupSameDay,
+                  key: const ValueKey('lab-group-same-day'),
+                  style: muted,
+                ),
+            ],
+            for (final MapEntry(key: reason, value: n)
+                in group.notDrawn.entries)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  s.labGroupNotDrawn(reason, n),
+                  key: ValueKey('lab-group-not-drawn-$reason'),
+                  style: muted,
+                ),
+              ),
+            const SizedBox(height: Space.xl),
+            Semantics(
+              container: true,
+              header: true,
+              child: Text(s.labGroupEvery, style: text.titleSmall),
             ),
-            const SizedBox(height: 8),
-            Text(s.labGroupLegend, style: muted),
-            if (group.sameDayDrawn)
-              Text(
-                s.labGroupSameDay,
-                key: const ValueKey('lab-group-same-day'),
-                style: muted,
+            for (final row in group.rows)
+              _GroupResult(
+                key: ValueKey('lab-group-row-${row.record.id}'),
+                record: row.record,
+                conflict: row.conflict,
+                groupLabel: group.label,
               ),
           ],
-          for (final MapEntry(key: reason, value: n) in group.notDrawn.entries)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                s.labGroupNotDrawn(reason, n),
-                key: ValueKey('lab-group-not-drawn-$reason'),
-                style: muted,
-              ),
-            ),
-          const SizedBox(height: 16),
-          Semantics(
-            container: true,
-            header: true,
-            child: Text(s.labGroupEvery, style: text.titleSmall),
-          ),
-          const SizedBox(height: 4),
-          for (final row in group.rows)
-            _GroupResult(
-              key: ValueKey('lab-group-row-${row.record.id}'),
-              record: row.record,
-              conflict: row.conflict,
-              groupLabel: group.label,
-            ),
-        ],
+        ),
       ),
     );
   }
@@ -175,55 +191,43 @@ class _GroupResult extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final lab = record.lab!;
     final name = lab.analyteLabel.trim();
-    return Card(
-      semanticContainer: false,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${s.labSampleDate}: ${labDay(record.observedAt)}',
-              style: text.bodySmall,
-            ),
-            Text(fmtValue(s, record), style: text.titleMedium),
-            // The same name in other letters (e.g. "hba1c") is said as
-            // typed, so nothing looks renamed.
-            if (name != groupLabel)
-              Text(s.labGroupNameAsTyped(name), style: text.bodySmall),
-            if (lab.laboratory case final l?)
-              Text(s.labGroupLaboratory(l), style: text.bodySmall),
-            if (lab.sourceFlag != null || conflict)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: [
-                    if (lab.sourceFlag case final f?)
-                      StatusChip(
-                        label: s.labPrintedFlag(f),
-                        tone: StatusTone.muted,
-                      ),
-                    if (conflict)
-                      StatusChip(
-                        label: s.entryStatus(EntryStatus.conflict),
-                        tone: StatusTone.warn,
-                      ),
-                  ],
-                ),
-              ),
-            Text(
-              lab.referenceText == null
-                  ? s.labNoRangePrinted
-                  : s.labPrintedRange(lab.referenceText!),
-              key: ValueKey('lab-group-range-${record.id}'),
-              style: text.bodySmall,
-            ),
-            for (final line in labReportLines(s, lab, fmtWhen))
-              Text(line, style: text.bodySmall),
-          ],
+    // The same row as Labs and the Timeline (U038): the sample date and
+    // the value as printed first; the lab's flag and range in view; the
+    // laboratory and the report's other lines behind "Details".
+    return RecordRow(
+      title: '${s.labSampleDate}: ${labDay(record.observedAt)}',
+      value: fmtValue(s, record),
+      // The same name in other letters (e.g. "hba1c") is said as typed,
+      // so nothing looks renamed.
+      when: name != groupLabel ? s.labGroupNameAsTyped(name) : null,
+      chips: [
+        if (lab.sourceFlag case final f?)
+          StatusChip(label: s.labPrintedFlag(f), tone: StatusTone.muted),
+        if (conflict)
+          StatusChip(
+            label: s.entryStatus(EntryStatus.conflict),
+            tone: StatusTone.warn,
+          ),
+      ],
+      lines: [
+        Text(
+          lab.referenceText == null
+              ? s.labNoRangePrinted
+              : s.labPrintedRange(lab.referenceText!),
+          key: ValueKey('lab-group-range-${record.id}'),
+          style: text.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
+      ],
+      footer: DetailsDisclosure(
+        id: 'lab-group-${record.id}',
+        about: labDay(record.observedAt),
+        children: [
+          if (lab.laboratory case final l?) DetailLine(s.labGroupLaboratory(l)),
+          DetailLine(s.provenanceKind(record.provenance.kind)),
+          for (final line in labReportLines(s, lab, fmtWhen)) DetailLine(line),
+        ],
       ),
     );
   }

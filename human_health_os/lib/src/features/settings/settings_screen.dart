@@ -11,6 +11,7 @@ import '../../l10n/strings.dart';
 import '../today/measurements_card.dart';
 import '../../presentation/theme/human_os_theme.dart';
 import '../../presentation/theme/spacing.dart';
+import '../../presentation/widgets/record_row.dart';
 import '../../presentation/widgets/whole_label_field.dart';
 import '../onboarding/first_run_screen.dart';
 import 'about_screen.dart';
@@ -114,26 +115,10 @@ class SettingsScreen extends StatelessWidget {
               // One heading level (U035): each section's title is the only
               // heading in it; the controls' own names are plain labels.
               const SizedBox(height: 24),
-              section(
-                s.settingsInterfaceScale,
-                _ScaleControl(
-                  percent: a.interfacePercent,
-                  onChange: (v) => set(a.copyWith(interfacePercent: v)),
-                ),
-              ),
-              section(
-                s.settingsLanguage,
-                choices(
-                  'set-language',
-                  [
-                    (LanguageChoice.tr, 'Türkçe'),
-                    (LanguageChoice.en, 'English'),
-                    (LanguageChoice.system, s.settingsSystem),
-                  ],
-                  a.language,
-                  (v) => set(a.copyWith(language: v)),
-                ),
-              ),
+              // The most used first (U038): light or dark, palette, colour,
+              // text size and language; the interface scale and fonts next;
+              // units, dates and the rest after; lock, updates and About
+              // last.
               section(
                 s.settingsTheme,
                 choices(
@@ -214,6 +199,26 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               section(
+                s.settingsLanguage,
+                choices(
+                  'set-language',
+                  [
+                    (LanguageChoice.tr, 'Türkçe'),
+                    (LanguageChoice.en, 'English'),
+                    (LanguageChoice.system, s.settingsSystem),
+                  ],
+                  a.language,
+                  (v) => set(a.copyWith(language: v)),
+                ),
+              ),
+              section(
+                s.settingsInterfaceScale,
+                _ScaleControl(
+                  percent: a.interfacePercent,
+                  onChange: (v) => set(a.copyWith(interfacePercent: v)),
+                ),
+              ),
+              section(
                 s.settingsFont,
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,16 +234,25 @@ class SettingsScreen extends StatelessWidget {
                       a.font,
                       (v) => set(a.copyWith(font: v)),
                     ),
-                    const SizedBox(height: 12),
-                    Text(s.fontPreviewNote, style: text.bodySmall),
-                    const SizedBox(height: 4),
-                    for (final (f, label) in [
-                      (FontChoice.system, s.settingsSystem),
-                      (FontChoice.legible, s.fontLegible),
-                      (FontChoice.dyslexic, s.fontDyslexic),
-                      (FontChoice.lexend, s.fontLexend),
-                    ])
-                      _FontPreview(choice: f, label: label),
+                    const SizedBox(height: Space.s),
+                    // The four samples open on demand (U038), so the
+                    // section stays short.
+                    DetailsDisclosure(
+                      id: 'font-previews',
+                      about: s.settingsFont,
+                      showText: s.fontPreviewShow,
+                      children: [
+                        Text(s.fontPreviewNote, style: text.bodySmall),
+                        const SizedBox(height: Space.xs),
+                        for (final (f, label) in [
+                          (FontChoice.system, s.settingsSystem),
+                          (FontChoice.legible, s.fontLegible),
+                          (FontChoice.dyslexic, s.fontDyslexic),
+                          (FontChoice.lexend, s.fontLexend),
+                        ])
+                          _FontPreview(choice: f, label: label),
+                      ],
+                    ),
                     SwitchListTile(
                       key: const ValueKey('set-wide-spacing'),
                       contentPadding: EdgeInsets.zero,

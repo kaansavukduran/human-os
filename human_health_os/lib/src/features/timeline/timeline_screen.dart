@@ -16,7 +16,9 @@ import '../../presentation/widgets/entry_list.dart';
 import '../../presentation/widgets/first_step.dart';
 import '../../presentation/widgets/loading_line.dart';
 import '../../presentation/widgets/read_failed_note.dart';
+import '../../presentation/widgets/record_row.dart';
 import '../../presentation/widgets/sheet_parts.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/status_chip.dart';
 
 /// Timeline (ladder F003): every fact once, newest first, with its versions.
@@ -72,14 +74,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final s = S.of(context);
     final go = DestinationSwitch.maybeOf(context);
     final entries = _readFailed ? const <TimelineEntry>[] : _entries;
+    // Day headers (U038): the entries are newest first, so a header goes
+    // before the first entry of each day.
+    final items = timelineItems(s, entries, DateTime.now());
     return EntryList(
       key: const ValueKey('screen-timeline'),
-      itemCount: entries.length,
-      itemBuilder: (_, i) => _EntryTile(
-        key: ValueKey('timeline-entry-${entries[i].rootId}'),
-        entry: entries[i],
-        onTap: () => _openDetail(entries[i]),
-      ),
+      itemCount: items.length,
+      itemBuilder: (_, i) => switch (items[i]) {
+        (final day, final label, null) => DayHeader(
+          label,
+          key: ValueKey('timeline-day-$day'),
+          first: i == 0,
+        ),
+        (_, _, final TimelineEntry e) => _EntryTile(
+          key: ValueKey('timeline-entry-${e.rootId}'),
+          entry: e,
+          onTap: () => _openDetail(e),
+        ),
+      },
       header: [
         const AreaIntro(area: DestinationId.timeline, terms: ['correction']),
         const SizedBox(height: 12),
@@ -195,6 +207,57 @@ String recordTitle(S s, HealthRecord r) =>
 String fmtWhen(DateTime utc) =>
     formatWhenShown(utc.toLocal(), displayDateOrder, displayClock);
 
+/// The calendar day a record belongs to (U038): a lab sample date is its
+/// own calendar day (stored as UTC midnight, never shifted); any other
+/// record falls on the local day it was observed.
+DateTime recordDay(HealthRecord r) =>
+    recordDayOf(r.observedAt, dateOnly: r.observedDateOnly);
+
+/// The calendar day of the stored instant [utc]: as stored for a date
+/// alone, else the local day.
+DateTime recordDayOf(DateTime utc, {required bool dateOnly}) {
+  final d = dateOnly ? utc : utc.toLocal();
+  return DateTime(d.year, d.month, d.day);
+}
+
+/// "Today", "Yesterday" or the date in the chosen order, for [day] seen
+/// from the local day of [now].
+String dayLabel(S s, DateTime day, DateTime now) {
+  if (day == DateTime(now.year, now.month, now.day)) return s.dayToday;
+  if (day == DateTime(now.year, now.month, now.day - 1)) {
+    return s.dayYesterday;
+  }
+  return formatDay(day.year, day.month, day.day, displayDateOrder);
+}
+
+/// The Timeline's rows: a day header `(yyyy-mm-dd, label, null)` before
+/// the first entry of each day, then each entry `(day, label, entry)`.
+List<(String, String, TimelineEntry?)> timelineItems(
+  S s,
+  List<TimelineEntry> entries,
+  DateTime now,
+) {
+  final items = <(String, String, TimelineEntry?)>[];
+  String? last;
+  for (final e in entries) {
+    final d = recordDay(e.shown);
+    final key = formatDay(d.year, d.month, d.day, DateOrder.iso);
+    final label = dayLabel(s, d, now);
+    if (key != last) items.add((key, label, null));
+    last = key;
+    items.add((key, label, e));
+  }
+  return items;
+}
+
+/// When, under a day header: the time of day alone, as the chosen clock
+/// shows it. A sample date has no time, so it says it is a sample date.
+String fmtTimeOfDay(S s, HealthRecord r) {
+  if (r.observedDateOnly) return '${s.labSampleDate}: ${fmtObserved(r)}';
+  final full = fmtWhen(r.observedAt);
+  return full.substring(full.indexOf(' ') + 1);
+}
+
 /// "time corrected from … to …" when [v] is a measurement correction whose
 /// time differs from the version it corrects (G-48); null otherwise.
 String? timeCorrectedLine(S s, HealthRecord v, Map<String, HealthRecord> byId) {
@@ -213,81 +276,32 @@ class _EntryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final text = Theme.of(context).textTheme;
     final r = entry.shown;
     final value = entry.status == EntryStatus.conflict
         ? s.versionsDisagree
         : fmtValue(s, r);
-    return Card(
-      semanticContainer: false,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(recordTitle(s, r), style: text.titleSmall),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      value,
-                      textAlign: TextAlign.end,
-                      style: text.titleMedium,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                [
-                  fmtObserved(r),
-                  s.recordState(r.state),
-                  s.provenanceKind(r.provenance.kind),
-                  if (r.kind.isMeasurement)
-                    if (savedWhenDifferent(r, fmtWhen) case final saved?)
-                      s.savedAtLabel(saved),
-                ].join(' · '),
-                style: text.bodySmall,
-              ),
-              // What else the report printed (D-045), when present.
-              if (entry.status != EntryStatus.conflict)
-                if (r.lab case final lab? when lab.hasReportDetails)
-                  Text(
-                    labReportLines(s, lab, fmtWhen).join(' · '),
-                    key: ValueKey('timeline-lab-report-${r.id}'),
-                    style: text.bodySmall,
-                  ),
-              if (entry.corrected || !entry.isLive) ...[
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: [
-                    if (entry.corrected)
-                      StatusChip(
-                        label: s.versionsCount(entry.versions.length),
-                        tone: StatusTone.info,
-                      ),
-                    if (entry.status != EntryStatus.current)
-                      StatusChip(
-                        label: s.entryStatus(entry.status),
-                        tone: entry.status == EntryStatus.conflict
-                            ? StatusTone.warn
-                            : StatusTone.muted,
-                      ),
-                  ],
-                ),
-              ],
-            ],
+    // One row (U038): what and the value as typed, then the time; where it
+    // came from, when it was saved and the report's other lines are in the
+    // record's sheet, under "Details".
+    return RecordRow(
+      title: recordTitle(s, r),
+      value: value,
+      when: fmtTimeOfDay(s, r),
+      onTap: onTap,
+      chips: [
+        if (entry.corrected)
+          StatusChip(
+            label: s.versionsCount(entry.versions.length),
+            tone: StatusTone.info,
           ),
-        ),
-      ),
+        if (entry.status != EntryStatus.current)
+          StatusChip(
+            label: s.entryStatus(entry.status),
+            tone: entry.status == EntryStatus.conflict
+                ? StatusTone.warn
+                : StatusTone.muted,
+          ),
+      ],
     );
   }
 }
@@ -324,6 +338,9 @@ class _EntryDetailState extends State<_EntryDetail> {
   String? _errorCode;
   String? _errorField;
   bool _busy = false;
+
+  /// The versions' machinery is shown (U038); closed when the sheet opens.
+  bool _details = false;
 
   @override
   void dispose() {
@@ -680,6 +697,7 @@ class _EntryDetailState extends State<_EntryDetail> {
     final e = widget.entry;
     final headIds = {for (final h in e.heads) h.id};
     final byId = {for (final v in e.versions) v.id: v};
+    final quiet = Theme.of(context).colorScheme.onSurfaceVariant;
     return SafeArea(
       child: SingleChildScrollView(
         key: const ValueKey('timeline-detail'),
@@ -693,45 +711,92 @@ class _EntryDetailState extends State<_EntryDetail> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(recordTitle(s, e.shown), style: text.titleLarge),
-            const SizedBox(height: 4),
-            Text(s.entryStatusExplain(e.status), style: text.bodyMedium),
-            const SizedBox(height: 12),
+            const SizedBox(height: Space.xs),
+            Text(
+              s.entryStatusExplain(e.status),
+              style: text.bodyMedium?.copyWith(color: quiet),
+            ),
+            const SizedBox(height: Space.l),
             Semantics(
               header: true,
               child: Text(s.versions, style: text.titleSmall),
             ),
+            // Each version: the value as typed first, then why it exists
+            // and when; the machinery (when it was saved, where it came
+            // from, the report's other lines) behind "Details" (U038).
             for (final v in e.versions.reversed)
-              ListTile(
+              Padding(
                 key: ValueKey('version-${v.id}'),
-                contentPadding: EdgeInsets.zero,
-                title: Text(fmtValue(s, v)),
-                subtitle: Text(
-                  [
-                    s.versionRole(
-                      isFirst: v.supersedesId == null,
-                      withdrawn: e.withdrawn.contains(v.id),
-                      current: headIds.contains(v.id) && e.isLive,
+                padding: const EdgeInsets.only(top: Space.m),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      fmtValue(s, v),
+                      style: text.titleMedium?.copyWith(
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
-                    if (v.kind.isMeasurement &&
-                        savedWhenDifferent(v, fmtWhen) != null)
-                      s.measuredAtLabel(fmtWhen(v.observedAt)),
-                    // A correction that moved the time says from what to
-                    // what (G-48); the earlier version keeps its own time.
-                    ?timeCorrectedLine(s, v, byId),
-                    '${s.enteredOn} ${fmtWhen(v.recordedAt)}',
-                    s.provenanceKind(v.provenance.kind),
-                    if (v.kind.isMeasurement) ...[
-                      if (typedWhenDifferent(v) case final typed?)
-                        '${s.enteredAs} "$typed"',
-                      if (v.context case final note?)
-                        '${s.contextLabel}: "$note"',
-                    ] else if (v.originalText != null)
-                      '"${v.originalText}"',
-                    if (v.lab case final lab?)
-                      ...labReportLines(s, lab, fmtWhen),
-                  ].join(' · '),
+                    Text(
+                      [
+                        s.versionRole(
+                          isFirst: v.supersedesId == null,
+                          withdrawn: e.withdrawn.contains(v.id),
+                          current: headIds.contains(v.id) && e.isLive,
+                        ),
+                        if (v.kind.isMeasurement &&
+                            savedWhenDifferent(v, fmtWhen) != null)
+                          s.measuredAtLabel(fmtWhen(v.observedAt))
+                        else
+                          fmtObserved(v),
+                        // A correction that moved the time says from what
+                        // to what (G-48); the earlier version keeps its own
+                        // time.
+                        ?timeCorrectedLine(s, v, byId),
+                        if (v.kind.isMeasurement) ...[
+                          if (typedWhenDifferent(v) case final typed?)
+                            '${s.enteredAs} "$typed"',
+                          if (v.context case final note?)
+                            '${s.contextLabel}: "$note"',
+                        ] else if (v.originalText != null)
+                          '"${v.originalText}"',
+                      ].join(' · '),
+                      style: text.bodyMedium?.copyWith(color: quiet),
+                    ),
+                    if (_details)
+                      Padding(
+                        key: ValueKey('version-details-${v.id}'),
+                        padding: const EdgeInsets.only(top: Space.xs),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DetailLine(
+                              '${s.enteredOn} ${fmtWhen(v.recordedAt)}',
+                            ),
+                            DetailLine(
+                              '${s.recordState(v.state)} · '
+                              '${s.provenanceKind(v.provenance.kind)}',
+                            ),
+                            if (v.lab case final lab?)
+                              for (final line in labReportLines(
+                                s,
+                                lab,
+                                fmtWhen,
+                              ))
+                                DetailLine(line),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
+            const SizedBox(height: Space.xs),
+            DetailsToggle(
+              id: 'timeline-${e.rootId}',
+              open: _details,
+              about: recordTitle(s, e.shown),
+              onToggle: () => setState(() => _details = !_details),
+            ),
             if (e.deletion != null)
               Text(
                 '${s.entryStatus(EntryStatus.deleted)} · '

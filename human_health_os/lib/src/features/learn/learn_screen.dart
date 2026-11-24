@@ -4,6 +4,7 @@ import '../../app/appearance_scope.dart';
 import '../../domain/settings/appearance.dart';
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/area_intro.dart';
 import '../../presentation/widgets/tool_row.dart';
 import '../guide/body_guide_screen.dart';
@@ -25,10 +26,10 @@ class LearnScreen extends StatelessWidget {
             .push(MaterialPageRoute<void>(builder: (_) => page));
     return ListView(
       key: const ValueKey('screen-learn'),
-      padding: const EdgeInsets.all(16),
+      padding: kPagePadding,
       children: [
         const AreaIntro(area: DestinationId.learn),
-        const SizedBox(height: 16),
+        const SizedBox(height: Space.l),
         ToolRow(
           key: const ValueKey('tool-glossary'),
           title: s.glossaryTitle,

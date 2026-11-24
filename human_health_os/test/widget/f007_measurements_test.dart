@@ -633,8 +633,9 @@ void main() {
     expect(find.text('77.50 kg'), findsOneWidget);
   });
 
-  testWidgets('Timeline: a back-dated height shows when it was measured and '
-      'when it was saved, on the row and in the sheet', (tester) async {
+  testWidgets('Timeline: a back-dated height is listed under the day it was '
+      'measured; the sheet says when it was measured and, under Details, '
+      'when it was saved', (tester) async {
     await launch(tester);
     await saveScalar(
       tester,
@@ -652,14 +653,36 @@ void main() {
       ),
     ).join('\n');
     expect(rows, contains('172 cm'));
-    expect(rows, contains('saved 2'), reason: 'the row says when it was saved');
+    // U038: the row sits under the day it was measured; when it was saved
+    // is machinery, in the sheet under Details.
+    final day = DateTime.utc(2026, 10, 1, 8).toLocal();
+    final iso =
+        '${day.year}-${day.month.toString().padLeft(2, '0')}-'
+        '${day.day.toString().padLeft(2, '0')}';
+    expect(find.byKey(ValueKey('timeline-day-$iso')), findsOneWidget);
+    expect(rows, isNot(contains('saved 2')));
     await tester.tap(find.text('172 cm'));
     await settle(tester);
-    final sheet = textsUnder(
+    String sheet() => textsUnder(
       tester,
       find.byKey(const ValueKey('timeline-detail')),
     ).join('\n');
-    expect(sheet, contains('measured 2'), reason: 'the sheet says measured');
+    expect(sheet(), contains('measured 2'), reason: 'the sheet says measured');
+    expect(sheet(), isNot(contains('entered 2')));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('timeline-detail')),
+        matching: find.byWidgetPredicate(
+          (w) =>
+              w.key is ValueKey<String> &&
+              (w.key! as ValueKey<String>).value.startsWith(
+                'details-timeline-',
+              ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(sheet(), contains('entered 2'), reason: 'Details: when saved');
   });
 
   testWidgets('a time error re-opens "More details" even when the person '

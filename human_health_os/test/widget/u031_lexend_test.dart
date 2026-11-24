@@ -102,6 +102,8 @@ void main() {
       initial: const AppearanceSettings(font: FontChoice.dyslexic),
     );
     await tapKey(tester, 'open-settings');
+    // The samples open under "See each font" (U038).
+    await tapKey(tester, 'details-font-previews');
     for (final f in FontChoice.values) {
       final line = find.descendant(
         of: find.byKey(ValueKey('font-preview-${f.name}')),
@@ -129,6 +131,7 @@ void main() {
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       await settle(tester);
       await tapKey(tester, 'open-settings');
+      await tapKey(tester, 'details-font-previews');
       for (final f in FontChoice.values) {
         for (final k in ['set-font-${f.name}', 'font-preview-${f.name}']) {
           final w = find.byKey(ValueKey(k));

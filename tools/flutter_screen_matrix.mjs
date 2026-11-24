@@ -97,8 +97,8 @@ const SCREENS = {
   ],
 };
 // Settings has one heading level per section (U035): its first is the
-// interface scale section's title.
-const SETTINGS_FIRST_HEADING = { 'en-US': 'Interface scale', 'tr-TR': 'Arayüz ölçeği' };
+// light-or-dark section's title (U038: the most used first).
+const SETTINGS_FIRST_HEADING = { 'en-US': 'Light or dark', 'tr-TR': 'Açık veya koyu' };
 const MORE = { 'en-US': 'More', 'tr-TR': 'Diğer' };
 // The back button is named once (R016: Flutter's Android icon label, which
 // repeated the tooltip as "Back Back", is removed by the app theme).

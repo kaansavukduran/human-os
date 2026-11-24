@@ -3,9 +3,51 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "U036",
+    "contract": "v0.32",
+    "run_id": "U036@v0.32",
+    "slice": "Breathing room and a clear first glance: one spacing scale, centred reading width, a calmer Today with More measurements, one heading level per screen",
+    "goal": "The owner asked for a user-friendly, airy, understandable, fluent UI.",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "ccb44d0",
+    "app_revision": null,
+    "started_at": "2026-11-24T19:30:00Z",
+    "finished_at": null,
+    "scope": [
+      "human_health_os/lib",
+      "human_health_os/test",
+      "tools/flutter_web_smoke.mjs",
+      "reports/runtime/u036",
+      "docs/DESIGN.md"
+    ],
+    "acceptance_criteria": [
+      "AC-1 audit numbers before/after recorded",
+      "AC-2 tests for the expander, width, reduced motion, 2x text",
+      "AC-3 full suites, smokes, Linux build and runtime pass"
+    ],
+    "completed_steps": [
+      "implementation 57a956f"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox, Safari NOT TESTED"
+    ],
+    "depends_on": [
+      "Q003"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

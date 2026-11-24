@@ -564,7 +564,7 @@ class _LabSheetState extends State<_LabSheet> {
         if (details != null)
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: FieldDetails(id: key, text: details),
+            child: FieldDetails(id: key, text: details, fieldLabel: label),
           ),
       ],
     ),
@@ -676,6 +676,8 @@ class _LabSheetState extends State<_LabSheet> {
         FieldDetails(
           id: 'lab-interval',
           text: s.labIntervalExplain,
+          fieldLabel: s.labIntervalTitle,
+          showText: s.fieldMoreShow,
           textKey: const ValueKey('lab-interval-explain'),
         ),
         const SizedBox(height: Space.s),

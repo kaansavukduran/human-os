@@ -201,11 +201,20 @@ class FieldDetails extends StatefulWidget {
     super.key,
     required this.id,
     required this.text,
+    required this.fieldLabel,
+    this.showText,
     this.textKey,
   });
 
   final String id;
   final String text;
+
+  /// The name of the field these details belong to. A screen reader hears
+  /// it with the toggle, so several toggles on one sheet stay apart.
+  final String fieldLabel;
+
+  /// The closed toggle's words; "What to type here" by default.
+  final String? showText;
 
   /// The key of the opened text; `<id>-details-text` by default.
   final Key? textKey;
@@ -222,6 +231,9 @@ class _FieldDetailsState extends State<FieldDetails> {
     final s = S.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final toggle = _open
+        ? s.fieldDetailsHide
+        : widget.showText ?? s.fieldDetailsShow;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,6 +242,7 @@ class _FieldDetailsState extends State<FieldDetails> {
           container: true,
           button: true,
           expanded: _open,
+          label: s.fieldDetailsFor(toggle, widget.fieldLabel),
           child: InkWell(
             key: ValueKey('${widget.id}-details'),
             borderRadius: BorderRadius.circular(Space.s),
@@ -250,10 +263,14 @@ class _FieldDetailsState extends State<FieldDetails> {
                     ),
                     const SizedBox(width: Space.xs),
                     Flexible(
-                      child: Text(
-                        _open ? s.fieldDetailsHide : s.fieldDetailsShow,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.primary,
+                      // Said once, with the field's name, by the Semantics
+                      // above.
+                      child: ExcludeSemantics(
+                        child: Text(
+                          toggle,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.primary,
+                          ),
                         ),
                       ),
                     ),

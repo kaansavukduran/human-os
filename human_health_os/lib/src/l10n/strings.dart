@@ -970,7 +970,8 @@ class S {
   };
   String get medsIngredients =>
       _t('Active ingredients (optional)', 'Etken maddeler (isteğe bağlı)');
-  String get medsStrength => _t('Strength (optional)', 'Güç (isteğe bağlı)');
+  String get medsStrength =>
+      _t('Strength (optional)', 'Etken madde miktarı (isteğe bağlı)');
   String get medsStrengthHelp =>
       _t('As printed, e.g. 500 mg', 'Kutuda yazdığı gibi, ör. 500 mg');
   String get medsForm => _t('Form (optional)', 'Şekil (isteğe bağlı)');
@@ -1030,7 +1031,7 @@ class S {
     'Bugün: $taken alındı, $skipped atlandı',
   );
   String get medsTodayNone =>
-      _t('Today: no dose recorded yet', 'Bugün: henüz doz kaydı yok');
+      _t('Today: no dose recorded', 'Bugün: doz kaydı yok');
   String medsDoseCounts(int taken, int skipped) => _t(
     'Doses you recorded: $taken taken, $skipped skipped',
     'Kaydettiğin dozlar: $taken alındı, $skipped atlandı',
@@ -1563,8 +1564,8 @@ class S {
     'Bunların hepsini daha sonra Ayarlar\'dan (sağ üst) değiştirebilirsin.',
   );
   String get firstThen => _t(
-    'Then type a first number on Today, for example your weight, and press Save.',
-    'Sonra Bugün ekranında ilk sayını, örneğin kilonu yaz ve Kaydet\'e bas.',
+    'Later, on Today, type a first number, for example your weight, and press Save.',
+    'Daha sonra Bugün ekranında ilk sayını, örneğin kilonu yaz ve Kaydet\'e bas.',
   );
   String get firstMoreInSettings => _t(
     'Colour, text size, units and more are in Settings.',
@@ -1573,6 +1574,11 @@ class S {
   String get firstNext => _t('Next', 'İleri');
   String get fieldDetailsShow => _t('What to type here', 'Ne yazılır?');
   String get fieldDetailsHide => _t('Hide the details', 'Ayrıntıyı gizle');
+  String get fieldMoreShow => _t('More about this', 'Bu ne demek?');
+
+  /// What a screen reader says for a details toggle: the toggle and the
+  /// field it belongs to (several toggles on one sheet stay apart).
+  String fieldDetailsFor(String toggle, String field) => '$toggle: $field';
   String get firstBack => _t('Back', 'Geri');
   String get firstSkip => _t('Skip', 'Atla');
   String get firstStart => _t('Start', 'Başla');

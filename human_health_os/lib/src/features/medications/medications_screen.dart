@@ -100,7 +100,12 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
       rowBuilder: (context, m, area) => _ItemCard(
         view: m,
         onPlan: () => area.openSheet(
-          (_) => _PlanSheet(svc: _svc, me: _me, itemRootId: m.rootId),
+          (_) => _PlanSheet(
+            svc: _svc,
+            me: _me,
+            itemRootId: m.rootId,
+            change: m.plan != null,
+          ),
         ),
         onDose: (status) => area.openSheet(
           (_) => _DoseSheet(
@@ -525,11 +530,15 @@ class _PlanSheet extends StatefulWidget {
     required this.svc,
     required this.me,
     required this.itemRootId,
+    this.change = false,
   });
 
   final HeartbeatService svc;
   final String me;
   final String itemRootId;
+
+  /// A plan exists: the sheet is titled "Change the plan".
+  final bool change;
 
   @override
   State<_PlanSheet> createState() => _PlanSheetState();
@@ -564,7 +573,7 @@ class _PlanSheetState extends State<_PlanSheet> with _SheetErrors<_PlanSheet> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     return _FormSheet(
-      title: s.medsPlanAdd,
+      title: widget.change ? s.medsPlanChange : s.medsPlanAdd,
       error: looseError,
       onSave: _save,
       saveKey: 'meds-plan-save',

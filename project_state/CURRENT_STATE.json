@@ -3,47 +3,9 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "IMPLEMENTING",
+  "development_state": "READY",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": {
-    "forge_id": "R024",
-    "contract": "v0.32",
-    "run_id": "R024@v0.32",
-    "slice": "U037 review fixes: details toggles name their field for screen readers, true first-run wording in every build, quieter dose and plan wording, natural Turkish for strength",
-    "goal": "U037 review fixes: details toggles name their field for screen readers, true first-run wording in every build, quieter dose and plan wording, natural Turkish for strength",
-    "status": "IMPLEMENTING",
-    "baseline_commit": "c7d4149",
-    "app_revision": null,
-    "started_at": "2026-11-24T22:18:23Z",
-    "finished_at": null,
-    "scope": [
-      "human_health_os/lib",
-      "human_health_os/test"
-    ],
-    "acceptance_criteria": [
-      "AC-1 each fix has a regression test",
-      "AC-2 full suites, web smoke, Linux build and runtime pass"
-    ],
-    "completed_steps": [
-      "fixes 822ba2a"
-    ],
-    "last_verified_gate": null,
-    "next_action": "gates",
-    "files_touched": [],
-    "migration_ids": [],
-    "evidence_ids": [],
-    "verified_gates": [],
-    "blocker": null,
-    "result": null,
-    "limitations": [
-      "real devices, Firefox, Safari, real screen readers NOT TESTED"
-    ],
-    "depends_on": [
-      "U037"
-    ],
-    "review": null,
-    "out_of_scope": []
-  },
+  "active_forge": null,
   "suspended_forges": [
     {
       "forge_id": "F015-L1",
@@ -54,7 +16,7 @@
       "next_action": "add libgles2 / libGLESv2.so.2()(64bit) dependencies, adopt D-012 names, rebuild staging3, rerun the Linux matrix incl. Ubuntu 22.04"
     }
   ],
-  "last_completed_forge": "U037@v0.32 (2026-11-24, source revision b3ad1d2bacf1)",
+  "last_completed_forge": "R024@v0.32 (2026-11-25, source revision 5abe8c87fd54)",
   "baseline": {
     "git_commit": "254c534f10b0a5d01e96edcc0bcb5630fbba6936",
     "working_tree": "clean at v0.32 Phase 0 start (only docs/handoff/v0.32 untracked)",
@@ -67,100 +29,100 @@
   "verified_gates": [
     {
       "gate": "flutter pub get",
-      "evidence_id": "EV-TEST-F007-1454",
+      "evidence_id": "EV-TEST-F007-1468",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "dart format --set-exit-if-changed . (0 changed)",
-      "evidence_id": "EV-TEST-F007-1455",
+      "evidence_id": "EV-TEST-F007-1469",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "flutter analyze (no issues)",
-      "evidence_id": "EV-TEST-F007-1456",
+      "evidence_id": "EV-TEST-F007-1470",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
-      "gate": "flutter test, TZ=UTC (1371 PASS, 1 skipped)",
-      "evidence_id": "EV-TEST-F007-1457",
+      "gate": "flutter test, TZ=UTC (1384 PASS, 1 skipped)",
+      "evidence_id": "EV-TEST-F007-1471",
       "criterion": "AC-1..AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "state/evidence tooling unit tests",
-      "evidence_id": "EV-TEST-F007-1458",
+      "evidence_id": "EV-TEST-F007-1472",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "flutter build web --release --no-web-resources-cdn (development profile) COMPILED",
-      "evidence_id": "EV-BUILD-F007-1459",
+      "evidence_id": "EV-BUILD-F007-1473",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "Playwright smoke in Chromium (182 checks): Learn and its three entries in desktop-en, phone-en and phone-tr, About, the loading view, every area, backup and restore; no console errors, no external requests",
-      "evidence_id": "EV-RUNTIME-F007-1460",
+      "evidence_id": "EV-RUNTIME-F007-1474",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "Appearance smoke in Chromium (24 checks: interface scale presets and exact scale, fonts; en-US, tr-TR, de-DE), also run by CI",
-      "evidence_id": "EV-RUNTIME-F007-1467",
+      "evidence_id": "EV-RUNTIME-F007-1481",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "Linux integration on real files (13 PASS, with a development vault imported into an encrypted vault, relaunched and unlocked, no plaintext marker in the vault file)",
-      "evidence_id": "EV-TEST-F007-1461",
+      "evidence_id": "EV-TEST-F007-1475",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "flutter build linux --release (development profile) COMPILED",
-      "evidence_id": "EV-BUILD-F007-1462",
+      "evidence_id": "EV-BUILD-F007-1476",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
-      "gate": "flutter test with TZ=America/New_York (1372 PASS)",
-      "evidence_id": "EV-RUNTIME-F007-1463",
+      "gate": "flutter test with TZ=America/New_York (1385 PASS)",
+      "evidence_id": "EV-RUNTIME-F007-1477",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "flutter test with TZ=America/New_York (1205 PASS)",
-      "evidence_id": "EV-TEST-F007-1464",
+      "evidence_id": "EV-TEST-F007-1478",
       "criterion": "AC-1..AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "contracts verification with the per-engine parity table: 73/73 vectors in TS and Python, Dart from its receipt",
-      "evidence_id": "EV-TEST-F007-1465",
+      "evidence_id": "EV-TEST-F007-1479",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     },
     {
       "gate": "pnpm test",
-      "evidence_id": "EV-TEST-F007-1466",
+      "evidence_id": "EV-TEST-F007-1480",
       "criterion": "AC-4",
-      "source_revision": "b3ad1d2bacf1158011b722c85044c4216cd860f0",
+      "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
       "result": "PASS"
     }
   ],
@@ -193,16 +155,16 @@
     }
   ],
   "next_recommended_forge": {
-    "forge_id": "R024",
+    "forge_id": "U038",
     "contract": "v0.32",
-    "run_id": "R024@v0.32",
-    "slice": "U037 review fixes: details toggles name their field for screen readers, true first-run wording in every build, quieter dose and plan wording, natural Turkish for strength",
-    "why": "Independent read-only review of U037 found two should-fix items and four nits.",
+    "run_id": "U038@v0.32",
+    "slice": "Airy, understandable reading: the Timeline, the Labs list and group view, Learn and Settings with the U036 scale; one clear action each; plain words for a first-time person",
+    "why": "Owner: user friendly, airy, understandable, fluent UI; U036/U037 covered Today and entry.",
     "depends_on": [
-      "U037"
+      "R024"
     ]
   },
-  "updated_at": "2026-11-24T23:50:00Z",
+  "updated_at": "2026-11-25T00:40:00Z",
   "authoritative_sources": {
     "product_semantics": "docs/handoff/v0.24/LONGEVITY_APP_MASTER_HANDOFF_v0.24.md",
     "process_master": "docs/handoff/v0.32/ (D-013); v0.31 superseded (D-011)",
@@ -18600,6 +18562,167 @@
         "U036"
       ],
       "review": "Independent read-only Opus review: no blocking findings; 2 should + 4 nits carried to R024. Includes the Windows CI Labs-test wait (50ba9fa) and the docs/lore structure (a9d3a1f, D-051)",
+      "out_of_scope": []
+    },
+    "R024@v0.32": {
+      "forge_id": "R024",
+      "contract": "v0.32",
+      "run_id": "R024@v0.32",
+      "slice": "U037 review fixes: details toggles name their field for screen readers, true first-run wording in every build, quieter dose and plan wording, natural Turkish for strength",
+      "goal": "U037 review fixes: details toggles name their field for screen readers, true first-run wording in every build, quieter dose and plan wording, natural Turkish for strength",
+      "status": "DONE",
+      "baseline_commit": "c7d4149",
+      "app_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+      "started_at": "2026-11-24T22:18:23Z",
+      "finished_at": "2026-11-25T00:40:00Z",
+      "scope": [
+        "human_health_os/lib",
+        "human_health_os/test"
+      ],
+      "acceptance_criteria": [
+        "AC-1 each fix has a regression test",
+        "AC-2 full suites, web smoke, Linux build and runtime pass"
+      ],
+      "completed_steps": [
+        "fixes 822ba2a",
+        "GATES: 14 receipts on clean tree 5abe8c8, all PASS"
+      ],
+      "last_verified_gate": "EV-TEST-F007-1480",
+      "next_action": null,
+      "files_touched": [
+        "human_health_os/lib/src/features/labs/labs_screen.dart",
+        "human_health_os/lib/src/features/medications/medications_screen.dart",
+        "human_health_os/lib/src/l10n/strings.dart",
+        "human_health_os/lib/src/presentation/widgets/sheet_parts.dart",
+        "human_health_os/test/widget/r024_entry_review_test.dart",
+        "project_state/CURRENT_STATE.json"
+      ],
+      "migration_ids": [],
+      "evidence_ids": [
+        "EV-TEST-F007-1468",
+        "EV-TEST-F007-1469",
+        "EV-TEST-F007-1470",
+        "EV-TEST-F007-1471",
+        "EV-TEST-F007-1472",
+        "EV-BUILD-F007-1473",
+        "EV-RUNTIME-F007-1474",
+        "EV-RUNTIME-F007-1481",
+        "EV-TEST-F007-1475",
+        "EV-BUILD-F007-1476",
+        "EV-RUNTIME-F007-1477",
+        "EV-TEST-F007-1478",
+        "EV-TEST-F007-1479",
+        "EV-TEST-F007-1480"
+      ],
+      "verified_gates": [
+        {
+          "gate": "flutter pub get",
+          "evidence_id": "EV-TEST-F007-1468",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "dart format --set-exit-if-changed . (0 changed)",
+          "evidence_id": "EV-TEST-F007-1469",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter analyze (no issues)",
+          "evidence_id": "EV-TEST-F007-1470",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test, TZ=UTC (1384 PASS, 1 skipped)",
+          "evidence_id": "EV-TEST-F007-1471",
+          "criterion": "AC-1..AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "state/evidence tooling unit tests",
+          "evidence_id": "EV-TEST-F007-1472",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter build web --release --no-web-resources-cdn (development profile) COMPILED",
+          "evidence_id": "EV-BUILD-F007-1473",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "Playwright smoke in Chromium (182 checks): Learn and its three entries in desktop-en, phone-en and phone-tr, About, the loading view, every area, backup and restore; no console errors, no external requests",
+          "evidence_id": "EV-RUNTIME-F007-1474",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "Appearance smoke in Chromium (24 checks: interface scale presets and exact scale, fonts; en-US, tr-TR, de-DE), also run by CI",
+          "evidence_id": "EV-RUNTIME-F007-1481",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "Linux integration on real files (13 PASS, with a development vault imported into an encrypted vault, relaunched and unlocked, no plaintext marker in the vault file)",
+          "evidence_id": "EV-TEST-F007-1475",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter build linux --release (development profile) COMPILED",
+          "evidence_id": "EV-BUILD-F007-1476",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test with TZ=America/New_York (1385 PASS)",
+          "evidence_id": "EV-RUNTIME-F007-1477",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test with TZ=America/New_York (1205 PASS)",
+          "evidence_id": "EV-TEST-F007-1478",
+          "criterion": "AC-1..AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "contracts verification with the per-engine parity table: 73/73 vectors in TS and Python, Dart from its receipt",
+          "evidence_id": "EV-TEST-F007-1479",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        },
+        {
+          "gate": "pnpm test",
+          "evidence_id": "EV-TEST-F007-1480",
+          "criterion": "AC-4",
+          "source_revision": "5abe8c87fd54781bd87e63d5212929bf269fab58",
+          "result": "PASS"
+        }
+      ],
+      "blocker": null,
+      "result": "R024_COMPLETE",
+      "limitations": [
+        "real devices, Firefox, Safari, real screen readers NOT TESTED"
+      ],
+      "depends_on": [
+        "U037"
+      ],
+      "review": "U037 review fixes with 13 regression tests",
       "out_of_scope": []
     }
   },

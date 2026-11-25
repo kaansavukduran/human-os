@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · U043@v0.32 closed (labels and chips wrap between words, never cut; WholeChip replaces every Material chip); 14 gates PASS at 2e0a475 (EV-*-F007-1622…1635). Q006 closed before it.
+- CONFIRMED · 2026-11-25 · Q007@v0.32 closed (screen matrix after U043: 278 cells, 258/20 by eye; Documents and Preventive field names fixed); 14 gates PASS at 0a4d229 (EV-*-F007-1636…1649). U043 closed before it.
 
 ## Next step
-- PLANNED · Q007@v0.32: screen matrix after U043 (every WholeChip screen, dark and light, keyboard focus, web semantics).
+- PLANNED · U044@v0.32: Medications sheet stacked heading, whole text-field labels everywhere at 2× text, compact chips, rail label limit, matrix reveal and the sheet Save bar.
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

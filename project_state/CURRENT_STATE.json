@@ -3,48 +3,9 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "IMPLEMENTING",
+  "development_state": "READY",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": {
-    "forge_id": "Q007",
-    "contract": "v0.32",
-    "run_id": "Q007@v0.32",
-    "slice": "Screen matrix after U043: real screenshots of every screen with WholeChip (24 chip uses, Settings order list, palette cards, first run) at 320 dp 1x/2x and desktop, EN/TR, dark and light; keyboard focus ring and web semantics (checked) seen in Chromium",
-    "goal": "Screen matrix after U043: real screenshots of every screen with WholeChip (24 chip uses, Settings order list, palette cards, first run) at 320 dp 1x/2x and desktop, EN/TR, dark and light; keyboard focus ring and web semantics (checked) seen in Chromium",
-    "status": "IMPLEMENTING",
-    "baseline_commit": "4907512",
-    "app_revision": null,
-    "started_at": "2026-11-25T18:21:38Z",
-    "finished_at": null,
-    "scope": [
-      "reports",
-      "tools",
-      "human_health_os"
-    ],
-    "acceptance_criteria": [
-      "AC-1 each fix has a regression test",
-      "AC-2 full suites, web smoke, Linux build and runtime pass"
-    ],
-    "completed_steps": [
-      "implementation 3f2230f 1e51e55 22b0ae8 83002fe"
-    ],
-    "last_verified_gate": null,
-    "next_action": "gates",
-    "files_touched": [],
-    "migration_ids": [],
-    "evidence_ids": [],
-    "verified_gates": [],
-    "blocker": null,
-    "result": null,
-    "limitations": [
-      "real devices, Firefox, Safari, real screen readers NOT TESTED"
-    ],
-    "depends_on": [
-      "U043"
-    ],
-    "review": null,
-    "out_of_scope": []
-  },
+  "active_forge": null,
   "suspended_forges": [
     {
       "forge_id": "F015-L1",
@@ -55,7 +16,7 @@
       "next_action": "add libgles2 / libGLESv2.so.2()(64bit) dependencies, adopt D-012 names, rebuild staging3, rerun the Linux matrix incl. Ubuntu 22.04"
     }
   ],
-  "last_completed_forge": "U043@v0.32 (2026-11-25, source revision 2e0a4751c6d6)",
+  "last_completed_forge": "Q007@v0.32 (2026-11-25, source revision 0a4d2298a4af)",
   "baseline": {
     "git_commit": "254c534f10b0a5d01e96edcc0bcb5630fbba6936",
     "working_tree": "clean at v0.32 Phase 0 start (only docs/handoff/v0.32 untracked)",
@@ -68,100 +29,100 @@
   "verified_gates": [
     {
       "gate": "flutter pub get",
-      "evidence_id": "EV-TEST-F007-1622",
+      "evidence_id": "EV-TEST-F007-1636",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "dart format --set-exit-if-changed . (0 changed)",
-      "evidence_id": "EV-TEST-F007-1623",
+      "evidence_id": "EV-TEST-F007-1637",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "flutter analyze (no issues)",
-      "evidence_id": "EV-TEST-F007-1624",
+      "evidence_id": "EV-TEST-F007-1638",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
-      "gate": "flutter test, TZ=UTC (1537 PASS, 1 skipped)",
-      "evidence_id": "EV-TEST-F007-1625",
+      "gate": "flutter test, TZ=UTC (1543 PASS, 1 skipped)",
+      "evidence_id": "EV-TEST-F007-1639",
       "criterion": "AC-1..AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "state/evidence tooling unit tests",
-      "evidence_id": "EV-TEST-F007-1626",
+      "evidence_id": "EV-TEST-F007-1640",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "flutter build web --release --no-web-resources-cdn (development profile) COMPILED",
-      "evidence_id": "EV-BUILD-F007-1627",
+      "evidence_id": "EV-BUILD-F007-1641",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "Playwright smoke in Chromium (182 checks): Learn and its three entries in desktop-en, phone-en and phone-tr, About, the loading view, every area, backup and restore; no console errors, no external requests",
-      "evidence_id": "EV-RUNTIME-F007-1628",
+      "evidence_id": "EV-RUNTIME-F007-1642",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "Appearance smoke in Chromium (24 checks: interface scale presets and exact scale, fonts; en-US, tr-TR, de-DE), also run by CI",
-      "evidence_id": "EV-RUNTIME-F007-1635",
+      "evidence_id": "EV-RUNTIME-F007-1649",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "Linux integration on real files (13 PASS, with a development vault imported into an encrypted vault, relaunched and unlocked, no plaintext marker in the vault file)",
-      "evidence_id": "EV-TEST-F007-1629",
+      "evidence_id": "EV-TEST-F007-1643",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "flutter build linux --release (development profile) COMPILED",
-      "evidence_id": "EV-BUILD-F007-1630",
+      "evidence_id": "EV-BUILD-F007-1644",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
-      "gate": "flutter test with TZ=America/New_York (1538 PASS)",
-      "evidence_id": "EV-RUNTIME-F007-1631",
+      "gate": "flutter test with TZ=America/New_York (1544 PASS)",
+      "evidence_id": "EV-RUNTIME-F007-1645",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "flutter test with TZ=America/New_York (1205 PASS)",
-      "evidence_id": "EV-TEST-F007-1632",
+      "evidence_id": "EV-TEST-F007-1646",
       "criterion": "AC-1..AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "contracts verification with the per-engine parity table: 73/73 vectors in TS and Python, Dart from its receipt",
-      "evidence_id": "EV-TEST-F007-1633",
+      "evidence_id": "EV-TEST-F007-1647",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     },
     {
       "gate": "pnpm test",
-      "evidence_id": "EV-TEST-F007-1634",
+      "evidence_id": "EV-TEST-F007-1648",
       "criterion": "AC-4",
-      "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+      "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
       "result": "PASS"
     }
   ],
@@ -194,16 +155,16 @@
     }
   ],
   "next_recommended_forge": {
-    "forge_id": "Q007",
+    "forge_id": "U044",
     "contract": "v0.32",
-    "run_id": "Q007@v0.32",
-    "slice": "Screen matrix after U043: real screenshots of every screen with WholeChip (24 chip uses, Settings order list, palette cards, first run) at 320 dp 1x/2x and desktop, EN/TR, dark and light; keyboard focus ring and web semantics (checked) seen in Chromium",
-    "why": "U043 replaced every Material chip; it is checked by widget tests and the appearance smoke only.",
+    "run_id": "U044@v0.32",
+    "slice": "Open UI points after Q007: the Medications add sheet title stacked on the From the pack heading; plain text-field labels at 2x text not yet whole (Activity, Timeline correction sheet, vault gate and any other TextField label cut with an ellipsis); compact density for WholeChip; rail labels without a line limit at large text; the matrix reveal learns a sheet Save bar",
+    "why": "Q007 and the U043 review left these open.",
     "depends_on": [
-      "U043"
+      "Q007"
     ]
   },
-  "updated_at": "2026-11-25T16:31:15Z",
+  "updated_at": "2026-11-25T18:48:10Z",
   "authoritative_sources": {
     "product_semantics": "docs/handoff/v0.24/LONGEVITY_APP_MASTER_HANDOFF_v0.24.md",
     "process_master": "docs/handoff/v0.32/ (D-013); v0.31 superseded (D-011)",
@@ -20949,6 +20910,228 @@
         "Q006"
       ],
       "review": "Independent Opus review: no blocking findings; fixed before the gates: a visible 2 dp keyboard focus ring (with a Tab/Enter/Space test) and the palette width measured once. A first gate run failed on the appearance smoke: a selected WholeChip was not announced as checked on the web (Material chips use checked there because aria-selected is ignored on a button) — fixed in 2e0a475 and re-run. Open: compact density no longer shrinks chips; rail labels have no line limit.",
+      "out_of_scope": []
+    },
+    "Q007@v0.32": {
+      "forge_id": "Q007",
+      "contract": "v0.32",
+      "run_id": "Q007@v0.32",
+      "slice": "Screen matrix after U043: real screenshots of every screen with WholeChip (24 chip uses, Settings order list, palette cards, first run) at 320 dp 1x/2x and desktop, EN/TR, dark and light; keyboard focus ring and web semantics (checked) seen in Chromium",
+      "goal": "Screen matrix after U043: real screenshots of every screen with WholeChip (24 chip uses, Settings order list, palette cards, first run) at 320 dp 1x/2x and desktop, EN/TR, dark and light; keyboard focus ring and web semantics (checked) seen in Chromium",
+      "status": "DONE",
+      "baseline_commit": "4907512",
+      "app_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+      "started_at": "2026-11-25T18:21:38Z",
+      "finished_at": "2026-11-25T18:48:10Z",
+      "scope": [
+        "reports",
+        "tools",
+        "human_health_os"
+      ],
+      "acceptance_criteria": [
+        "AC-1 each fix has a regression test",
+        "AC-2 full suites, web smoke, Linux build and runtime pass"
+      ],
+      "completed_steps": [
+        "implementation 3f2230f 1e51e55 22b0ae8 83002fe",
+        "GATES: 14 receipts on clean tree 0a4d229, all PASS"
+      ],
+      "last_verified_gate": "EV-TEST-F007-1648",
+      "next_action": null,
+      "files_touched": [
+        "human_health_os/lib/src/features/documents/documents_screen.dart",
+        "human_health_os/lib/src/features/preventive/preventive_screen.dart",
+        "human_health_os/test/widget/q007_field_labels_test.dart",
+        "project_state/CURRENT_STATE.json",
+        "reports/runtime/screen-matrix/637f6e348c7a/Q007_REVIEW.md",
+        "reports/runtime/screen-matrix/637f6e348c7a/matrix.json",
+        "reports/runtime/screen-matrix/637f6e348c7a/matrix.md",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_desktop_en-US_Settings-focus-dark.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_desktop_en-US_focus-Dark-selected-dark.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_desktop_en-US_focus-Dark-unselected-light.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_desktop_en-US_focus-Light-selected-light.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_desktop_en-US_focus-Light-unselected-dark.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_desktop_tr-TR_sleep-sheet-focus-selected.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_text-2x_small-phone_en-US_Settings-language-chips.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_text-2x_small-phone_en-US_Settings-measurement-order.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_text-2x_small-phone_en-US_Settings-palettes.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_text-2x_small-phone_en-US_Settings-theme-chips.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_text-2x_small-phone_tr-TR_Conditions-source-chip.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_text-2x_small-phone_tr-TR_Labs-kind-chips.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_text-2x_small-phone_tr-TR_Nutrition-label-chip.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_text-2x_small-phone_tr-TR_Settings-language-chips.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_text-2x_small-phone_tr-TR_Settings-measurement-order.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/q007_text-2x_small-phone_tr-TR_Settings-palettes.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/sheets-text-2x_small-phone_en-US_Settings-palettes.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/sheets-text-2x_small-phone_tr-TR_Labs-more-from-the-report.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/sheets-text-2x_small-phone_tr-TR_Settings-palettes.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/text-2x_small-phone_en-US_Settings.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/text-2x_small-phone_tr-TR_Settings.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u041-text-2x_small-phone_en-US_First-run-look.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u041-text-2x_small-phone_tr-TR_First-run-look.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-light-2x_small-phone_en-US_Conditions-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-light-2x_small-phone_en-US_Documents-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-light-2x_small-phone_en-US_Today-feeling-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-light-2x_small-phone_en-US_Today-glucose-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-light-2x_small-phone_en-US_Trend-weight.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-light-2x_small-phone_tr-TR_Conditions-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-light-2x_small-phone_tr-TR_Documents-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-light-2x_small-phone_tr-TR_Today-feeling-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-light-2x_small-phone_tr-TR_Today-glucose-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-light-2x_small-phone_tr-TR_Trend-weight.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_en-US_Conditions-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_en-US_Documents-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_en-US_Learn-body-guide.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_en-US_Medications-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_en-US_Nutrition-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_en-US_Preventive-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_en-US_Today-feeling-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_en-US_Today-glucose-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_en-US_Today-sleep-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_en-US_Trend-weight.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_tr-TR_Conditions-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_tr-TR_Documents-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_tr-TR_Learn-body-guide.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_tr-TR_Medications-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_tr-TR_Nutrition-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_tr-TR_Preventive-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_tr-TR_Today-feeling-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_tr-TR_Today-glucose-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_tr-TR_Today-sleep-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043-text-2x_small-phone_tr-TR_Trend-weight.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043_desktop_en-US_Medications-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043_desktop_en-US_Today-sleep-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043_desktop_tr-TR_Medications-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043_small-phone_en-US_Preventive-add-sheet.png",
+        "reports/runtime/screen-matrix/637f6e348c7a/u043_small-phone_tr-TR_Documents-add-sheet.png",
+        "tools/flutter_screen_matrix.mjs"
+      ],
+      "migration_ids": [],
+      "evidence_ids": [
+        "EV-TEST-F007-1636",
+        "EV-TEST-F007-1637",
+        "EV-TEST-F007-1638",
+        "EV-TEST-F007-1639",
+        "EV-TEST-F007-1640",
+        "EV-BUILD-F007-1641",
+        "EV-RUNTIME-F007-1642",
+        "EV-RUNTIME-F007-1649",
+        "EV-TEST-F007-1643",
+        "EV-BUILD-F007-1644",
+        "EV-RUNTIME-F007-1645",
+        "EV-TEST-F007-1646",
+        "EV-TEST-F007-1647",
+        "EV-TEST-F007-1648"
+      ],
+      "verified_gates": [
+        {
+          "gate": "flutter pub get",
+          "evidence_id": "EV-TEST-F007-1636",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "dart format --set-exit-if-changed . (0 changed)",
+          "evidence_id": "EV-TEST-F007-1637",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter analyze (no issues)",
+          "evidence_id": "EV-TEST-F007-1638",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test, TZ=UTC (1543 PASS, 1 skipped)",
+          "evidence_id": "EV-TEST-F007-1639",
+          "criterion": "AC-1..AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "state/evidence tooling unit tests",
+          "evidence_id": "EV-TEST-F007-1640",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter build web --release --no-web-resources-cdn (development profile) COMPILED",
+          "evidence_id": "EV-BUILD-F007-1641",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "Playwright smoke in Chromium (182 checks): Learn and its three entries in desktop-en, phone-en and phone-tr, About, the loading view, every area, backup and restore; no console errors, no external requests",
+          "evidence_id": "EV-RUNTIME-F007-1642",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "Appearance smoke in Chromium (24 checks: interface scale presets and exact scale, fonts; en-US, tr-TR, de-DE), also run by CI",
+          "evidence_id": "EV-RUNTIME-F007-1649",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "Linux integration on real files (13 PASS, with a development vault imported into an encrypted vault, relaunched and unlocked, no plaintext marker in the vault file)",
+          "evidence_id": "EV-TEST-F007-1643",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter build linux --release (development profile) COMPILED",
+          "evidence_id": "EV-BUILD-F007-1644",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test with TZ=America/New_York (1544 PASS)",
+          "evidence_id": "EV-RUNTIME-F007-1645",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test with TZ=America/New_York (1205 PASS)",
+          "evidence_id": "EV-TEST-F007-1646",
+          "criterion": "AC-1..AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "contracts verification with the per-engine parity table: 73/73 vectors in TS and Python, Dart from its receipt",
+          "evidence_id": "EV-TEST-F007-1647",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        },
+        {
+          "gate": "pnpm test",
+          "evidence_id": "EV-TEST-F007-1648",
+          "criterion": "AC-4",
+          "source_revision": "0a4d2298a4af313d7942f7458e4f6b553b08bb60",
+          "result": "PASS"
+        }
+      ],
+      "blocker": null,
+      "result": "Q007_COMPLETE",
+      "limitations": [
+        "real devices, Firefox, Safari, real screen readers NOT TESTED"
+      ],
+      "depends_on": [
+        "U043"
+      ],
+      "review": "Independent Opus review: no blocking findings; the 6 field-label tests fail on the old screens; notes on loose matrix checks (text_scaled_2x not run for the light 2x group, theme_applied reads state not colours, pickChip skips a pre-checked chip) added to Q007_REVIEW.md.",
       "out_of_scope": []
     }
   },

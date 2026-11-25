@@ -69,10 +69,10 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
         ),
       ),
       // One centred reading column on a wide window (U038).
-      body: ReadingWidth(
-        child: ListView(
+      body: ReadingWidth.builder(
+        builder: (context) => ListView(
           key: const ValueKey('screen-glossary'),
-          padding: kPagePadding,
+          padding: readingPadding(context),
           children: [
             WholeLabelField(
               label: s.glossarySearch,
@@ -142,10 +142,10 @@ class GlossaryEntryScreen extends StatelessWidget {
           child: Text(_pick(s, entry.term)),
         ),
       ),
-      body: ReadingWidth(
-        child: ListView(
+      body: ReadingWidth.builder(
+        builder: (context) => ListView(
           key: ValueKey('screen-glossary-${entry.id}'),
-          padding: kPagePadding,
+          padding: readingPadding(context),
           children: [
             Text(_pick(s, entry.what), style: text.bodyLarge),
             if (unit != null) ...[

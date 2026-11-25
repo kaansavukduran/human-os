@@ -105,7 +105,7 @@ class _TodayScreenState extends State<TodayScreen> {
     ];
     return ListView(
       key: const ValueKey('screen-today'),
-      padding: kPagePadding,
+      padding: readingPadding(context),
       children: [
         Semantics(
           header: true,

@@ -23,10 +23,10 @@ class HowToScreen extends StatelessWidget {
         ),
       ),
       // One centred reading column on a wide window (U038).
-      body: ReadingWidth(
-        child: ListView(
+      body: ReadingWidth.builder(
+        builder: (context) => ListView(
           key: const ValueKey('screen-howto'),
-          padding: kPagePadding,
+          padding: readingPadding(context),
           children: [
             for (var i = 0; i < steps.length; i++)
               Container(

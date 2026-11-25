@@ -16,12 +16,12 @@ import 'package:human_health_os/src/domain/settings/appearance.dart';
 import 'package:human_health_os/src/features/today/measurements_card.dart';
 import 'package:human_health_os/src/l10n/strings.dart';
 import 'package:human_health_os/src/navigation/destinations.dart';
-import 'package:human_health_os/src/presentation/theme/spacing.dart';
 
 import 'f007_measurements_test.dart'
     show launch, saveScalar, settle, showAllMeasurements, tapKey;
 import 'u005_settings_test.dart' show launchWith;
 import 'u035_text_fit_test.dart' show cutTexts, mainScroll, sweep;
+import 'u039_scroll_anywhere_test.dart' show expectReadingColumn;
 
 const _kinds = MeasurementsCard.kinds;
 
@@ -157,30 +157,18 @@ void main() {
   testWidgets('desktop: Today, the area screens and Settings are one centred '
       'column of at most 840 dp', (tester) async {
     await launch(tester, size: const Size(1440, 900));
+    // Since U039 the scroll view spans the body and only its content is
+    // the column: 840 dp with the page padding, centred beside the rail.
     void centredColumn(String key) {
-      final rect = tester.getRect(find.byKey(ValueKey(key)));
-      expect(rect.width, lessThanOrEqualTo(kReadingWidth), reason: key);
-      final column = tester.getRect(
+      expect(
         find.ancestor(
           of: find.byKey(ValueKey(key)),
           matching: find.byKey(const ValueKey('reading-width')),
         ),
-      );
-      expect(column.width, kReadingWidth, reason: key);
-      // Centred in the space beside the rail.
-      final body = tester.getRect(
-        find
-            .ancestor(
-              of: find.byKey(const ValueKey('reading-width')),
-              matching: find.byType(Align),
-            )
-            .first,
-      );
-      expect(
-        (column.left - body.left) - (body.right - column.right),
-        closeTo(0, 1),
+        findsOneWidget,
         reason: key,
       );
+      expectReadingColumn(tester, key);
     }
 
     centredColumn('screen-today');

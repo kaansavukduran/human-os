@@ -30,10 +30,10 @@ class AboutScreen extends StatelessWidget {
           child: Text(s.aboutTitle),
         ),
       ),
-      body: ReadingWidth(
-        child: ListView(
+      body: ReadingWidth.builder(
+        builder: (context) => ListView(
           key: const ValueKey('screen-about'),
-          padding: const EdgeInsets.all(16),
+          padding: readingPadding(context, const EdgeInsets.all(16)),
           children: [
             _Section(
               key: const ValueKey('about-build'),

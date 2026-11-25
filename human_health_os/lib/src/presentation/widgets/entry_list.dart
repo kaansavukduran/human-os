@@ -26,19 +26,24 @@ class EntryList extends StatelessWidget {
   final EdgeInsets padding;
 
   @override
-  Widget build(BuildContext context) => CustomScrollView(
-    slivers: [
-      SliverPadding(
-        padding: padding.copyWith(bottom: 0),
-        sliver: SliverList.list(children: header),
-      ),
-      SliverPadding(
-        padding: padding.copyWith(top: 0),
-        sliver: SliverList.builder(
-          itemCount: itemCount,
-          itemBuilder: itemBuilder,
+  Widget build(BuildContext context) {
+    // Full width, so it scrolls wherever the pointer is; the reading column
+    // is its padding (U039).
+    final padding = readingPadding(context, this.padding);
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: padding.copyWith(bottom: 0),
+          sliver: SliverList.list(children: header),
         ),
-      ),
-    ],
-  );
+        SliverPadding(
+          padding: padding.copyWith(top: 0),
+          sliver: SliverList.builder(
+            itemCount: itemCount,
+            itemBuilder: itemBuilder,
+          ),
+        ),
+      ],
+    );
+  }
 }

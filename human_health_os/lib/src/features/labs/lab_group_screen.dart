@@ -51,10 +51,10 @@ class LabGroupScreen extends StatelessWidget {
         ),
       ),
       // One centred reading column on a wide window (U036, U038).
-      body: ReadingWidth(
-        child: ListView(
+      body: ReadingWidth.builder(
+        builder: (context) => ListView(
           key: const ValueKey('screen-lab-group'),
-          padding: kPagePadding,
+          padding: readingPadding(context),
           children: [
             // The full name, which the app bar may cut short at 320 dp; then
             // unit and specimen as typed, quieter. How a group is formed is

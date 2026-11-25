@@ -30,6 +30,7 @@ import 'package:human_health_os/src/features/timeline/timeline_screen.dart'
 import 'f007_measurements_test.dart' show launch, settle, tapKey;
 import 'u034_learn_test.dart' show openLearn;
 import 'u035_text_fit_test.dart' show cutTexts, mainScroll, sweep;
+import 'u039_scroll_anywhere_test.dart' show expectReadingColumn;
 
 LabInput _lab(String value, String date, {String flag = ''}) => LabInput(
   analyte: 'HbA1c',
@@ -367,10 +368,8 @@ void main() {
     }
     await tapKey(tester, 'tool-guide');
     expect(find.byType(Card), findsNothing);
-    expect(
-      tester.getSize(find.byKey(const ValueKey('reading-width')).last).width,
-      lessThanOrEqualTo(840),
-    );
+    // One centred column of 840 dp in a full-width scroll view (U039).
+    expectReadingColumn(tester, 'screen-guide');
   });
 
   testWidgets('Settings: the most used first, advanced last', (tester) async {

@@ -30,10 +30,10 @@ class BodyGuideScreen extends StatelessWidget {
       ),
       // One centred reading column on a wide window; the systems are
       // plain rows like Learn's, not a grid of cards (U038).
-      body: ReadingWidth(
-        child: ListView(
+      body: ReadingWidth.builder(
+        builder: (context) => ListView(
           key: const ValueKey('screen-guide'),
-          padding: kPagePadding,
+          padding: readingPadding(context),
           children: [
             Text(
               s.guideIntro,
@@ -103,10 +103,10 @@ class BodySystemScreen extends StatelessWidget {
           child: Text(_pick(s, system.name)),
         ),
       ),
-      body: ReadingWidth(
-        child: ListView(
+      body: ReadingWidth.builder(
+        builder: (context) => ListView(
           key: ValueKey('screen-guide-${system.id}'),
-          padding: kPagePadding,
+          padding: readingPadding(context),
           children: [
             Text(_pick(s, system.what), style: text.bodyLarge),
             heading(s.guideParts),

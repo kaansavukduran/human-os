@@ -92,12 +92,12 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
       // One centred reading column on a wide window (U036).
-      body: ReadingWidth(
+      body: ReadingWidth.builder(
         // Built whole, not lazily: a short, fixed page, so Tab reaches
         // every control even where the next one is far below the window.
-        child: SingleChildScrollView(
+        builder: (context) => SingleChildScrollView(
           key: const ValueKey('screen-settings'),
-          padding: kPagePadding,
+          padding: readingPadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

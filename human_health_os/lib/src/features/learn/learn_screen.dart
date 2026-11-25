@@ -26,7 +26,7 @@ class LearnScreen extends StatelessWidget {
             .push(MaterialPageRoute<void>(builder: (_) => page));
     return ListView(
       key: const ValueKey('screen-learn'),
-      padding: kPagePadding,
+      padding: readingPadding(context),
       children: [
         const AreaIntro(area: DestinationId.learn),
         const SizedBox(height: Space.l),

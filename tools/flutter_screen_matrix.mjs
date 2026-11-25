@@ -345,20 +345,25 @@ async function runPass(root, mode) {
       await page.mouse.move(vp.width - 4, vp.height / 2).catch(() => {});
       await page.waitForTimeout(700);
     };
-    // Pushed pages (Settings, About, a lab group) scroll only inside their
-    // centred reading column (U036, at most 840 dp wide): wheel just left of
-    // the leftmost heading below the top bar, i.e. in the column's padding.
-    const columnX = async () => {
-      const xs = await page.evaluate(() => [...document.querySelectorAll('flt-semantics-host [role="heading"], flt-semantics-host h1, flt-semantics-host h2, flt-semantics-host h3, flt-semantics-host h4, flt-semantics-host h5, flt-semantics-host h6')]
-        .map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.top >= 64 && r.top < window.innerHeight).map((r) => r.left)).catch(() => []);
-      return xs.length ? Math.max(2, Math.min(...xs) - 8) : 6;
+    // Since U039 every screen scrolls wherever the pointer is: its scroll
+    // view spans the whole body and only the content is the centred reading
+    // column (U036, at most 840 dp). Wheel halfway between the body's left
+    // edge (the rail's right edge on a shell screen, the window edge on a
+    // pushed page or without a rail) and the content: over the side margin
+    // on a wide window, over the 16 dp page padding on a narrow one.
+    const bodyLeft = () => (pushed > 0 || vp.width < 840 ? 0 : vp.width >= 1200 ? 257 : 81);
+    const marginX = (left) => { const b = bodyLeft(); return Math.max(b + 2, Math.round((b + left) / 2)); };
+    const pageX = async () => {
+      const b = bodyLeft();
+      const xs = await page.evaluate((b) => [...document.querySelectorAll('flt-semantics-host [role="heading"], flt-semantics-host h1, flt-semantics-host h2, flt-semantics-host h3, flt-semantics-host h4, flt-semantics-host h5, flt-semantics-host h6')]
+        .map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.top >= 64 && r.top < window.innerHeight && r.left >= b).map((r) => r.left), b).catch(() => []);
+      return xs.length ? marginX(Math.min(...xs)) : b + 6;
     };
-    // Wheel over the list padding: left of the heading (inside the content
-    // column on every layout), or the page's left gutter on Settings.
+    // Left of the screen's heading, in the margin (or the page padding).
     const wheelX = async (id) => {
-      if (names[id].kind === 'settings') return columnX();
+      if (names[id].kind === 'settings') return pageX();
       const b = await H(names[id].heading).boundingBox().catch(() => null);
-      return b ? Math.max(2, b.x - 8) : 6;
+      return b ? marginX(b.x) : bodyLeft() + 6;
     };
     const toTop = async (x) => {
       for (let i = 0; i < 8; i++) { await page.mouse.move(x, vp.height / 2); await page.mouse.wheel(0, -3000); await page.waitForTimeout(80); }
@@ -583,7 +588,7 @@ async function runPass(root, mode) {
           await open('Settings');
           await H(names.Settings.heading).waitFor({ timeout: 15_000 });
           const row = page.getByRole('button', { name: new RegExp(`^${esc(T.about)}`) }).or(page.getByText(T.about, { exact: true })).first();
-          await reveal(row, await columnX());
+          await reveal(row, await pageX());
           await tap(row);
           pushed = 2;
           await xh(T.about).waitFor({ timeout: 15_000 });
@@ -608,7 +613,7 @@ async function runPass(root, mode) {
         for (let i = 0; i < 30; i++) {
           const b = await swatch.boundingBox().catch(() => null);
           if (b && b.y > 60 && b.y + b.height < vp.height - 10) break;
-          await page.mouse.move(await columnX(), vp.height / 2);
+          await page.mouse.move(await pageX(), vp.height / 2);
           await page.mouse.wheel(0, b ? Math.max(-400, Math.min(400, b.y - vp.height / 2)) : 300);
           await page.waitForTimeout(200);
         }
@@ -619,7 +624,7 @@ async function runPass(root, mode) {
         const note = page.getByText(new RegExp(`${g.palette} has its own light or dark look`)).or(page.getByLabel(new RegExp(`${g.palette} has its own light or dark look`)));
         await note.first().waitFor({ state: 'attached', timeout: 5_000 }).catch(() => {});
         paletteApplied = (await note.count()) > 0;
-        await toTop(await columnX());
+        await toTop(await pageX());
       } catch (e) {
         log('palette', e.message.split('\n')[0]);
         paletteApplied = false;
@@ -644,7 +649,7 @@ async function runPass(root, mode) {
       try {
         if (ex) {
           await ex.go();
-          x = ex.x() ?? (ex.col ? await columnX() : await wheelX('Today'));
+          x = ex.x() ?? (ex.col ? await pageX() : await wheelX('Today'));
           if (ex.probe) { await toTop(x); probeHeight = (await ex.probe().boundingBox({ timeout: 2_000 }).catch(() => null))?.height ?? null; }
           reached = await reveal(ex.target(), x, !!ex.sheet);
           if (!reached) cell.navError = 'target not brought into view';

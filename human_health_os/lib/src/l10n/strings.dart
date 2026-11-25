@@ -2922,12 +2922,12 @@ class S {
       '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: bu tarayıcının deposu yazmayı reddetti (dolu olabilir). Depoda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kayıt durduruldu.',
     ),
     'RESTORE_SWITCH_FAILED' when detail == null || detail.isEmpty => _t(
-      '${importing ? 'The records could not be brought in: this browser\'s storage refused the updated copy' : 'The restore could not be finished: this browser\'s storage refused the restored copy'} (it may be full). The data that was here before is back in place. Reload the page before saving anything.',
-      '${importing ? 'Kayıtlar getirilemedi: bu tarayıcının deposu güncellenen kopyayı' : 'Geri yükleme tamamlanamadı: bu tarayıcının deposu geri yüklenen kopyayı'} kabul etmedi (dolu olabilir). Daha önce burada olan veriler yerinde. Bir şey kaydetmeden önce sayfayı yenile.',
+      '${importing ? 'The records could not be brought in' : 'The restore could not be finished'}: this browser\'s storage refused the ${importing ? 'updated' : 'restored'} copy (it may be full). The data that was here before is back in place. Reload the page before saving anything.',
+      '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: bu tarayıcının deposu ${importing ? 'güncellenen' : 'geri yüklenen'} kopyayı kabul etmedi (dolu olabilir). Daha önce burada olan veriler yerinde. Bir şey kaydetmeden önce sayfayı yenile.',
     ),
     'RESTORE_SWITCH_FAILED' => _t(
-      '${importing ? 'The records could not be brought in: this browser\'s storage refused the updated copy' : 'The restore could not be finished: this browser\'s storage refused the restored copy'} (it may be full). The data that was here before is kept in this browser\'s storage as "$detail". Nothing was deleted. Reload the page before saving anything.',
-      '${importing ? 'Kayıtlar getirilemedi: bu tarayıcının deposu güncellenen kopyayı' : 'Geri yükleme tamamlanamadı: bu tarayıcının deposu geri yüklenen kopyayı'} kabul etmedi (dolu olabilir). Daha önce burada olan veriler bu tarayıcının deposunda "$detail" olarak saklanıyor. Hiçbir şey silinmedi. Bir şey kaydetmeden önce sayfayı yenile.',
+      '${importing ? 'The records could not be brought in' : 'The restore could not be finished'}: this browser\'s storage refused the ${importing ? 'updated' : 'restored'} copy (it may be full). The data that was here before is kept in this browser\'s storage as "$detail". Nothing was deleted. Reload the page before saving anything.',
+      '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: bu tarayıcının deposu ${importing ? 'güncellenen' : 'geri yüklenen'} kopyayı kabul etmedi (dolu olabilir). Daha önce burada olan veriler bu tarayıcının deposunda "$detail" olarak saklanıyor. Hiçbir şey silinmedi. Bir şey kaydetmeden önce sayfayı yenile.',
     ),
     _ => null,
   };

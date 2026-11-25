@@ -1,11 +1,11 @@
-# STATE: where are we now? (2026-11-24)
+# STATE: where are we now? (2026-11-25)
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · U039@v0.32 closed (scroll anywhere on wide windows); 14 gates PASS at b4fd200 (EV-*-F007-1510…1523).
+- CONFIRMED · 2026-11-25 · F005-S4@v0.32 closed (development records merge into a vault with records, D-053, with R026 review fixes); 14 gates PASS at beccb79 (EV-*-F007-1524…1537).
 
 ## Next step
-- PLANNED · F005-S4@v0.32: merge development records into a non-empty encrypted vault (G-76; running).
+- PLANNED · U040@v0.32: merge wording follow-ups from the second review (running).
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).
@@ -23,7 +23,7 @@
 - G-71 signed packages, Android key continuity, Apple notarization/store, trusted updater, two-package update drill; an update check needs an owner decision on network use.
 - G-32 encrypted browser storage: non-development web builds are memory only.
 - G-27 lab interpretation engine exists in Dart but is not wired into the app.
-- G-76 merging development records into a vault that already holds records.
+- G-76 (narrowed) development records under another SELF profile are refused, not merged; other-platform file choosers NOT_RUN.
 - G-31 no import of external formats (CSV, FHIR, documents).
 - G-33 no passphrase change or data-key rotation outside recovery.
 - G-35 removal of the newest encrypted entries cannot be detected.

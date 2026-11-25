@@ -464,11 +464,16 @@ async function runPass(root, mode) {
       }
       const top = inSheet ? 0 : 64;
       // Above the bottom navigation bar on touch layouts (its tabs' top),
-      // which is 80 px at 320x640; 85 when it is not found.
-      const barTop = vp.touch && !inSheet ? await page.evaluate((vh) => {
+      // which is 80 px at 320x640; 85 when it is not found on a shell
+      // screen. A pushed page (Settings, About, a tool, first run) has no
+      // bar (Q006: the 85 px assumed there made the last row of Settings and
+      // first run's buttons, clear of the window bottom, fail as cut): its
+      // limit is the window's bottom, as on the desktop.
+      const noBar = pushed > 0 || onFirstRun;
+      const barTop = vp.touch && !inSheet ? await page.evaluate(([vh, noBar]) => {
         const tops = [...document.querySelectorAll('flt-semantics-host [role="tab"]')].map((e) => e.getBoundingClientRect().top).filter((t) => t > vh / 2);
-        return tops.length ? Math.min(...tops) : vh - 85;
-      }, vp.height).catch(() => vp.height - 85) : null;
+        return tops.length ? Math.min(...tops) : noBar ? null : vh - 85;
+      }, [vp.height, noBar]).catch(() => (noBar ? null : vp.height - 85)) : null;
       const bottom = barTop ?? vp.height - 10;
       let prev = null;
       for (let i = 0; i < 30; i++) {
@@ -484,6 +489,30 @@ async function runPass(root, mode) {
         // under the bar: recorded as its own finding, which fails the cell
         // (U042; before, this counted as in view).
         if (b && prev && b.y >= top && Math.abs(b.y - prev.y) < 1 && Math.abs(b.height - prev.height) < 1) {
+          // A box clipped at both ends of the list's viewport (a target
+          // taller than the space; the viewport can start below 64, under
+          // the development banner) does not move either, although the
+          // list does (Q006: the Timeline switch with its help line, TR at
+          // 2× text, 100..560 with the bar at 560). Wheel back up: if the
+          // box still does not move but the page's pixels do, the list is
+          // not at its end and the target fills the space; it counts as
+          // the taller-than-the-space rule above counts it (top in the
+          // upper third). A box at a real list end moves down, and a page
+          // that does not move at all keeps its pixels: both stay cut.
+          const clip = { x: 0, y: top, width: vp.width, height: Math.max(1, bottom - top) };
+          const before = await page.screenshot({ clip }).catch(() => null);
+          await page.mouse.move(x, vp.height / 2);
+          await page.mouse.wheel(0, -40);
+          await page.waitForTimeout(300);
+          const u = await locator.boundingBox({ timeout: 1_000 }).catch(() => null);
+          const after = await page.screenshot({ clip }).catch(() => null);
+          await page.mouse.wheel(0, 40);
+          await page.waitForTimeout(300);
+          const fills = u && Math.abs(u.y - b.y) < 1 && Math.abs(u.height - b.height) < 1 && before && after && !before.equals(after);
+          if (fills && b.y <= top + (bottom - top) / 3) {
+            log('reveal', 'fills the list viewport (clipped at both ends)', `${Math.round(b.y)} ${Math.round(b.height)}`);
+            return true;
+          }
           cutAtListEnd.push(`box ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)} ends at ${Math.round(b.y + b.height)}, bar top ${Math.round(bottom)}`);
           log('reveal', 'cut at list end', cutAtListEnd[cutAtListEnd.length - 1]);
           return false;

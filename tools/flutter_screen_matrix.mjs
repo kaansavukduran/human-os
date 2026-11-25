@@ -108,7 +108,7 @@ const MORE = { 'en-US': 'More', 'tr-TR': 'Diğer' };
 const BACK = { 'en-US': /^Back$/, 'tr-TR': /^Geri$/ };
 // The buttons of a sheet's pinned bar (SheetFrame: Save and Cancel; U044).
 const SHEET_BAR = { 'en-US': '^(Save|Cancel)$', 'tr-TR': '^(Kaydet|Vazgeç)$' };
-const SHEET_SAVE = { 'en-US': '^Save$', 'tr-TR': '^Kaydet$' };
+const SHEET_SAVE = { 'en-US': '^Save( correction)?$', 'tr-TR': '^(Kaydet|Düzeltmeyi kaydet)$' };
 const ALL = SCREENS['en-US'].map(([id]) => id);
 // One group = one page load; its cells are visited in order.
 const GROUPS = [];

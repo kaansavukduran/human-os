@@ -458,7 +458,7 @@ class _EntryDetailState extends State<_EntryDetail> {
           helperMaxLines: 20,
           border: const OutlineInputBorder(),
           errorText: _errorFor(s, field),
-          errorMaxLines: 3,
+          errorMaxLines: 20,
           counterText: '',
         ),
       ),

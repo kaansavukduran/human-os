@@ -48,3 +48,13 @@ After the fix: dart format, flutter analyze (no issues) and `TZ=UTC flutter test
 ## Screenshots
 
 49 are kept: 42 cell shots and 7 sweep shots (`*_sweepNN.png`). The others were deleted for disk space. Their checks remain in `matrix.json`, whose `screenshot` field still names the deleted files.
+
+## Commit hashes on the branch
+
+The worktree commits were cherry-picked, so the hashes above map as follows (identical trees): e760ccb → 6ffd318, fd81ddf → aa40177, aa5b6a7 → 08e59c2, 17a0637 → a624fe9. The folder name `e760ccba36ad` keeps the matrix's source hash.
+
+## Independent review (APPROVE) and follow-ups
+
+- The Save-bar match also accepts "Save correction" / "Düzeltmeyi kaydet" (Labs correction sheet), so that bar is not missed.
+- Timeline correction `errorMaxLines` 3 → 20, like the help lines.
+- Still open: the rail count can be made up by a non-rail control with left < 40 (not possible in today's layouts); the Turkish Activity date pattern wraps at a hyphen; the fixes are widget-tested, not re-run in the matrix.

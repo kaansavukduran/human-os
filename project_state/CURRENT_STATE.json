@@ -3,9 +3,48 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "Q007",
+    "contract": "v0.32",
+    "run_id": "Q007@v0.32",
+    "slice": "Screen matrix after U043: real screenshots of every screen with WholeChip (24 chip uses, Settings order list, palette cards, first run) at 320 dp 1x/2x and desktop, EN/TR, dark and light; keyboard focus ring and web semantics (checked) seen in Chromium",
+    "goal": "Screen matrix after U043: real screenshots of every screen with WholeChip (24 chip uses, Settings order list, palette cards, first run) at 320 dp 1x/2x and desktop, EN/TR, dark and light; keyboard focus ring and web semantics (checked) seen in Chromium",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "4907512",
+    "app_revision": null,
+    "started_at": "2026-11-25T18:21:38Z",
+    "finished_at": null,
+    "scope": [
+      "reports",
+      "tools",
+      "human_health_os"
+    ],
+    "acceptance_criteria": [
+      "AC-1 each fix has a regression test",
+      "AC-2 full suites, web smoke, Linux build and runtime pass"
+    ],
+    "completed_steps": [
+      "implementation 3f2230f 1e51e55 22b0ae8 83002fe"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox, Safari, real screen readers NOT TESTED"
+    ],
+    "depends_on": [
+      "U043"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

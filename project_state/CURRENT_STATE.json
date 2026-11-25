@@ -3,9 +3,49 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "U038",
+    "contract": "v0.32",
+    "run_id": "U038@v0.32",
+    "slice": "Airy, understandable reading: the Timeline, the Labs list and group view, Learn and Settings with the U036 scale; one clear action each; plain words for a first-time person",
+    "goal": "Airy, understandable reading: the Timeline, the Labs list and group view, Learn and Settings with the U036 scale; one clear action each; plain words for a first-time person",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "c325ec5",
+    "app_revision": null,
+    "started_at": "2026-11-25T01:15:13Z",
+    "finished_at": null,
+    "scope": [
+      "human_health_os/lib",
+      "human_health_os/test",
+      "tools",
+      "docs"
+    ],
+    "acceptance_criteria": [
+      "AC-1 each fix has a regression test",
+      "AC-2 full suites, web smoke, Linux build and runtime pass"
+    ],
+    "completed_steps": [
+      "implementation 4990b3d"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox, Safari, real screen readers NOT TESTED"
+    ],
+    "depends_on": [
+      "R024"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

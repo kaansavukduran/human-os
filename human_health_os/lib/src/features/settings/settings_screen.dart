@@ -142,36 +142,43 @@ class SettingsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     LayoutBuilder(
-                      builder: (context, box) => Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: [
-                          for (final p in PaletteChoice.values)
-                            _PaletteSwatch(
-                              width: _PaletteSwatch.widthFor(
-                                context,
-                                [
-                                  for (final q in PaletteChoice.values)
-                                    s.paletteName(q),
-                                ],
-                                box.maxWidth,
-                                gap: 12,
+                      builder: (context, box) {
+                        // Measured once per layout, shared by every card.
+                        final cardWidth = _PaletteSwatch.widthFor(
+                          context,
+                          [
+                            for (final q in PaletteChoice.values)
+                              s.paletteName(q),
+                          ],
+                          box.maxWidth,
+                          gap: 12,
+                        );
+                        return Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: [
+                            for (final p in PaletteChoice.values)
+                              _PaletteSwatch(
+                                width: cardWidth,
+                                choice: p,
+                                label: s.paletteName(p),
+                                sample: s.paletteSample,
+                                tokens:
+                                    tokensFor(
+                                      p,
+                                      highContrast: a.highContrast,
+                                    ) ??
+                                    standardTokens(
+                                      _standardBrightness(context, a.theme),
+                                      a.accent,
+                                      highContrast: a.highContrast,
+                                    ),
+                                selected: a.palette == p,
+                                onTap: () => set(a.copyWith(palette: p)),
                               ),
-                              choice: p,
-                              label: s.paletteName(p),
-                              sample: s.paletteSample,
-                              tokens:
-                                  tokensFor(p, highContrast: a.highContrast) ??
-                                  standardTokens(
-                                    _standardBrightness(context, a.theme),
-                                    a.accent,
-                                    highContrast: a.highContrast,
-                                  ),
-                              selected: a.palette == p,
-                              onTap: () => set(a.copyWith(palette: p)),
-                            ),
-                        ],
-                      ),
+                          ],
+                        );
+                      },
                     ),
                     if (a.palette != PaletteChoice.standard) ...[
                       const SizedBox(height: 8),

@@ -114,29 +114,37 @@ class WholeChip extends StatelessWidget {
         onTap: tap,
         focusNode: focusNode,
         customBorder: shape,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 32, minWidth: 48),
-          child: Padding(
-            padding: EdgeInsetsDirectional.only(
-              start: on ? 8 : 16,
-              end: 16,
-              top: 6,
-              bottom: 6,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (on) ...[
-                  Icon(Icons.check, size: tick, color: ink),
-                  const SizedBox(width: 8),
-                ],
-                // Read once, by the chip's own node.
-                Flexible(
-                  child: ExcludeSemantics(
-                    child: WholeWordText(label, style: style),
-                  ),
+        // A focus ring the reader can see from the keyboard (U043 review):
+        // the ink overlay alone is faint, most of all in high contrast.
+        child: Builder(
+          builder: (context) => DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: _focusRing(context, scheme),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 32, minWidth: 48),
+              child: Padding(
+                padding: EdgeInsetsDirectional.only(
+                  start: on ? 8 : 16,
+                  end: 16,
+                  top: 6,
+                  bottom: 6,
                 ),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (on) ...[
+                      Icon(Icons.check, size: tick, color: ink),
+                      const SizedBox(width: 8),
+                    ],
+                    // Read once, by the chip's own node.
+                    Flexible(
+                      child: ExcludeSemantics(
+                        child: WholeWordText(label, style: style),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -162,6 +170,20 @@ class WholeChip extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A 2 dp ring in the primary colour while the chip holds keyboard focus.
+Decoration _focusRing(BuildContext context, ColorScheme scheme) {
+  final focused =
+      Focus.of(context).hasPrimaryFocus &&
+      FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+  if (!focused) return const BoxDecoration();
+  return ShapeDecoration(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8),
+      side: BorderSide(color: scheme.primary, width: 2),
+    ),
+  );
 }
 
 enum _Kind { choice, action, plain }

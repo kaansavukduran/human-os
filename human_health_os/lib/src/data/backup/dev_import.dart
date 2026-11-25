@@ -461,12 +461,16 @@ Future<ImportPlan> planImport(StagedImport imp, EncryptedLogSink sink) async {
       (correctedHere[target] ??= <String>{}).add(e.key);
     }
   }
-  // Every record id the file holds: a stored correction the file also
-  // holds is shared, never a competitor.
-  final fileIds = <String>{
+  // Every record the file itself withdrew or replaced: a stored correction
+  // the file supersedes is settled there, never a competitor. Merely
+  // holding it is not enough: a file with two live corrections of one
+  // record (a fork) still competes.
+  final supersededInFile = <String>{
     for (final l in imp.lines)
       if (l.startsWith('{"op":"record.append"'))
-        ((jsonDecode(l) as Map)['data']! as Map)['id']! as String,
+        if (((jsonDecode(l) as Map)['data']! as Map)['supersedes_id']
+            case final String target)
+          target,
   };
   final newLines = <String>[];
   final conflicts = <String>[];
@@ -483,10 +487,13 @@ Future<ImportPlan> planImport(StagedImport imp, EncryptedLogSink sink) async {
       // A new correction of a record this vault already corrected (or,
       // seen from the vault, a stored correction of a record the file also
       // corrects): two corrections would compete. Neither wins by import.
-      // A stored correction the file holds too is shared, not competing.
+      // A stored correction the file withdrew or replaced is shared, not
+      // competing.
       final target = data['supersedes_id'];
       if (target is String &&
-          (correctedHere[target]?.any((c) => c != id && !fileIds.contains(c)) ??
+          (correctedHere[target]?.any(
+                (c) => c != id && !supersededInFile.contains(c),
+              ) ??
               false)) {
         competing.add(id);
       }

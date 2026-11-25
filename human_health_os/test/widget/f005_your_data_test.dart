@@ -478,7 +478,7 @@ void main() {
           .backupError('RESTORE_NOT_SWITCHED', vaultChangedBeforeSwitch),
       'Geri yükleme tamamlanmadı: hazırlanırken bir kayıt kaydedildi ve '
       'Human OS onun üzerine asla yazmaz. Diskte hiçbir şey değişmedi. Human '
-      'OS yeniden başlayana kadar kayıt durduruldu. Bir yedek yalnız kayıt '
+      'OS yeniden başlayana kadar kaydetme duraklatıldı. Bir yedek yalnız kayıt '
       'olmayan bir kasaya geri yüklenebilir; bu kasada artık bir kayıt var.',
     );
   });

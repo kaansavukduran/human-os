@@ -115,6 +115,26 @@ class SwitchRefused extends LinkedFiles {
   }
 }
 
+/// Linked files whose staged copy does not read back identically: refused
+/// before the switch starts, so this session keeps writing.
+class VerifyFails extends LinkedFiles {
+  VerifyFails(super.raw, super.sink);
+
+  static bool on = false;
+
+  @override
+  Future<RestoreOutcome> restore(
+    StagedRestore staged, {
+    required DateTime now,
+    FutureOr<void> Function()? beforeSwitch,
+  }) async {
+    if (!on) {
+      return super.restore(staged, now: now, beforeSwitch: beforeSwitch);
+    }
+    throw const BackupError('RESTORE_VERIFY_FAILED', 'import');
+  }
+}
+
 /// An encrypted vault holding the development records (brought in while
 /// empty), reopened and unlocked.
 Future<void> vaultWithDevRecords(
@@ -435,16 +455,32 @@ void main() {
           ? 'Bu kasada başka türlü düzeltilmiş ya da kaldırılmış bir kaydı '
                 'dosyada da düzelten ya da kaldıran kayıt sayısı: 1. Human OS '
                 'bir kayda yapılan iki değişiklik arasında asla seçim yapmaz; '
-                'bu yüzden hiçbir şey getirilmez. Kayıtlar hiç silinmez; bu '
-                'yüzden bu dosya buraya getirilemez. Bundan sonra kayıtları '
-                'yalnız tek bir yerden getir. Hiçbir şey değişmedi.'
+                'bu yüzden hiçbir şey getirilmez. Değişiklikler hep saklanır; '
+                'bu yüzden o cihazdan gelen kayıtlar buraya hiç getirilemez. '
+                'Bundan sonra kayıtları yalnız tek bir cihazdan getir. Hiçbir '
+                'şey değişmedi.'
           : 'Records in the file that correct or remove a record this vault '
                 'already corrected or removed another way: 1. Human OS never '
                 'chooses between two changes to one record, so nothing is '
-                'brought in. Records are never deleted, so this file cannot '
-                'come in here. From now on, bring in records from only one '
-                'place. Nothing was changed.';
+                'brought in. Changes are kept forever, so records from that '
+                'device can never come in here. From now on, bring in records '
+                'from only one device. Nothing was changed.';
       expect(textOf(tester, 'import-stop-text'), reason);
+      // With conflicting records too, the same way out.
+      final both = S(tr ? AppLang.tr : AppLang.en)
+          .importBlocked(conflicts: 1, competing: 1);
+      expect(
+        both,
+        endsWith(
+          tr
+              ? 'Değişiklikler hep saklanır; bu yüzden o cihazdan gelen '
+                    'kayıtlar buraya hiç getirilemez. Bundan sonra kayıtları '
+                    'yalnız tek bir cihazdan getir. Hiçbir şey değişmedi.'
+              : 'Changes are kept forever, so records from that device can '
+                    'never come in here. From now on, bring in records from '
+                    'only one device. Nothing was changed.',
+        ),
+      );
       expect(find.byKey(const ValueKey('confirm-import')), findsNothing);
       expect(find.byKey(const ValueKey('import-understand')), findsNothing);
       expect(find.text(tr ? 'Kapat' : 'Close'), findsOneWidget);
@@ -494,8 +530,8 @@ void main() {
         tr
             ? 'Kayıtlar getirilmedi: hazırlanırken bir kayıt kaydedildi ve '
                   'Human OS onun üzerine asla yazmaz. Diskte hiçbir şey '
-                  'değişmedi. Human OS yeniden başlayana kadar kayıt '
-                  'durduruldu.'
+                  'değişmedi. Human OS yeniden başlayana kadar kaydetme '
+                  'duraklatıldı.'
             : 'The records were not brought in: a record was saved while '
                   'they were being prepared, and Human OS never replaces it. '
                   'Nothing was changed on disk. Saving stays paused until '
@@ -574,6 +610,56 @@ void main() {
       }
       expect(variants[1], contains('kept.copy'));
       expect(variants[3], contains('"kept.copy"'));
+    });
+  }
+  for (final tr in [false, true]) {
+    testWidgets('R027 (${tr ? 'TR' : 'EN'}, 320 dp at 2x text): an import '
+        'whose updated copy does not read back identically says the records '
+        'could not be brought in, never "restored copy"; nothing written', (
+      tester,
+    ) async {
+      final dev = (await tester.runAsync(DevBuild.start))!;
+      final picker = FakePicker((await tester.runAsync(dev.backup))!);
+      final disk = Disk();
+      VerifyFails.on = false;
+      addTearDown(() => VerifyFails.on = false);
+      await vaultWithDevRecords(
+        tester,
+        disk,
+        picker,
+        locale: tr ? const Locale('tr') : const Locale('en'),
+        size: const Size(320, 4000),
+        textScale: 2,
+        files: VerifyFails.new,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.runAsync(
+        () => dev.svc.recordWeightKg(profileId: dev.me, input: '79,9'),
+      );
+      picker.text = (await tester.runAsync(dev.backup))!;
+      final before = disk.raw.text;
+      VerifyFails.on = true;
+      await reveal(tester, 'import-development');
+      await tapKey(tester, 'import-development');
+      await tapKey(tester, 'import-understand');
+      await tapKey(tester, 'confirm-import');
+      expect(tester.takeException(), isNull);
+      final message = textOf(tester, 'data-message');
+      expect(
+        message,
+        tr
+            ? 'Kayıtlar getirilemedi: güncellenen veri dosyası aynı şekilde '
+                  'geri okunamadı. Hiçbir şey değişmedi.\n'
+                  'Yeniden denemek için başka bir dosya seçebilirsin.'
+            : 'The records could not be brought in: the updated data file '
+                  'did not read back identically. Nothing was changed.\n'
+                  'You can choose another file to try again.',
+      );
+      expect(
+        message,
+        isNot(contains(tr ? 'geri yüklenen kopya' : 'restored copy')),
+      );
+      expect(disk.raw.text, before);
     });
   }
 }

@@ -2645,11 +2645,11 @@ class S {
       'Bu kasada başka türlü düzeltilmiş ya da kaldırılmış bir kaydı dosyada da düzelten ya da kaldıran kayıt sayısı: $competing.',
     );
     if (conflicts == 0) {
-      return '$compete ${_t('Human OS never chooses between two changes to one record, so nothing is brought in. Records are never deleted, so this file cannot come in here. From now on, bring in records from only one place. Nothing was changed.', 'Human OS bir kayda yapılan iki değişiklik arasında asla seçim yapmaz; bu yüzden hiçbir şey getirilmez. Kayıtlar hiç silinmez; bu yüzden bu dosya buraya getirilemez. Bundan sonra kayıtları yalnız tek bir yerden getir. Hiçbir şey değişmedi.')}';
+      return '$compete ${_t('Human OS never chooses between two changes to one record, so nothing is brought in. Changes are kept forever, so records from that device can never come in here. From now on, bring in records from only one device. Nothing was changed.', 'Human OS bir kayda yapılan iki değişiklik arasında asla seçim yapmaz; bu yüzden hiçbir şey getirilmez. Değişiklikler hep saklanır; bu yüzden o cihazdan gelen kayıtlar buraya hiç getirilemez. Bundan sonra kayıtları yalnız tek bir cihazdan getir. Hiçbir şey değişmedi.')}';
     }
     return _t(
-      'Records in the file with the same identity as a record in this vault but different content: $conflicts. $compete Human OS never overwrites a record and never chooses between two changes to one record, so nothing is brought in. Records are never deleted, so this file cannot come in here. From now on, bring in records from only one place. Nothing was changed.',
-      'Dosyada bu kasadaki bir kayıtla aynı kimliğe ama farklı içeriğe sahip kayıt sayısı: $conflicts. $compete Human OS bir kaydın üzerine asla yazmaz ve bir kayda yapılan iki değişiklik arasında asla seçim yapmaz; bu yüzden hiçbir şey getirilmez. Kayıtlar hiç silinmez; bu yüzden bu dosya buraya getirilemez. Bundan sonra kayıtları yalnız tek bir yerden getir. Hiçbir şey değişmedi.',
+      'Records in the file with the same identity as a record in this vault but different content: $conflicts. $compete Human OS never overwrites a record and never chooses between two changes to one record, so nothing is brought in. Changes are kept forever, so records from that device can never come in here. From now on, bring in records from only one device. Nothing was changed.',
+      'Dosyada bu kasadaki bir kayıtla aynı kimliğe ama farklı içeriğe sahip kayıt sayısı: $conflicts. $compete Human OS bir kaydın üzerine asla yazmaz ve bir kayda yapılan iki değişiklik arasında asla seçim yapmaz; bu yüzden hiçbir şey getirilmez. Değişiklikler hep saklanır; bu yüzden o cihazdan gelen kayıtlar buraya hiç getirilemez. Bundan sonra kayıtları yalnız tek bir cihazdan getir. Hiçbir şey değişmedi.',
     );
   }
 
@@ -2894,13 +2894,13 @@ class S {
   );
   String get restartToUseBrowser => _t(
     'A restore ran in this tab: reload the page before going on. Saving, backups and exports are paused until then.',
-    'Bu sekmede bir geri yükleme çalıştı: devam etmeden önce sayfayı yenile. O zamana kadar kayıt, yedek ve dışa aktarma durduruldu.',
+    'Bu sekmede bir geri yükleme çalıştı: devam etmeden önce sayfayı yenile. O zamana kadar kaydetme, yedekleme ve dışa aktarma duraklatıldı.',
   );
 
   /// After a restore ran in the browser, finished or not: the only way on.
   String get reloadToGoOn => _t(
     'Reload the page to go on. Saving, backups and exports are paused until then.',
-    'Devam etmek için sayfayı yenile. O zamana kadar kayıt, yedek ve dışa aktarma durduruldu.',
+    'Devam etmek için sayfayı yenile. O zamana kadar kaydetme, yedekleme ve dışa aktarma duraklatıldı.',
   );
   String get reloadPage => _t('Reload the page', 'Sayfayı yenile');
 
@@ -2915,11 +2915,11 @@ class S {
   }) => switch (code) {
     'RESTORE_NOT_SWITCHED' when detail == 'VAULT_CHANGED' => _t(
       '${importing ? 'The records were not brought in: a record was saved while they were' : 'The restore was not finished: a record was saved while it was'} being prepared, and Human OS never replaces it. Nothing was changed in this browser\'s storage. Reload the page to go on; saving is paused until then.',
-      '${importing ? 'Kayıtlar getirilmedi' : 'Geri yükleme tamamlanmadı'}: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Bu tarayıcının deposunda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kayıt durduruldu.',
+      '${importing ? 'Kayıtlar getirilmedi' : 'Geri yükleme tamamlanmadı'}: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Bu tarayıcının deposunda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kaydetme duraklatıldı.',
     ),
     'RESTORE_NOT_SWITCHED' => _t(
       '${importing ? 'The records could not be brought in' : 'The restore could not be finished'}: this browser\'s storage refused the write (it may be full). Nothing was changed in it. Reload the page to go on; saving is paused until then.',
-      '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: bu tarayıcının deposu yazmayı reddetti (dolu olabilir). Depoda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kayıt durduruldu.',
+      '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: bu tarayıcının deposu yazmayı reddetti (dolu olabilir). Depoda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kaydetme duraklatıldı.',
     ),
     'RESTORE_SWITCH_FAILED' when detail == null || detail.isEmpty => _t(
       '${importing ? 'The records could not be brought in' : 'The restore could not be finished'}: this browser\'s storage refused the ${importing ? 'updated' : 'restored'} copy (it may be full). The data that was here before is back in place. Reload the page before saving anything.',
@@ -2977,7 +2977,7 @@ class S {
             ));
   String get restartToUse => _t(
     'A restore ran in this session: close and reopen Human OS before going on. Saving, backups and exports are paused until then.',
-    'Bu oturumda bir geri yükleme çalıştı: devam etmeden önce uygulamayı kapatıp yeniden aç. O zamana kadar kayıt, yedek ve dışa aktarma durduruldu.',
+    'Bu oturumda bir geri yükleme çalıştı: devam etmeden önce uygulamayı kapatıp yeniden aç. O zamana kadar kaydetme, yedekleme ve dışa aktarma duraklatıldı.',
   );
   String get restoreTitle =>
       _t('Restore this backup?', 'Bu yedek geri yüklensin mi?');
@@ -3064,15 +3064,15 @@ class S {
     ),
     'RESTORE_NOT_SWITCHED' when detail == 'VAULT_CHANGED' && importing => _t(
       'The records were not brought in: a record was saved while they were being prepared, and Human OS never replaces it. Nothing was changed on disk. Saving stays paused until Human OS restarts.',
-      'Kayıtlar getirilmedi: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kayıt durduruldu.',
+      'Kayıtlar getirilmedi: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kaydetme duraklatıldı.',
     ),
     'RESTORE_NOT_SWITCHED' when detail == 'VAULT_CHANGED' => _t(
       'The restore was not finished: a record was saved while it was being prepared, and Human OS never replaces it. Nothing was changed on disk. Saving stays paused until Human OS restarts. A backup can be restored only into a vault that holds no records, and this vault now holds one.',
-      'Geri yükleme tamamlanmadı: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kayıt durduruldu. Bir yedek yalnız kayıt olmayan bir kasaya geri yüklenebilir; bu kasada artık bir kayıt var.',
+      'Geri yükleme tamamlanmadı: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kaydetme duraklatıldı. Bir yedek yalnız kayıt olmayan bir kasaya geri yüklenebilir; bu kasada artık bir kayıt var.',
     ),
     'RESTORE_NOT_SWITCHED' => _t(
       '${importing ? 'The records could not be brought in' : 'The restore could not be finished'}: the data files could not be moved (another program may be using them). Nothing was changed on disk. Saving stays paused until Human OS restarts.',
-      '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: veri dosyaları taşınamadı (başka bir program kullanıyor olabilir). Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kayıt durduruldu.',
+      '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: veri dosyaları taşınamadı (başka bir program kullanıyor olabilir). Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kaydetme duraklatıldı.',
     ),
     'RESTORE_SWITCH_FAILED' when detail == null || detail.isEmpty => _t(
       '${importing ? 'The records could not be brought in: the updated data file' : 'The restore could not be finished: the restored copy'} could not be moved into place. The previous data file is back where it was. Restart Human OS before saving anything.',
@@ -3081,6 +3081,10 @@ class S {
     'RESTORE_SWITCH_FAILED' => _t(
       '${importing ? 'The records could not be brought in: the updated data file' : 'The restore could not be finished: the restored copy'} could not be moved into place, and the previous data file is now at $detail. Nothing was deleted. Restart Human OS before saving anything.',
       '${importing ? 'Kayıtlar getirilemedi: güncellenen veri dosyası' : 'Geri yükleme tamamlanamadı: geri yüklenen kopya'} yerine taşınamadı; önceki veri dosyası şimdi şurada: $detail. Hiçbir şey silinmedi. Bir şey kaydetmeden önce uygulamayı yeniden başlat.',
+    ),
+    'RESTORE_VERIFY_FAILED' when importing => _t(
+      'The records could not be brought in: the updated data file did not read back identically. Nothing was changed.',
+      'Kayıtlar getirilemedi: güncellenen veri dosyası aynı şekilde geri okunamadı. Hiçbir şey değişmedi.',
     ),
     'RESTORE_VERIFY_FAILED' => _t(
       'The restored copy did not read back identically. Nothing was changed.',

@@ -632,9 +632,28 @@ void main() {
       expect(plan.competingIds, isNot(contains(inVault.id)));
     });
 
-    test('U040: a vault correction the file holds too is shared, never a '
-        'competitor: the file\'s second correction of the same record comes '
-        'in', () async {
+    /// An export file of [me] holding [records], in this order.
+    String exportOf(List<Map<String, Object?>> records) => jsonEncode({
+      'format': 'hhos-export',
+      'format_version': 1,
+      'exported_at': t0.toIso8601String(),
+      'app_version': 't',
+      'encryption': 'none',
+      'profile': {'id': me, 'type': 'self'},
+      'record_count': records.length,
+      'records': records,
+      'timeline': <Object?>[],
+    });
+
+    /// A second correction C2 of the record [c1] corrects.
+    Map<String, Object?> secondCorrection(HealthRecord c1) => c1.toJson()
+      ..['id'] = '${c1.id}-c2'
+      ..['quantity'] = {'value': 80.6, 'unit': 'kg'}
+      ..['original_text'] = '80,6';
+
+    /// A vault that holds the development records and the file's correction
+    /// C1 of the shared record, byte for byte, reopened.
+    Future<(OpenedVault, HealthRecord)> vaultHoldingC1() async {
       final (o, _) = await vaultWithRecords();
       final head = await devCorrection();
       final c1 = await dev.correctWeightKg(
@@ -642,41 +661,63 @@ void main() {
         targetId: head.id,
         input: '80,8',
       );
-      // C1 is brought in: the vault now holds it too, byte for byte.
       await bringIn(
         o,
         stageImport(bundleOf(devFile.readAsStringSync()), now: t0),
       );
-      final again = await vault().unlock(pass);
-      // A file that holds C1 and a second correction C2 of the same record.
-      final c2 = c1.toJson()
-        ..['id'] = '${c1.id}-c2'
-        ..['quantity'] = {'value': 80.6, 'unit': 'kg'}
-        ..['original_text'] = '80,6';
-      final records = [
-        for (final r in await devRepo.records(me)) r.toJson(),
-        c2,
-      ];
-      final export = {
-        'format': 'hhos-export',
-        'format_version': 1,
-        'exported_at': t0.toIso8601String(),
-        'app_version': 't',
-        'encryption': 'none',
-        'profile': {'id': me, 'type': 'self'},
-        'record_count': records.length,
-        'records': records,
-        'timeline': <Object?>[],
-      };
+      return (await vault().unlock(pass), c1);
+    }
+
+    test('U040, N1: a vault correction the file withdrew is settled, never a '
+        'competitor: the file\'s second correction of the same record comes '
+        'in', () async {
+      final (again, c1) = await vaultHoldingC1();
+      // The file holds C1, its withdrawal and a second correction C2.
+      final withdrawal = await dev.amend(
+        profileId: me,
+        targetId: c1.id,
+        reason: AmendReason.enteredInError,
+      );
+      final c2 = secondCorrection(c1);
       final plan = await planImport(
-        stageImport(jsonEncode(export), now: t0),
+        stageImport(
+          exportOf([for (final r in await devRepo.records(me)) r.toJson(), c2]),
+          now: t0,
+        ),
         again.sink,
       );
       expect(plan.conflictIds, isEmpty);
       expect(plan.competingIds, isEmpty);
       expect(plan.blocked, isFalse);
-      expect(plan.newLines, hasLength(1));
-      expect(plan.newLines.single, contains('"id":"${c2['id']}"'));
+      expect(plan.newLines, hasLength(2));
+      expect(
+        plan.newLines,
+        containsAll([
+          contains('"id":"${withdrawal.id}"'),
+          contains('"id":"${c2['id']}"'),
+        ]),
+      );
+    });
+
+    test('N1: a file that holds a live fork (C1 and C2 of one record, '
+        'neither withdrawn) blocks, though the vault holds C1 too; nothing '
+        'written', () async {
+      final (again, c1) = await vaultHoldingC1();
+      final c2 = secondCorrection(c1);
+      final before = vaultFile.readAsStringSync();
+      final imp = stageImport(
+        exportOf([for (final r in await devRepo.records(me)) r.toJson(), c2]),
+        now: t0,
+      );
+      final plan = await planImport(imp, again.sink);
+      expect(plan.conflictIds, isEmpty);
+      expect(plan.competingIds, [c2['id']]);
+      expect(plan.blocked, isTrue);
+      await expectLater(
+        bringIn(again, imp),
+        importError('IMPORT_CORRECTIONS_COMPETE'),
+      );
+      unchanged(before);
     });
 
     test('D-053: a correction whose target is only in this vault is refused '

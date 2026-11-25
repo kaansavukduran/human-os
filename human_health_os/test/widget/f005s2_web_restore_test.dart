@@ -1045,7 +1045,7 @@ void main() {
         message(tester),
         'Geri yükleme tamamlanamadı: bu tarayıcının deposu yazmayı reddetti '
         '(dolu olabilir). Depoda hiçbir şey değişmedi. Devam etmek için '
-        'sayfayı yenile; o zamana kadar kayıt durduruldu.',
+        'sayfayı yenile; o zamana kadar kaydetme duraklatıldı.',
       );
       expect(message(tester), isNot(contains('başka bir dosya')));
       expect(find.text('Sayfayı yenile'), findsOneWidget);

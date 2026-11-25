@@ -654,7 +654,7 @@ class _YourDataCardState extends State<YourDataCard> {
       imp = stageImport(picked.text, now: DateTime.now().toUtc());
       p = await plan(imp);
     } catch (e) {
-      _say(_describe(e, s, chosenFile: true), error: true);
+      _say(_describe(e, s, chosenFile: true, importing: true), error: true);
       return;
     }
     if (!mounted) return;

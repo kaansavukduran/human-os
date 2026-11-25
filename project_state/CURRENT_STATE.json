@@ -3,9 +3,48 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "U044",
+    "contract": "v0.32",
+    "run_id": "U044@v0.32",
+    "slice": "Open UI points after Q007: the Medications add sheet title stacked on the From the pack heading; plain text-field labels at 2x text not yet whole (Activity, Timeline correction sheet, vault gate and any other TextField label cut with an ellipsis); compact density for WholeChip; rail labels without a line limit at large text; the matrix reveal learns a sheet Save bar",
+    "goal": "Open UI points after Q007: the Medications add sheet title stacked on the From the pack heading; plain text-field labels at 2x text not yet whole (Activity, Timeline correction sheet, vault gate and any other TextField label cut with an ellipsis); compact density for WholeChip; rail labels without a line limit at large text; the matrix reveal learns a sheet Save bar",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "502f07c",
+    "app_revision": null,
+    "started_at": "2026-11-25T19:38:17Z",
+    "finished_at": null,
+    "scope": [
+      "human_health_os",
+      "tools",
+      "docs"
+    ],
+    "acceptance_criteria": [
+      "AC-1 each fix has a regression test",
+      "AC-2 full suites, web smoke, Linux build and runtime pass"
+    ],
+    "completed_steps": [
+      "implementation 52c014c 0247ff3 1ef49de f2850da 9de37e1"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox, Safari, real screen readers NOT TESTED"
+    ],
+    "depends_on": [
+      "Q007"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

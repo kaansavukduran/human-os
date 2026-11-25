@@ -460,8 +460,10 @@ async function runPass(root, mode) {
       const top = inSheet ? 0 : 64;
       // Above the bottom navigation bar on touch layouts (its tabs' top),
       // which is 80 px at 320x640; 85 when it is not found.
-      const barTop = vp.touch && !inSheet ? await page.evaluate((vh) => Math.min(...[...document.querySelectorAll('flt-semantics-host [role="tab"]')]
-        .map((e) => e.getBoundingClientRect().top).filter((t) => t > vh / 2), vh - 85), vp.height).catch(() => vp.height - 85) : null;
+      const barTop = vp.touch && !inSheet ? await page.evaluate((vh) => {
+        const tops = [...document.querySelectorAll('flt-semantics-host [role="tab"]')].map((e) => e.getBoundingClientRect().top).filter((t) => t > vh / 2);
+        return tops.length ? Math.min(...tops) : vh - 85;
+      }, vp.height).catch(() => vp.height - 85) : null;
       const bottom = barTop ?? vp.height - 10;
       for (let i = 0; i < 30; i++) {
         const b = await locator.boundingBox({ timeout: 1_000 }).catch(() => null);
@@ -471,9 +473,11 @@ async function runPass(root, mode) {
         if (b && b.height > bottom - top && b.y >= top && b.y <= top + (bottom - top) / 3) return true;
         log('reveal', i, b ? `${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}` : 'no box');
         await page.mouse.move(x, vp.height / 2);
-        // Move by what is missing (a target already at a third of the window
-        // but cut at the bottom moved by 0 before, Q005).
-        const d = !b ? 300 : b.y < top ? b.y - top - 8 : b.y + b.height > bottom ? Math.min(b.y - top, Math.max(40, b.y + b.height - bottom + 8)) : b.y - vp.height / 3;
+        // Bring the target to a third of the window (clear of a sheet's own
+        // bottom bar); one already there but cut at the bottom moved by 0
+        // before, so it moves by what is missing (Q005).
+        const third = b ? b.y - vp.height / 3 : 300;
+        const d = !b ? 300 : Math.abs(third) >= 20 ? third : b.y < top ? b.y - top - 8 : Math.min(b.y - top, Math.max(40, b.y + b.height - bottom + 8));
         await page.mouse.wheel(0, Math.max(-400, Math.min(400, d)));
         await page.waitForTimeout(200);
       }

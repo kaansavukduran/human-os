@@ -103,6 +103,8 @@ const MORE = { 'en-US': 'More', 'tr-TR': 'Diğer' };
 // The back button is named once (R016: Flutter's Android icon label, which
 // repeated the tooltip as "Back Back", is removed by the app theme).
 const BACK = { 'en-US': /^Back$/, 'tr-TR': /^Geri$/ };
+// The buttons of a sheet's pinned bar (SheetFrame: Save and Cancel; U044).
+const SHEET_BAR = { 'en-US': '^(Save|Cancel)$', 'tr-TR': '^(Kaydet|Vazgeç)$' };
 const ALL = SCREENS['en-US'].map(([id]) => id);
 // One group = one page load; its cells are visited in order.
 const GROUPS = [];
@@ -110,7 +112,7 @@ for (const vp of Object.keys(VIEWPORTS)) for (const locale of LOCALES) GROUPS.pu
 for (const palette of ['Matrix', 'Axolotl', 'Trans']) for (const vp of ['phone', 'desktop']) GROUPS.push({ variant: `palette-${palette.toLowerCase()}`, palette, vp, locale: 'en-US', screens: ['Settings', 'Today'] });
 // 2× text through the browser's font size (the root font size Flutter web
 // reads as its text scale), as a person with a large browser font gets.
-for (const locale of LOCALES) GROUPS.push({ variant: 'text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: ALL });
+for (const locale of LOCALES) GROUPS.push({ variant: 'text-2x', fontSize: '32px', ref: 'base', vp: 'small-phone', locale, screens: ALL });
 // Q002/Q003: sheets, sub-pages and deep sections that a screen's first view
 // does not show: the Labs add sheet, "More from the report", "Same test over
 // time" (F004-S4), Settings palettes, app lock and About Human OS (U032), and
@@ -134,7 +136,7 @@ const EXTRA_IDS = [
 for (const locale of LOCALES) {
   GROUPS.push({ variant: 'sheets', vp: 'small-phone', locale, screens: EXTRA_IDS });
   GROUPS.push({ variant: 'sheets', vp: 'desktop', locale, screens: EXTRA_IDS });
-  GROUPS.push({ variant: 'sheets-text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: EXTRA_IDS });
+  GROUPS.push({ variant: 'sheets-text-2x', fontSize: '32px', ref: 'sheets', vp: 'small-phone', locale, screens: EXTRA_IDS });
 }
 // Q005 (after U041): the empty states that now name the first step, the
 // empty visit summary, the weight card's empty state, the how-to without
@@ -159,7 +161,7 @@ const U041_IDS = [
 for (const locale of LOCALES) {
   GROUPS.push({ variant: 'u041', vp: 'small-phone', locale, screens: U041_IDS, firstRun: true });
   GROUPS.push({ variant: 'u041', vp: 'desktop', locale, screens: U041_IDS, firstRun: true });
-  GROUPS.push({ variant: 'u041-text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: U041_IDS, firstRun: true });
+  GROUPS.push({ variant: 'u041-text-2x', fontSize: '32px', ref: 'u041', vp: 'small-phone', locale, screens: U041_IDS, firstRun: true });
 }
 // Q007 (after U043): the sheets and pages with a WholeChip that the cells
 // above do not open (Settings, first run and the Labs add sheet already
@@ -184,8 +186,18 @@ const U043_IDS = [
 for (const locale of LOCALES) {
   GROUPS.push({ variant: 'u043', vp: 'small-phone', locale, screens: U043_IDS });
   GROUPS.push({ variant: 'u043', vp: 'desktop', locale, screens: U043_IDS });
-  GROUPS.push({ variant: 'u043-text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: U043_IDS });
-  GROUPS.push({ variant: 'u043-light-2x', theme: 'light', fontSize: '32px', vp: 'small-phone', locale, screens: U043_IDS });
+  GROUPS.push({ variant: 'u043-text-2x', fontSize: '32px', ref: 'u043', vp: 'small-phone', locale, screens: U043_IDS });
+  // Compared with the dark 1× group: the theme does not change sizes.
+  GROUPS.push({ variant: 'u043-light-2x', theme: 'light', fontSize: '32px', ref: 'u043', vp: 'small-phone', locale, screens: U043_IDS });
+}
+// U044: every 2× group (one with a browser font size) is checked by
+// `text_scaled_2x` against the 1× group it names in `ref`, whatever its
+// variant is called (Q007: `u043-light-2x` was skipped because only
+// variants ending in `text-2x` were checked). A 2× group without a 1×
+// group to compare with is a mistake in this file, not a skipped check.
+const TWO_X_REF = new Map(GROUPS.filter((g) => g.fontSize).map((g) => [g.variant, g.ref]));
+for (const [variant, ref] of TWO_X_REF) {
+  if (!ref || !GROUPS.some((g) => g.variant === ref && !g.fontSize)) throw new Error(`2× group ${variant} names no 1× group to compare with (ref: ${ref})`);
 }
 // The words the U043 cells look for (lib/src/l10n/strings.dart).
 const U_TEXT = {
@@ -511,6 +523,8 @@ async function runPass(root, mode) {
     // of the bar, so the cell fails on `not_cut_at_list_end`. Reset for
     // each cell.
     let cutAtListEnd = [];
+    // The chips the cell picked (pickChip); reset for each cell.
+    let chipPicks = new Map();
     // Wheel at x until [locator] sits inside the viewport (below a top bar,
     // above a bottom bar on touch layouts).
     const reveal = async (locator, x, inSheet = false) => {
@@ -531,13 +545,31 @@ async function runPass(root, mode) {
         const tops = [...document.querySelectorAll('flt-semantics-host [role="tab"]')].map((e) => e.getBoundingClientRect().top).filter((t) => t > vh / 2);
         return tops.length ? Math.min(...tops) : noBar ? null : vh - 85;
       }, [vp.height, noBar]).catch(() => (noBar ? null : vp.height - 85)) : null;
-      const bottom = barTop ?? vp.height - 10;
+      // In a sheet, its pinned Save and Cancel bar (SheetFrame, G-74) is
+      // the limit, as the navigation bar is on a screen (U044; Q007: a
+      // target under it counted as in view, "Labs: more from the report").
+      // The bar is the row of Save / Cancel buttons at the window's bottom;
+      // its top less the 8 dp above the buttons and the divider is the
+      // limit. A sheet whose Save scrolls with its fields has no such bar.
+      const sheetBar = inSheet ? await page.evaluate(([vh, words]) => {
+        const re = new RegExp(words);
+        const rs = [...document.querySelectorAll('flt-semantics-host [role="button"]')]
+          .filter((e) => re.test((e.getAttribute('aria-label') ?? e.textContent ?? '').trim()))
+          .map((e) => e.getBoundingClientRect())
+          .filter((r) => r.width > 0 && r.top > vh / 2 && r.bottom >= vh - 80);
+        return rs.length ? Math.min(...rs.map((r) => r.top)) - 9 : null;
+      }, [vp.height, SHEET_BAR[g.locale]]).catch(() => null) : null;
+      const bottom = sheetBar ?? barTop ?? vp.height - 10;
+      // A box wholly inside the pinned bar is the bar's own button: it is
+      // always in view.
+      const inBar = (b) => sheetBar != null && b.y >= sheetBar && b.y + b.height <= vp.height;
       let prev = null;
       for (let i = 0; i < 30; i++) {
         const b = await locator.boundingBox({ timeout: 1_000 }).catch(() => null);
         // Flutter clips a semantics box at the list's edge, so a box that
         // ends exactly at the bar may be cut: it must end 2 px above it.
         if (b && b.y >= top && b.y + b.height <= bottom - 2) return true;
+        if (b && inBar(b)) return true;
         // Taller than the space between the bars (Q005: the Timeline switch
         // with its help line at 2× text): its top is in the upper third.
         if (b && b.height > bottom - top && b.y >= top && b.y <= top + (bottom - top) / 3) return true;
@@ -570,7 +602,7 @@ async function runPass(root, mode) {
             log('reveal', 'fills the list viewport (clipped at both ends)', `${Math.round(b.y)} ${Math.round(b.height)}`);
             return true;
           }
-          cutAtListEnd.push(`box ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)} ends at ${Math.round(b.y + b.height)}, bar top ${Math.round(bottom)}`);
+          cutAtListEnd.push(`box ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)} ends at ${Math.round(b.y + b.height)}, ${sheetBar != null ? 'sheet Save bar' : 'bar'} top ${Math.round(bottom)}`);
           log('reveal', 'cut at list end', cutAtListEnd[cutAtListEnd.length - 1]);
           return false;
         }
@@ -951,13 +983,22 @@ async function runPass(root, mode) {
         .map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0).map((r) => r.left)).catch(() => []);
       return xs.length ? Math.max(2, Math.min(...xs) - 8) : 6;
     };
-    const pickChip = async (name, x) => {
+    // What each pickChip of the cell found and did, by chip name (U044):
+    // `chip_checked` passes only for a chip the cell itself selected, one
+    // that was not checked before and is checked after its tap. A chip
+    // already checked is recorded, not tapped, and fails that check.
+    const pick = async (name, x) => {
       const chip = chipLoc(name);
       await chip.waitFor({ state: 'attached', timeout: 15_000 });
       await reveal(chip, x, true);
-      if ((await chip.getAttribute('aria-checked').catch(() => null)) !== 'true') await tap(chip);
+      const before = await chip.getAttribute('aria-checked').catch(() => null);
+      if (before !== 'true') await tap(chip);
       await page.waitForTimeout(500);
+      const after = await chip.getAttribute('aria-checked').catch(() => null);
+      chipPicks.set(name, { before, tapped: before !== 'true', after });
+      log('pickChip', name, `aria-checked ${before} → ${after}`);
     };
+    const pickChip = pick;
     const chipSheet = (area, addName, chipName) => ({
       label: chipName,
       target: () => chipLoc(chipName),
@@ -1102,6 +1143,7 @@ async function runPass(root, mode) {
       groupKeys.push(key);
       const set = (name, status, detail = '') => { cell.checks[name] = { status, detail }; };
       cutAtListEnd = [];
+      chipPicks = new Map();
       let reached = false;
       log('cell', key);
       const ex = EXTRA[id];
@@ -1144,9 +1186,14 @@ async function runPass(root, mode) {
         if (g.theme) set('theme_applied', themeApplied ? 'PASS' : 'FAIL', `${U.light} chosen in Settings`);
         // U043: the chip the cell selected is exposed as checked (a selected
         // WholeChip is a checkbox with aria-checked on the web).
+        // The cell must have made the selection itself (U044): a chip that
+        // was already checked proves nothing about selecting.
         if (ex?.chip) {
           const ac = reached ? await ex.target().getAttribute('aria-checked', { timeout: 2_000 }).catch(() => null) : null;
-          set('chip_checked', ac === 'true' ? 'PASS' : 'FAIL', `checkbox "${ex.label}" aria-checked=${ac}`);
+          const p = chipPicks.get(ex.label);
+          const selected = !!p && p.tapped && p.before !== 'true' && p.after === 'true';
+          const how = !p ? 'the cell did not pick it' : p.tapped ? `picked: aria-checked ${p.before} → ${p.after}` : `already checked before the cell (aria-checked ${p.before}): no selection was made`;
+          set('chip_checked', selected && ac === 'true' ? 'PASS' : 'FAIL', `checkbox "${ex.label}" aria-checked=${ac}; ${how}`);
         }
         // Compared later: 2× text must really reach the app. Settings' title
         // is in the top bar, whose text Flutter caps at about 1.34×, so the
@@ -1420,8 +1467,8 @@ const cells = Object.values(release).map((c) => {
 });
 // 2× text cells: the larger text really reached the app (the heading is at
 // least 1.6× as tall as on the same screen, size and language at 1×).
-for (const c of cells.filter((c) => c.variant.endsWith('text-2x'))) {
-  const refVariant = c.variant === 'text-2x' ? 'base' : c.variant.replace(/-text-2x$/, '');
+for (const c of cells.filter((c) => TWO_X_REF.has(c.variant))) {
+  const refVariant = TWO_X_REF.get(c.variant);
   const ref = cells.find((r) => r.variant === refVariant && r.viewport === c.viewport && r.locale === c.locale && r.screen === c.screen);
   const ratio = ref?.headingHeight && c.headingHeight ? c.headingHeight / ref.headingHeight : null;
   c.checks.text_scaled_2x = ratio == null
@@ -1464,15 +1511,15 @@ const meta = {
     lab_group_chart_spoken: 'Labs: same test over time: "Same test over time" is exposed as its own heading on Labs and the group chart carries its spoken dated-values summary',
     restore_chooser_opens: 'Today: restore from file: tapping the entry opens the browser file chooser',
     restore_cancel_reported: 'Today: restore from file: closing the chooser without a file shows "No file chosen. Nothing was changed." on screen within 1 s',
-    not_cut_at_list_end: 'U042: every target the script scrolled to ended at least 2 px above the bottom navigation bar (or the window bottom); one that stops moving at the end of its list with its bottom still under the bar is a finding (cut at list end), not in view',
+    not_cut_at_list_end: 'U042: every target the script scrolled to ended at least 2 px above the bottom navigation bar (in a sheet, above its pinned Save bar, U044; else the window bottom); one that stops moving at the end of its list with its bottom still under the bar is a finding (cut at list end), not in view',
     no_stacked_headings: 'Q005: no heading has another heading as the next visible text directly below it in the same column (less than 32 px between them, nothing in between)',
     no_english_on_tr: 'Q005, tr-TR cells: no accessible label or heading seen while sweeping the screen contains an English word from a fixed list (names shared by both languages allowed)',
     theme_applied: 'U043 light groups only: Light was chosen in Settings and its chip reads as checked',
-    chip_checked: 'Q007 (U043) chip cells: the chip the cell selected is a semantics checkbox with aria-checked=true',
+    chip_checked: 'Q007 (U043) chip cells: the chip the cell selected is a semantics checkbox with aria-checked=true; U044: the cell selected it itself (it was not checked before its tap, and is after); a chip that starts checked fails',
     title_whole: 'Q005: first run, Summary, Derived and how-to titles: the title box lies wholly inside the window at the top of the page',
     howto_no_numbers: 'Q005 (U041): the how-to has at least six task headings and no heading or label starts with a number',
     switch_help_read_with_switch: 'Q005 (U041): the Timeline "show deleted and withdrawn" switch is one control whose accessible name includes its help line',
-    text_scaled_2x: '2× text cells only: the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app',
+    text_scaled_2x: '2× text cells only (every group with a browser font size, against the 1× group it names, U044): the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app',
   },
   counts,
   not_tested: NOT_TESTED_PLATFORMS,

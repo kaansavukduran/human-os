@@ -15,6 +15,7 @@ TextScaler wholeWordScaler({
   required double maxWidth,
   required TextDirection textDirection,
   Locale? locale,
+  int? maxLines,
 }) {
   final words = text
       .split(RegExp(r'[ \t\n\r]+'))
@@ -37,14 +38,31 @@ TextScaler wholeWordScaler({
     return most;
   }
 
+  // At most [maxLines] lines when wrapped between words (U044).
+  bool fitsLines(TextScaler scaler) {
+    if (maxLines == null) return true;
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: textDirection,
+      textScaler: scaler,
+      locale: locale,
+    )..layout(maxWidth: maxWidth);
+    final lines = painter.computeLineMetrics().length;
+    painter.dispose();
+    return lines <= maxLines;
+  }
+
   final width = widest(base);
-  if (width <= maxWidth) return base;
+  if (width <= maxWidth && fitsLines(base)) return base;
   final size = style?.fontSize ?? 14.0;
-  var factor = base.scale(size) / size * (maxWidth / width);
+  var factor = base.scale(size) / size;
+  if (width > maxWidth) factor *= maxWidth / width;
   // Glyph widths do not always scale exactly with the size (hinting,
-  // rounding): step down a little until the longest word fits.
-  for (var i = 0; i < 20; i++) {
-    if (widest(TextScaler.linear(factor)) <= maxWidth) break;
+  // rounding): step down a little until the longest word fits (and the
+  // text fits in its lines).
+  for (var i = 0; i < 80; i++) {
+    final scaler = TextScaler.linear(factor);
+    if (widest(scaler) <= maxWidth && fitsLines(scaler)) break;
     factor *= 0.99;
   }
   return TextScaler.linear(factor);
@@ -54,11 +72,21 @@ TextScaler wholeWordScaler({
 /// single word is wider than the space, the whole text is drawn just small
 /// enough for that word to fit; otherwise at the person's text size.
 class WholeWordText extends StatelessWidget {
-  const WholeWordText(this.data, {super.key, this.style, this.textAlign});
+  const WholeWordText(
+    this.data, {
+    super.key,
+    this.style,
+    this.textAlign,
+    this.maxLines,
+  });
 
   final String data;
   final TextStyle? style;
   final TextAlign? textAlign;
+
+  /// When set, the text is also drawn just small enough to wrap onto at
+  /// most this many lines (U044, the compact rail). It is never cut.
+  final int? maxLines;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -70,6 +98,7 @@ class WholeWordText extends StatelessWidget {
         maxWidth: constraints.maxWidth,
         textDirection: Directionality.of(context),
         locale: Localizations.maybeLocaleOf(context),
+        maxLines: maxLines,
       );
       return Text(
         data,

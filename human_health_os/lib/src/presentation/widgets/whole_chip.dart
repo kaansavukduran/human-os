@@ -104,6 +104,16 @@ class WholeChip extends StatelessWidget {
             ),
     );
     final style = theme.textTheme.labelLarge?.copyWith(color: ink);
+    // The theme's density (Settings, "Compact") moves the drawn chip as it
+    // moves Material's: compact takes 4 dp off each side's padding, so a
+    // one-line chip is drawn 24 dp tall instead of 32 (U044). Whatever is
+    // drawn, the target stays at least 48 dp: the space above and below
+    // grows by what the drawn chip lost.
+    final density = theme.visualDensity.baseSizeAdjustment;
+    final drawnMin = (32 + density.dy).clamp(20.0, 48.0);
+    final padY = (6 + density.dy / 2).clamp(0.0, 14.0);
+    final padX = (16 + density.dx / 2).clamp(8.0, 24.0);
+    final targetPad = (48 - drawnMin) / 2;
     // The tick grows with the text, as Material's does.
     final tick = MediaQuery.textScalerOf(context).scale(18);
     Widget chip = Material(
@@ -122,13 +132,13 @@ class WholeChip extends StatelessWidget {
             position: DecorationPosition.foreground,
             decoration: _focusRing(context, scheme),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 32, minWidth: 48),
+              constraints: BoxConstraints(minHeight: drawnMin, minWidth: 48),
               child: Padding(
                 padding: EdgeInsetsDirectional.only(
-                  start: on ? 8 : 16,
-                  end: 16,
-                  top: 6,
-                  bottom: 6,
+                  start: on ? padX / 2 : padX,
+                  end: padX,
+                  top: padY,
+                  bottom: padY,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -161,14 +171,15 @@ class WholeChip extends StatelessWidget {
       selected: _kind == _Kind.choice && !kIsWeb ? selected : null,
       checked: _kind == _Kind.choice && kIsWeb ? selected : null,
       label: semanticsLabel ?? label,
-      // The 8 dp above and below the drawn chip are part of its target,
-      // so a one-line chip is 48 dp tall, like Material's.
+      // The space above and below the drawn chip (8 dp, 12 dp when
+      // compact) is part of its target, so a one-line chip is 48 dp tall,
+      // like Material's.
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         excludeFromSemantics: true,
         onTap: tap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: EdgeInsets.symmetric(vertical: targetPad),
           child: chip,
         ),
       ),

@@ -175,7 +175,7 @@ class _ScrollableRail extends StatelessWidget {
     // `scrollable` lets the framework scroll destinations + the planned group
     // on short windows (an IntrinsicHeight wrapper under-measured the
     // trailing group and overflowed at 1024×700).
-    return NavigationRail(
+    final rail = NavigationRail(
       key: const ValueKey('nav-rail'),
       scrollable: true,
       minWidth: kRailMinWidth,
@@ -192,7 +192,18 @@ class _ScrollableRail extends StatelessWidget {
           NavigationRailDestination(
             icon: Icon(d.icon),
             selectedIcon: Icon(d.selectedIcon),
-            label: Text(d.label(lang)),
+            // Compact: the label wraps between words in the rail's width
+            // instead of widening the rail (U044, railLabelScaler).
+            label: extended
+                ? Text(d.label(lang))
+                : SizedBox(
+                    width: kRailLabelWidth,
+                    child: WholeWordText(
+                      d.label(lang),
+                      textAlign: TextAlign.center,
+                      maxLines: kRailLabelMaxLines,
+                    ),
+                  ),
           ),
       ],
       trailing: _PlannedRailGroup(
@@ -202,8 +213,35 @@ class _ScrollableRail extends StatelessWidget {
         services: services,
       ),
     );
+    if (extended) return rail;
+    // The compact rail's labels (U044): at most Material's 1.3× for
+    // navigation labels, so the rail cannot grow without bound at large
+    // text; see kRailLabelMaxLines.
+    final media = MediaQuery.of(context);
+    return MediaQuery(
+      data: media.copyWith(
+        textScaler: media.textScaler.clamp(maxScaleFactor: kNavLabelMaxScale),
+      ),
+      child: rail,
+    );
   }
 }
+
+/// The most lines a label of the compact (80 dp) rail takes (U044).
+///
+/// Every label of the compact rail (the three areas, the planned group,
+/// its heading and Settings) is drawn at the person's text size capped at
+/// [kNavLabelMaxScale], as the bottom bar's labels are. It wraps between
+/// words; it is drawn smaller only as much as needed for its longest word
+/// to fit on one line of the rail and for the whole label to fit in this
+/// many lines ([WholeWordText]). It is never cut or broken inside a word,
+/// the rail stays [kRailMinWidth] wide, and the screen-reader names are
+/// unchanged.
+const int kRailLabelMaxLines = 3;
+
+/// The width a primary label of the compact rail has: the rail less the
+/// 8 dp a side Material keeps around a destination's label.
+const double kRailLabelWidth = kRailMinWidth - 16;
 
 /// Secondary, clearly labelled group of planned areas under the rail.
 class _PlannedRailGroup extends StatelessWidget {
@@ -237,12 +275,21 @@ class _PlannedRailGroup extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: extended ? 30 : 4),
             child: Semantics(
               header: true,
-              child: Text(
-                s.plannedGroup,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
+              child: extended
+                  ? Text(
+                      s.plannedGroup,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    )
+                  : WholeWordText(
+                      s.plannedGroup,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: kRailLabelMaxLines,
+                    ),
             ),
           ),
           const SizedBox(height: 4),
@@ -337,6 +384,7 @@ class _RailSettingsItem extends StatelessWidget {
                           color: color,
                         ),
                         textAlign: TextAlign.center,
+                        maxLines: kRailLabelMaxLines,
                       ),
                     ],
                   ),
@@ -409,6 +457,7 @@ class _PlannedRailItem extends StatelessWidget {
                           color: color,
                         ),
                         textAlign: TextAlign.center,
+                        maxLines: kRailLabelMaxLines,
                       ),
                     ],
                   ),

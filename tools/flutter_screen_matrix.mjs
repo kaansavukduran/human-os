@@ -365,6 +365,58 @@ const browserVersion = browser.version();
 
 const cellId = (g, screen) => `${g.variant}|${g.vp}|${g.locale}|${screen}`;
 
+// U045: theme_applied measures the rendered page. The Standard palette's
+// surface, card and raised-container colours of each theme
+// (standardTokens, lib/src/presentation/theme/human_os_theme.dart); dark
+// is the default. A cell's screenshot is read back in a blank page and its
+// pixels counted: the theme is applied when the page's most common colour
+// is one of the expected theme's three (or one of them seen through the
+// black 54 % modal barrier of a sheet or dialog) and those cover at least
+// a quarter of the window (every 4th pixel, each channel within 3).
+const THEME_SURFACES = {
+  dark: { surface: '101819', card: '172224', container: '1d2b2d' },
+  light: { surface: 'f6f8f8', card: 'ffffff', container: 'eef2f2' },
+};
+let colourPage = null;
+async function surfaceColours(file) {
+  colourPage ??= await browser.newPage();
+  const b64 = (await readFile(file)).toString('base64');
+  return colourPage.evaluate(async ({ b64, themes }) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0);
+    const d = ctx.getImageData(0, 0, c.width, c.height).data;
+    const rgb = (h) => [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+    // A sheet's or dialog's modal barrier is Material's black at 54 %
+    // (Colors.black54): the surfaces seen through it count as well.
+    const tokens = Object.entries(themes).flatMap(([t, set]) => Object.entries(set).flatMap(([k, h]) => {
+      const v = rgb(h);
+      return [{ t, k, v }, { t, k: `${k} under the scrim`, v: v.map((c) => Math.round(c * (1 - 138 / 255))) }];
+    }));
+    const hits = Object.fromEntries(tokens.map((x) => [`${x.t}.${x.k}`, 0]));
+    const counts = new Map();
+    let n = 0;
+    for (let i = 0; i < d.length; i += 16) {
+      n++;
+      const key = ((d[i] << 16) | (d[i + 1] << 8) | d[i + 2]).toString(16).padStart(6, '0');
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+      for (const x of tokens) {
+        if (Math.abs(d[i] - x.v[0]) <= 3 && Math.abs(d[i + 1] - x.v[1]) <= 3 && Math.abs(d[i + 2] - x.v[2]) <= 3) hits[`${x.t}.${x.k}`]++;
+      }
+    }
+    const [top, topN] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    const share = (t) => tokens.filter((x) => x.t === t).reduce((a, x) => a + hits[`${x.t}.${x.k}`], 0) / n;
+    const near = (h, v) => { const w = rgb(h); return w.every((c, i) => Math.abs(c - v[i]) <= 3); };
+    const topTheme = tokens.find((x) => near(top, x.v));
+    return { top, topShare: topN / n, topIs: topTheme ? `${topTheme.t}.${topTheme.k}` : null, share: Object.fromEntries(Object.keys(themes).map((t) => [t, share(t)])) };
+  }, { b64, themes: THEME_SURFACES });
+}
+
 async function runPass(root, mode) {
   const { server, base } = await serve(root);
   const buildHash = await sha256(join(root, 'main.dart.js')).catch(() => 'missing');
@@ -1309,7 +1361,6 @@ async function runPass(root, mode) {
         const what = `"${ex ? ex.label : names[id].heading}"`;
         set('heading_visible', reached && hb && hb.y >= 0 && hb.y + hb.height <= vp.height ? 'PASS' : 'FAIL', reached ? what : `${what} not shown${cell.navError ? `: ${cell.navError}` : ''}`);
         if (g.palette) set('palette_applied', paletteApplied ? 'PASS' : 'FAIL', `${g.palette} chosen in Settings`);
-        if (g.theme) set('theme_applied', themeApplied ? 'PASS' : 'FAIL', `${U.light} chosen in Settings`);
         // U043: the chip the cell selected is exposed as checked (a selected
         // WholeChip is a checkbox with aria-checked on the web).
         // The cell must have made the selection itself (U044): a chip that
@@ -1325,14 +1376,39 @@ async function runPass(root, mode) {
         // its 11 items (4 primary, 6 areas, Settings) lies whole inside
         // the rail and the window. Line counts are judged by eye.
         if (g.rail) {
-          const rail = await page.evaluate(() => [...document.querySelectorAll('flt-semantics-host [role="button"], flt-semantics-host [role="tab"]')]
-            .map((e) => ({ n: (e.getAttribute('aria-label') ?? e.textContent ?? '').trim().split('\n')[0], r: e.getBoundingClientRect() }))
-            .filter(({ r }) => r.width > 0 && r.left < 40 && r.top > 60)
-            .map(({ n, r }) => ({ n, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }))).catch(() => []);
+          // U045: only the rail's own items count. The rail is the
+          // outermost semantics node, above a button or tab near the left
+          // edge, whose box lies within the rail's 80 dp (the web build
+          // gives the rail a group node 80 wide); its items are the buttons
+          // and tabs inside that node. A control elsewhere on the page, even
+          // one drawn near the left edge, is not inside it.
+          const found = await page.evaluate(() => {
+            const host = document.querySelector('flt-semantics-host');
+            if (!host) return { items: [], box: null };
+            const sel = '[role="button"], [role="tab"]';
+            const inRail = (r) => r.width > 0 && r.left >= -1 && r.right <= 81 && r.height >= 200;
+            const containers = new Set();
+            for (const e of host.querySelectorAll(sel)) {
+              const r = e.getBoundingClientRect();
+              if (!(r.width > 0 && r.left < 40 && r.top > 60)) continue;
+              let top = null;
+              for (let a = e.parentElement; a && a !== host; a = a.parentElement) if (inRail(a.getBoundingClientRect())) top = a;
+              if (top) containers.add(top);
+            }
+            const best = [...containers].map((c) => ({ c, n: c.querySelectorAll(sel).length })).sort((a, b) => b.n - a.n)[0];
+            if (!best) return { items: [], box: null };
+            const br = best.c.getBoundingClientRect();
+            const items = [...best.c.querySelectorAll(sel)].map((e) => ({ n: (e.getAttribute('aria-label') ?? e.textContent ?? '').trim().split('\n')[0], r: e.getBoundingClientRect() }))
+              .filter(({ r }) => r.width > 0)
+              .map(({ n, r }) => ({ n, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }));
+            return { items, box: { x: Math.round(br.left), y: Math.round(br.top), w: Math.round(br.width), h: Math.round(br.height) }, containers: containers.size };
+          }).catch(() => ({ items: [], box: null }));
+          const rail = found.items;
           const out = rail.filter((b) => b.x < 0 || b.x + b.w > 81 || b.y + b.h > vp.height);
           cell.rail = rail;
+          cell.railBox = found.box;
           set('rail_in_window', rail.length >= 11 && out.length === 0 ? 'PASS' : 'FAIL',
-            `${rail.length} rail items; widest ends at x ${Math.max(0, ...rail.map((b) => b.x + b.w))}, lowest at y ${Math.max(0, ...rail.map((b) => b.y + b.h))} of ${vp.height}${out.length ? `; outside: ${out.map((b) => `"${b.n}" ${b.x},${b.y} ${b.w}x${b.h}`).join('; ')}` : ''}`);
+            `${rail.length} items inside the rail node${found.box ? ` (${found.box.x},${found.box.y} ${found.box.w}x${found.box.h})` : ' (no rail node found)'}; widest ends at x ${Math.max(0, ...rail.map((b) => b.x + b.w))}, lowest at y ${Math.max(0, ...rail.map((b) => b.y + b.h))} of ${vp.height}${out.length ? `; outside: ${out.map((b) => `"${b.n}" ${b.x},${b.y} ${b.w}x${b.h}`).join('; ')}` : ''}`);
         }
         // Compared later: 2× text must really reach the app. Settings' title
         // is in the top bar, whose text Flutter caps at about 1.34×, so the
@@ -1342,6 +1418,17 @@ async function runPass(root, mode) {
         const shot = `${g.variant}_${g.vp}_${g.locale}_${id.replace(/[^A-Za-z]+/g, '-')}.png`;
         await page.screenshot({ path: join(out, shot) }).catch(() => {});
         cell.screenshot = shot;
+        // U045: the theme is checked on the rendered colours (dark unless
+        // the group chose Light in Settings), not only on the chip's state.
+        if (!g.palette) {
+          const want = g.theme ?? 'dark';
+          const col = await surfaceColours(join(out, shot)).catch((e) => ({ error: e.message.split('\n')[0] }));
+          cell.colours = col;
+          const ok = !col.error && col.topIs?.startsWith(`${want}.`) && col.share[want] >= 0.25 && (g.theme !== 'light' || themeApplied);
+          const pct = (v) => `${Math.round(v * 100)} %`;
+          set('theme_applied', ok ? 'PASS' : 'FAIL', col.error ? `screenshot not read: ${col.error}`
+            : `want ${want}${g.theme === 'light' ? ` (${U.light} chosen in Settings: chip checked ${themeApplied})` : ''}; most common colour #${col.top} (${pct(col.topShare)}, ${col.topIs ?? 'not a theme surface'}); ${want} surfaces ${pct(col.share[want])}, ${want === 'dark' ? 'light' : 'dark'} surfaces ${pct(col.share[want === 'dark' ? 'light' : 'dark'])}`);
+        }
         // A title (first run, Summary, Derived, the how-to) is drawn whole:
         // its box lies inside the window, at the top of the page.
         if (ex?.title && reached) {
@@ -1659,12 +1746,12 @@ const meta = {
     not_cut_at_list_end: 'U042: every target the script scrolled to ended at least 2 px above the bottom navigation bar (in a sheet, above its pinned Save bar, U044; else the window bottom); one that stops moving at the end of its list with its bottom still under the bar is a finding (cut at list end), not in view',
     no_stacked_headings: 'Q005: no heading has another heading as the next visible text directly below it in the same column (less than 32 px between them, nothing in between)',
     no_english_on_tr: 'Q005, tr-TR cells: no accessible label or heading seen while sweeping the screen contains an English word from a fixed list (names shared by both languages allowed)',
-    theme_applied: 'U043 light groups only: Light was chosen in Settings and its chip reads as checked',
+    theme_applied: 'U045: every group without a palette: the cell\'s screenshot is read back and its most common colour is a surface, card or raised container of the expected theme, or one of them under the black 54 % modal barrier (dark by default; light in the groups that chose Light in Settings, whose chip must also read as checked), those three covering at least 25 % of the window (every 4th pixel, each channel within 3)',
     chip_checked: 'Q007 (U043) chip cells: the chip the cell selected is a semantics checkbox with aria-checked=true; U044: the cell selected it itself (it was not checked before its tap, and is after); a chip that starts checked fails',
     title_whole: 'Q005: first run, Summary, Derived and how-to titles: the title box lies wholly inside the window at the top of the page',
     howto_no_numbers: 'Q005 (U041): the how-to has at least six task headings and no heading or label starts with a number',
     switch_help_read_with_switch: 'Q005 (U041): the Timeline "show deleted and withdrawn" switch is one control whose accessible name includes its help line',
-    rail_in_window: 'Q008 compact-rail groups only (840 and 1000 wide): at least 11 rail items (4 primary, 6 areas, Settings), each ending within 81 px from the left and above the window bottom (U044: the rail stays 80 dp wide)',
+    rail_in_window: 'Q008 compact-rail groups only (840 and 1000 wide): at least 11 rail items (4 primary, 6 areas, Settings), each ending within 81 px from the left and above the window bottom (U044: the rail stays 80 dp wide); U045: only buttons and tabs inside the rail\'s own semantics node count (the outermost node within 81 px of the left edge, at least 200 px tall, above a control near the left edge)',
     text_scaled_2x: '2× text cells only (every group with a browser font size, against the 1× group it names, U044): the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app',
   },
   counts,

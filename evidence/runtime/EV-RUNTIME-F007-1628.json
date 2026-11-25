@@ -1,0 +1,72 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-RUNTIME-F007-1628",
+  "kind": "RUNTIME",
+  "forge_id": "U043@v0.32",
+  "source_revision": "2e0a4751c6d6253ff2fa078e86fa8a706f0ed680",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "env EXPECT_FLUTTER_VERSION=3.47.6 node tools/flutter_web_smoke.mjs",
+  "argv": [
+    "env",
+    "EXPECT_FLUTTER_VERSION=3.47.6",
+    "node",
+    "tools/flutter_web_smoke.mjs"
+  ],
+  "cwd": ".",
+  "started_at": "2026-11-25T16:14:32.593Z",
+  "finished_at": "2026-11-25T16:19:32.276Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.4",
+    "python": "Python 3.13.18"
+  },
+  "host": "Linux 6.18.44-fc-v880 x86_64",
+  "summary": "PASS  slow load: no progress percentage",
+  "log_sha256": "44160fd595deead7c0e52f5f9a8e9e9e999e92f52d2eb7726ba01505816463ab",
+  "log_lines": 182,
+  "log_tail": [
+    "PASS  phone-tr: \u00d6\u011fren opens the glossary",
+    "PASS  phone-tr: Today shows the Uyku card",
+    "PASS  phone-tr: Today shows the Nas\u0131l hissediyorsun card",
+    "PASS  phone-tr: no external network requests",
+    "PASS  phone-tr: no page errors",
+    "PASS  phone-tr: no console errors",
+    "PASS  phone-tr: no failed requests",
+    "PASS  reduced motion: loading view visible",
+    "PASS  reduced motion: loading indicator has no animation  ({\"name\":\"none\",\"duration\":\"0s\"})",
+    "PASS  slow load: no second line before 15 s",
+    "PASS  slow load: second plain line after 15 s",
+    "PASS  slow load: no progress percentage"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os",
+    "tools/flutter_web_smoke.mjs"
+  ],
+  "target": "web",
+  "profile": "development",
+  "artifacts": [
+    {
+      "path": "/home/user/claudereponewscience/human_health_os/build/web/main.dart.js",
+      "type": "file",
+      "bytes": 3941119,
+      "sha256": "fee774fbe24078863f8bec8091fc8447e752424c6b7b2aa15657772b29e46695"
+    },
+    {
+      "path": "/home/user/claudereponewscience/reports/runtime/flutter_web_smoke_2e0a4751c6d6.json",
+      "type": "file",
+      "bytes": 23183,
+      "sha256": "f5de1855a6825bdb769a9e42aad3851beb0a1b58acadc3870c5887059831c6f9"
+    }
+  ]
+}

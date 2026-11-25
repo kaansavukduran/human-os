@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · Q006@v0.32 closed (screen matrix after U042: 198/198 by script, 193/5 by eye; U042 confirmed); 14 gates PASS at 013eedd (EV-*-F007-1608…1621). U042 closed before it.
+- CONFIRMED · 2026-11-25 · U043@v0.32 closed (labels and chips wrap between words, never cut; WholeChip replaces every Material chip); 14 gates PASS at 2e0a475 (EV-*-F007-1622…1635). Q006 closed before it.
 
 ## Next step
-- PLANNED · U043@v0.32: Q006 by-eye findings: labels and chips at 2× text wrap between words and are never cut (Settings measurement order, palette card, first-run language chip).
+- PLANNED · Q007@v0.32: screen matrix after U043 (every WholeChip screen, dark and light, keyboard focus, web semantics).
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

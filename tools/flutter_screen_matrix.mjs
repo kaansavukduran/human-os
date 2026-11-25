@@ -560,9 +560,13 @@ async function runPass(root, mode) {
         return rs.length ? Math.min(...rs.map((r) => r.top)) - 9 : null;
       }, [vp.height, SHEET_BAR[g.locale]]).catch(() => null) : null;
       const bottom = sheetBar ?? barTop ?? vp.height - 10;
-      // A box wholly inside the pinned bar is the bar's own button: it is
-      // always in view.
-      const inBar = (b) => sheetBar != null && b.y >= sheetBar && b.y + b.height <= vp.height;
+      // The bar's own Save or Cancel button is always in view; any other
+      // target lying inside the bar's band is hidden by it (U044 review).
+      const isBarButton = sheetBar != null && await locator.evaluate(
+        (e, words) => new RegExp(words).test((e.getAttribute('aria-label') ?? e.textContent ?? '').trim()),
+        SHEET_BAR[g.locale],
+      ).catch(() => false);
+      const inBar = (b) => isBarButton && b.y >= sheetBar && b.y + b.height <= vp.height;
       let prev = null;
       for (let i = 0; i < 30; i++) {
         const b = await locator.boundingBox({ timeout: 1_000 }).catch(() => null);

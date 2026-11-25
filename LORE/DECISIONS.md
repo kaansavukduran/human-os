@@ -84,3 +84,9 @@ Karar: Development kayıtları dolu şifreli kasaya kimlikle birleşir: aynı ki
 Neden: G-76; hiçbir kayıt yeniden yazılmaz, sıra zaman çizelgesi kurallarından gelir, önizleme yeni/atlanan/engelleyen sayar.
 Reddedilen: Kayıtları kasanın SELF profiline yeniden bağlamak (profile_id kaydın baytıdır); profil eşlemesi (her ekran, düzeltme kuralı ve dışa aktarım profile göre); dosyada hedefi olmayan düzeltme.
 Kısıt/Etki: Yalnız aynı SELF profili; okunamayan girdili veya salt okunur kasa reddedilir; önizlemeden sonra değişen kasa yazılmaz (`IMPORT_VAULT_CHANGED`); önceki zarf saklanır, adı alınmışsa bir saniye ileri (ad özel oluşturmayla alınır). R026: aynı kaydın her iki sürümdeki iki farklı düzeltmesi de engelleyen çakışmadır (`IMPORT_CORRECTIONS_COMPETE`); geçiş öncesi oturum kilitlenir ve süren yazmalar beklenir, kasa yeniden okunur, değiştiyse geçilmez (`RESTORE_NOT_SWITCHED`/`VAULT_CHANGED`); geri yüklemede de aynı yol.
+
+## D-054 · 2026-11-25 · KABUL
+Karar: Metin okuyucunun seçtiği boyutta kalır; iki istisna vardır: tek bir sözcük satırdan genişse yalnız o başlık/etiket sözcük sığacak kadar küçülür (U042), dar gezinme rayının etiketleri alt çubuk gibi en çok 1,3× ve 3 satırdır (U044).
+Neden: Sözcük içinde bölünen metin okunmaz; rayı genişletmek 840–1200 dp'de okuma sütunundan yer alır; Material gezinme etiketlerini zaten 1,3×'te sınırlar.
+Reddedilen: Rayı genişletmek; etiketi kesmek ("…"); başlıkları her zaman küçültmek.
+Kısıt/Etki: Başka hiçbir metin okuyucunun boyutunun altına inmez; yeni bir istisna yeni karar ister. Sahip: Kaan

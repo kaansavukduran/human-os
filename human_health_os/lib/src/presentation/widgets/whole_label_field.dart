@@ -34,31 +34,39 @@ class WholeLabelField extends StatelessWidget {
   final double? knownWidth;
 
   Widget _build(BuildContext context, double width) {
-    if (labelFitsField(context, label, width - reserve)) {
-      return field(label);
-    }
+    final above = !labelFitsField(context, label, width - reserve);
     final style = Theme.of(context).textTheme.bodyMedium;
+    // One tree for both layouts (U044 review): the field keeps its element,
+    // so a resize or rotation that moves the label does not drop focus.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Wraps between words; a single word wider than the line draws the
-        // label just small enough for it (U042), never broken inside it.
-        ExcludeSemantics(
-          child: Text(
-            label,
-            style: style,
-            textScaler: wholeWordScaler(
-              text: label,
-              style: DefaultTextStyle.of(context).style.merge(style),
-              base: MediaQuery.textScalerOf(context),
-              maxWidth: width,
-              textDirection: Directionality.of(context),
-              locale: Localizations.maybeLocaleOf(context),
+        if (above) ...[
+          // Wraps between words; a single word wider than the line draws
+          // the label just small enough for it (U042), never broken inside.
+          ExcludeSemantics(
+            child: Text(
+              label,
+              style: style,
+              textScaler: wholeWordScaler(
+                text: label,
+                style: DefaultTextStyle.of(context).style.merge(style),
+                base: MediaQuery.textScalerOf(context),
+                maxWidth: width,
+                textDirection: Directionality.of(context),
+                locale: Localizations.maybeLocaleOf(context),
+              ),
             ),
           ),
+          const SizedBox(height: 4),
+        ],
+        KeyedSubtree(
+          key: const ValueKey('whole-label-field'),
+          child: Semantics(
+            label: above ? label : null,
+            child: field(above ? null : label),
+          ),
         ),
-        const SizedBox(height: 4),
-        Semantics(label: label, child: field(null)),
       ],
     );
   }

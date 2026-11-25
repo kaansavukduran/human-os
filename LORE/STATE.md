@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · U044@v0.32 closed (no heading under a sheet title, every field name whole, compact chips and rail, D-054); 14 gates PASS at eb5fda9 (EV-*-F007-1650…1663). Q007 closed before it.
+- CONFIRMED · 2026-11-25 · Q008@v0.32 closed (screen matrix after U044: 330 cells PASS, 3 by-eye failures fixed: Settings switch words, Timeline correction help and errors); 14 gates PASS (EV-*-F007-1664…1677). U044 closed before it.
 
 ## Next step
-- PLANNED · Q008@v0.32: screen matrix after U044 in Chromium (tightened checks run; every sheet and the vault gate; compact rail).
+- PLANNED · U045@v0.32: open UI points after Q008 (selected rail label font, rail count only rail items, TR date pattern wrap, theme_applied on real colours, matrix re-run on the Q008 fixes).
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

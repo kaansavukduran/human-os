@@ -51,3 +51,11 @@ By eye: the 60 phone screenshots of the `u043` groups (all three phone groups, b
 - Other plain `labelText` fields (Activity, the Timeline correction sheet, the vault gate) were not checked at 2× text.
 
 Screenshots of other cells were deleted for disk space (their checks remain in `matrix.json`). 58 screenshots are kept.
+
+## After the independent review
+
+No blocking findings; the 6 field-label tests fail on the old screens. Notes for the next matrix Forge:
+- `text_scaled_2x` runs only for variants ending in `text-2x`, so the `u043-light-2x` group relies on the review by eye for 2× text.
+- `theme_applied` reads only the Light chip's state, not the colours.
+- `pickChip` skips the tap when a chip already starts checked, so `chip_checked` can pass without the cell selecting it.
+- The reveal does not know a sheet's Save bar (the false Labs FAIL, half-hidden chips in some shots).

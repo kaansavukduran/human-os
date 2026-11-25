@@ -166,7 +166,7 @@ class S {
   String get saved => _t('Saved', 'Kaydedildi');
   String get noWeightYet => _t(
     'No weight recorded yet. Type it in the field and press Save.',
-    'Henüz ağırlık kaydı yok. Alana yaz ve Kaydet\'e bas.',
+    'Henüz ağırlık kaydı yok. Değeri alana yaz ve Kaydet\'e bas.',
   );
   String get latest => _t('Latest', 'Son');
   String get history => _t('History', 'Geçmiş');
@@ -542,8 +542,8 @@ class S {
     'Silinenleri ve geri çekilenleri göster',
   );
   String get showHiddenHelp => _t(
-    'Records you deleted or marked as entered in error stay in history.',
-    'Sildiğin ya da yanlışlıkla girildi diye işaretlediğin kayıtlar geçmişte kalır.',
+    'Records you deleted or marked as entered in error stay in history; switch this on to see them.',
+    'Sildiğin ya da yanlışlıkla girildi diye işaretlediğin kayıtlar geçmişte kalır; görmek için bunu aç.',
   );
   String get versionsDisagree => _t('Versions disagree', 'Sürümler çelişiyor');
   String get versions => _t('Versions', 'Sürümler');
@@ -1438,8 +1438,8 @@ class S {
     'Kişinin kendisi kaydetti, bir klinik değil. Human OS bu değerleri yorumlamaz ve puanlamaz.',
   );
   String get summaryEmpty => _t(
-    'Nothing recorded yet. What you save on Today and in the other areas appears here.',
-    'Henüz kayıt yok. Bugün ekranında ve diğer alanlarda kaydettiklerin burada görünür.',
+    'Nothing recorded yet. Weights, measurements and lab results you save appear here.',
+    'Henüz kayıt yok. Kaydettiğin ağırlık, ölçüm ve tahlil sonuçları burada görünür.',
   );
   String get summarySave =>
       _t('Save as a page to print', 'Yazdırmak için sayfa olarak kaydet');
@@ -1598,7 +1598,7 @@ class S {
   );
   String get firstThen => _t(
     'Later, on Today, type a first number, for example your weight, and press Save.',
-    'Daha sonra Bugün ekranında ilk sayını, örneğin kilonu yaz ve Kaydet\'e bas.',
+    'Daha sonra Bugün ekranında ilk sayını, örneğin ağırlığını yaz ve Kaydet\'e bas.',
   );
   String get firstMoreInSettings => _t(
     'Colour, text size, units and more are in Settings.',

@@ -4,6 +4,7 @@ import '../../app/app_services.dart';
 import '../../data/backup/data_files.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/theme/spacing.dart';
+import '../../presentation/widgets/wrapping_title_bar.dart';
 import '../today/save_copy.dart';
 import 'doctor_summary.dart';
 
@@ -95,14 +96,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
         !files.sessionOnly &&
         !widget.services.storage.encrypted;
     return Scaffold(
-      appBar: AppBar(
-        // Scaled down rather than cut at 320 dp with large text (U041).
-        title: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: AlignmentDirectional.centerStart,
-          child: Text(s.summaryTitle),
-        ),
-      ),
+      // Wraps at the person's text size, never shrunk or cut (U041).
+      appBar: WrappingTitleBar.of(context, s.summaryTitle),
       body: summary == null
           ? const SizedBox.shrink()
           // One centred reading column on a wide window (U041).

@@ -8,6 +8,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/casing.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/theme/spacing.dart';
+import '../../presentation/widgets/wrapping_title_bar.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../measurements/measurement_format.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
@@ -67,14 +68,8 @@ class _DerivedScreenState extends State<DerivedScreen> {
     final text = Theme.of(context).textTheme;
     final rows = _rows;
     return Scaffold(
-      appBar: AppBar(
-        // Scaled down rather than cut at 320 dp with large text (U041).
-        title: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: AlignmentDirectional.centerStart,
-          child: Text(s.derivedTitle),
-        ),
-      ),
+      // Wraps at the person's text size, never shrunk or cut (U041).
+      appBar: WrappingTitleBar.of(context, s.derivedTitle),
       body: _failed
           ? Padding(
               padding: const EdgeInsets.all(16),

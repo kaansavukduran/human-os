@@ -14,6 +14,7 @@
 //    centred reading column on a wide window.
 // Each changed screen is checked in EN and TR at 320 dp with 2× text.
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:human_health_os/src/domain/settings/appearance.dart'
     show MemoryAppearanceStore;
@@ -59,6 +60,29 @@ Future<void> _scrollTo(WidgetTester tester, String screen, String key) async {
   }
   await tester.ensureVisible(f);
   await tester.pumpAndSettle();
+}
+
+/// [title] in the app bar: not cut, not drawn smaller than the person's
+/// text size, and inside the bar.
+void _expectWholeTitle(WidgetTester tester, String title) {
+  final text = find.descendant(
+    of: find.byType(AppBar),
+    matching: find.text(title),
+  );
+  expect(text, findsOneWidget);
+  final paragraph = tester.renderObject<RenderParagraph>(
+    find.descendant(of: text, matching: find.byType(RichText)),
+  );
+  expect(paragraph.didExceedMaxLines, isFalse);
+  expect(paragraph.textScaler.scale(10), closeTo(20, 0.01));
+  final bar = tester.getRect(find.byType(AppBar));
+  final r = tester.getRect(text);
+  expect(r.top, greaterThanOrEqualTo(bar.top - 0.5));
+  expect(r.bottom, lessThanOrEqualTo(bar.bottom + 0.5));
+  // Drawn at its laid-out size (nothing shrinks it on screen), so every
+  // line is shown at the person's text size.
+  expect(r.height, closeTo(paragraph.size.height, 0.5));
+  expect(r.width, closeTo(paragraph.size.width, 0.5));
 }
 
 /// Opens a tool listed under Today's "Tools".
@@ -109,6 +133,16 @@ void main() {
                   ]) {
           expect(t, contains(word));
         }
+        // The summary promises only what it collects: weights, Today's
+        // measurements and lab results (doctor_summary.dart).
+        expect(
+          s.summaryEmpty,
+          lang == AppLang.en
+              ? contains('Weights, measurements and lab results')
+              : contains('ağırlık, ölçüm ve tahlil sonuçları'),
+        );
+        expect(s.summaryEmpty, isNot(contains('Today')));
+        expect(s.summaryEmpty, isNot(contains('diğer alan')));
       });
 
       test('${lang.name}: the weight card says where to type and which '
@@ -119,6 +153,10 @@ void main() {
           expect(s.weightTitle, contains('ağırlığı'));
           expect(s.noWeightYet, contains('ağırlık'));
           expect(s.noWeightYet, isNot(contains('kilo')));
+          // The step says what to type: the value.
+          expect(s.noWeightYet, contains('Değeri alana yaz'));
+          expect(s.firstThen, contains('ağırlığını yaz'));
+          expect(s.firstThen, isNot(contains('kilo')));
         }
       });
     }
@@ -162,15 +200,16 @@ void main() {
         await tester.ensureVisible(empty);
         await tester.pumpAndSettle();
         expect(tester.widget<Text>(empty).data, S(lang).summaryEmpty);
-        // The title too: scaled down, never cut.
+        // The title too: whole, at the chosen text size.
         expect(cutTexts(tester), isEmpty);
         expect(tester.takeException(), isNull);
+        _expectWholeTitle(tester, S(lang).summaryTitle);
         Navigator.of(
           tester.element(find.byKey(const ValueKey('screen-summary'))),
         ).pop();
         await settle(tester);
         await _openTool(tester, 'tool-derived');
-        expect(find.text(S(lang).derivedTitle), findsOneWidget);
+        _expectWholeTitle(tester, S(lang).derivedTitle);
         expect(cutTexts(tester), isNot(contains(S(lang).derivedTitle)));
         expect(tester.takeException(), isNull);
       });
@@ -288,6 +327,15 @@ void main() {
         await reveal(tester, help);
         final words = S(lang);
         expect(tester.widget<Text>(help).data, words.showHiddenHelp);
+        // It ends by saying what the switch does.
+        expect(
+          words.showHiddenHelp,
+          endsWith(
+            lang == AppLang.en
+                ? 'switch this on to see them.'
+                : 'görmek için bunu aç.',
+          ),
+        );
         // It belongs to the switch: read out with it.
         expect(
           find.descendant(

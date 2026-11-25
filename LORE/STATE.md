@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · U041@v0.32 closed (first-time user audit); 14 gates PASS at b705619 (EV-*-F007-1566…1579). F005-S4, U040 and R027 closed before it.
+- CONFIRMED · 2026-11-25 · Q005@v0.32 closed (screen matrix after U041: 198 cells, 179 PASS / 19 FAIL by eye; TR ağırlık fixed); 14 gates PASS at ca6b5be (EV-*-F007-1580…1593). U041 closed before it.
 
 ## Next step
-- PLANNED · Q005@v0.32: screen matrix after U041 (real screenshots of the changed screens).
+- PLANNED · U042@v0.32: Q005 findings: one heading for the Today tools, Turkish titles that never break inside a word, matrix reveal clear of the navigation bar.
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

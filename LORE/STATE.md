@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · Q007@v0.32 closed (screen matrix after U043: 278 cells, 258/20 by eye; Documents and Preventive field names fixed); 14 gates PASS at 0a4d229 (EV-*-F007-1636…1649). U043 closed before it.
+- CONFIRMED · 2026-11-25 · U044@v0.32 closed (no heading under a sheet title, every field name whole, compact chips and rail, D-054); 14 gates PASS at eb5fda9 (EV-*-F007-1650…1663). Q007 closed before it.
 
 ## Next step
-- PLANNED · U044@v0.32: Medications sheet stacked heading, whole text-field labels everywhere at 2× text, compact chips, rail label limit, matrix reveal and the sheet Save bar.
+- PLANNED · Q008@v0.32: screen matrix after U044 in Chromium (tightened checks run; every sheet and the vault gate; compact rail).
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

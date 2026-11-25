@@ -279,21 +279,21 @@ class SettingsScreen extends StatelessWidget {
                     SwitchListTile(
                       key: const ValueKey('set-wide-spacing'),
                       contentPadding: EdgeInsets.zero,
-                      title: Text(s.settingsWideSpacing),
+                      title: WholeWordText(s.settingsWideSpacing),
                       value: a.wideSpacing,
                       onChanged: (on) => set(a.copyWith(wideSpacing: on)),
                     ),
                     SwitchListTile(
                       key: const ValueKey('set-reduce-motion'),
                       contentPadding: EdgeInsets.zero,
-                      title: Text(s.settingsReduceMotion),
+                      title: WholeWordText(s.settingsReduceMotion),
                       value: a.reduceMotion,
                       onChanged: (on) => set(a.copyWith(reduceMotion: on)),
                     ),
                     SwitchListTile(
                       key: const ValueKey('set-show-aion'),
                       contentPadding: EdgeInsets.zero,
-                      title: Text(s.settingsShowAion),
+                      title: WholeWordText(s.settingsShowAion),
                       value: a.showAion,
                       onChanged: (on) => set(a.copyWith(showAion: on)),
                     ),
@@ -366,7 +366,7 @@ class SettingsScreen extends StatelessWidget {
                 SwitchListTile(
                   key: const ValueKey('set-high-contrast'),
                   contentPadding: EdgeInsets.zero,
-                  title: Text(s.settingsHighContrast),
+                  title: WholeWordText(s.settingsHighContrast),
                   value: a.highContrast,
                   onChanged: (on) => set(a.copyWith(highContrast: on)),
                 ),
@@ -396,8 +396,8 @@ class SettingsScreen extends StatelessWidget {
                 SwitchListTile(
                   key: const ValueKey('set-discovery'),
                   contentPadding: EdgeInsets.zero,
-                  title: Text(s.discoveryEnabled),
-                  subtitle: Text(s.discoveryNote),
+                  title: WholeWordText(s.discoveryEnabled),
+                  subtitle: WholeWordText(s.discoveryNote),
                   value: a.discoveryEnabled,
                   onChanged: (v) => set(a.copyWith(discoveryEnabled: v)),
                 ),
@@ -505,8 +505,8 @@ class _AppLockSettings extends StatelessWidget {
         SwitchListTile(
           key: const ValueKey('set-lock-hidden'),
           contentPadding: EdgeInsets.zero,
-          title: Text(s.lockHidden),
-          subtitle: Text(s.lockHiddenNote),
+          title: WholeWordText(s.lockHidden),
+          subtitle: WholeWordText(s.lockHiddenNote),
           value: on && settings.lockWhenHidden,
           onChanged: on
               ? (v) => onChange(settings.copyWith(lockWhenHidden: v))
@@ -1022,7 +1022,7 @@ class _TodayLayout extends StatelessWidget {
           SwitchListTile(
             key: ValueKey('set-section-${x.name}'),
             contentPadding: EdgeInsets.zero,
-            title: Text(s.todaySectionName(x)),
+            title: WholeWordText(s.todaySectionName(x)),
             value: !settings.hiddenSections.contains(x),
             onChanged: (on) {
               final hidden = {...settings.hiddenSections};
@@ -1033,21 +1033,21 @@ class _TodayLayout extends StatelessWidget {
         SwitchListTile(
           key: const ValueKey('set-pad-open'),
           contentPadding: EdgeInsets.zero,
-          title: Text(s.settingsPadOpen),
+          title: WholeWordText(s.settingsPadOpen),
           value: settings.padOpen,
           onChanged: (on) => onChange(settings.copyWith(padOpen: on)),
         ),
         SwitchListTile(
           key: const ValueKey('set-measurements-first'),
           contentPadding: EdgeInsets.zero,
-          title: Text(s.settingsMeasurementsFirst),
+          title: WholeWordText(s.settingsMeasurementsFirst),
           value: settings.measurementsFirst,
           onChanged: (on) => onChange(settings.copyWith(measurementsFirst: on)),
         ),
         SwitchListTile(
           key: const ValueKey('set-checkins-first'),
           contentPadding: EdgeInsets.zero,
-          title: Text(s.settingsCheckInsFirst),
+          title: WholeWordText(s.settingsCheckInsFirst),
           value: settings.checkInsFirst,
           onChanged: (on) => onChange(settings.copyWith(checkInsFirst: on)),
         ),

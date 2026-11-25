@@ -455,7 +455,7 @@ class _EntryDetailState extends State<_EntryDetail> {
         decoration: InputDecoration(
           labelText: labelText,
           helperText: helper,
-          helperMaxLines: 3,
+          helperMaxLines: 20,
           border: const OutlineInputBorder(),
           errorText: _errorFor(s, field),
           errorMaxLines: 3,

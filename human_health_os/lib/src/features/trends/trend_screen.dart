@@ -9,6 +9,7 @@ import '../../domain/trends/trend.dart';
 import '../../l10n/strings.dart';
 import '../measurements/measurement_format.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
+import '../../presentation/widgets/whole_chip.dart';
 
 enum TrendRange { days30, days90, year, all }
 
@@ -91,9 +92,9 @@ class _TrendScreenState extends State<TrendScreen> {
             runSpacing: 8,
             children: [
               for (final r in TrendRange.values)
-                ChoiceChip(
+                WholeChip.choice(
                   key: ValueKey('trend-range-${r.name}'),
-                  label: Text(s.trendRange(r.name)),
+                  label: s.trendRange(r.name),
                   selected: _range == r,
                   onSelected: (_) => setState(() {
                     _range = r;

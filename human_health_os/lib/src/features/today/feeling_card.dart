@@ -7,6 +7,7 @@ import '../../l10n/strings.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
+import '../../presentation/widgets/whole_chip.dart';
 
 /// How the person feels on Today (F007 slice 4): energy, mood and stress as
 /// their own levels, each optional. Self-report: nothing is scored, judged,
@@ -214,13 +215,11 @@ class _FeelingSheetState extends State<_FeelingSheet> {
               runSpacing: 4,
               children: [
                 for (final l in SelfLevel.values)
-                  ChoiceChip(
+                  WholeChip.choice(
                     key: ValueKey('feel-$name-${l.name}'),
-                    label: Text(
-                      s.feelWord(q, l),
-                      // Each chip is read with its question.
-                      semanticsLabel: '$label: ${s.feelWord(q, l)}',
-                    ),
+                    label: s.feelWord(q, l),
+                    // Each chip is read with its question.
+                    semanticsLabel: '$label: ${s.feelWord(q, l)}',
                     selected: value == l,
                     // Tapping the chosen one again clears it: not given.
                     onSelected: (on) => setState(() {

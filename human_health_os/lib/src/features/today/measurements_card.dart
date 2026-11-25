@@ -18,6 +18,7 @@ import '../../navigation/destination_switch.dart';
 import '../../navigation/destinations.dart';
 import '../measurements/measurement_format.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
+import '../../presentation/widgets/whole_chip.dart';
 
 /// Measurements typed by hand (ladder F007): a quiet grid of tiles that show
 /// the latest value of each kind, and one entry sheet per kind. Each save is
@@ -655,10 +656,11 @@ class _EntrySheetState extends State<_EntrySheet> {
                   runSpacing: 8,
                   children: [
                     for (final (i, u) in kind.units.indexed)
-                      ChoiceChip(
+                      WholeChip.choice(
                         key: ValueKey('measure-unit-$u'),
                         focusNode: i == 0 ? _focus['unit'] : null,
-                        label: Text(s.unit(u), semanticsLabel: s.spokenUnit(u)),
+                        label: s.unit(u),
+                        semanticsLabel: s.spokenUnit(u),
                         selected: _unit == u,
                         onSelected: _busy
                             ? null
@@ -698,9 +700,9 @@ class _EntrySheetState extends State<_EntrySheet> {
             runSpacing: 8,
             children: [
               for (final t in GlucoseTiming.values)
-                ChoiceChip(
+                WholeChip.choice(
                   key: ValueKey('measure-timing-${t.code}'),
-                  label: Text(s.glucoseTiming(t)),
+                  label: s.glucoseTiming(t),
                   selected: _timing == t,
                   onSelected: _busy
                       ? null
@@ -735,9 +737,9 @@ class _EntrySheetState extends State<_EntrySheet> {
         runSpacing: 8,
         children: [
           for (final (label, value, enabled) in options)
-            ActionChip(
+            WholeChip.action(
               key: ValueKey('measure-preset-$label'),
-              label: Text(label),
+              label: label,
               onPressed: enabled
                   ? () => setState(() => _when.text = value ?? '')
                   : null,
@@ -916,9 +918,9 @@ class _EntrySheetState extends State<_EntrySheet> {
                             runSpacing: 8,
                             children: [
                               for (var i = 0; i < _notes.length; i++)
-                                ActionChip(
+                                WholeChip.action(
                                   key: ValueKey('measure-note-$i'),
-                                  label: Text(_notes[i]),
+                                  label: _notes[i],
                                   onPressed: () => setState(() {
                                     _context.text = _notes[i];
                                   }),

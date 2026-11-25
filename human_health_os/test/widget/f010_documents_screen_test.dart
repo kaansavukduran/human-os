@@ -2,6 +2,7 @@
 // app never reads, opens, uploads or stores it.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:human_health_os/src/presentation/widgets/whole_chip.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
 import 'package:human_health_os/src/features/timeline/timeline_screen.dart'
     show fmtValue;
@@ -24,8 +25,8 @@ void main() {
     expect(find.byKey(const ValueKey('screen-documents')), findsOneWidget);
     expect(find.byKey(const ValueKey('doc-none')), findsOneWidget);
     await tapKey(tester, 'doc-add');
-    ChoiceChip chip(String key) =>
-        tester.widget<ChoiceChip>(find.byKey(ValueKey(key)));
+    WholeChip chip(String key) =>
+        tester.widget<WholeChip>(find.byKey(ValueKey(key)));
     // Nothing is chosen for the person.
     for (final t in DocumentType.values) {
       expect(

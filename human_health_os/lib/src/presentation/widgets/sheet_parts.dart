@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/strings.dart';
 import '../theme/spacing.dart';
+import 'whole_chip.dart';
 
 /// A bottom-sheet form whose fields scroll while its buttons stay in view
 /// (G-74): Save and Cancel never scroll away under long forms, large text
@@ -146,9 +147,9 @@ class TimePicks extends StatelessWidget {
           runSpacing: 4,
           children: [
             for (final (label, value, enabled) in picks)
-              ActionChip(
+              WholeChip.action(
                 key: ValueKey('$keyPrefix-pick-$label'),
-                label: Text(label),
+                label: label,
                 onPressed: enabled
                     ? () {
                         controller.text = value;

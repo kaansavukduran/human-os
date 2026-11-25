@@ -54,10 +54,11 @@ TextScaler wholeWordScaler({
 /// single word is wider than the space, the whole text is drawn just small
 /// enough for that word to fit; otherwise at the person's text size.
 class WholeWordText extends StatelessWidget {
-  const WholeWordText(this.data, {super.key, this.style});
+  const WholeWordText(this.data, {super.key, this.style, this.textAlign});
 
   final String data;
   final TextStyle? style;
+  final TextAlign? textAlign;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -74,6 +75,7 @@ class WholeWordText extends StatelessWidget {
         data,
         style: style,
         textScaler: scaler,
+        textAlign: textAlign,
         softWrap: true,
         overflow: TextOverflow.visible,
       );

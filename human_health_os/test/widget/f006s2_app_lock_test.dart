@@ -9,6 +9,7 @@ import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:human_health_os/src/presentation/widgets/whole_chip.dart';
 import 'package:human_health_os/src/app/app_lock.dart';
 import 'package:human_health_os/src/app/appearance_scope.dart';
 import 'package:human_health_os/src/app/bootstrap.dart';
@@ -357,7 +358,7 @@ void main() {
         isSemantics(label: textOf(tester, 'set-lock-reason'), isHeader: false),
       );
       for (final m in AppearanceSettings.lockMinuteChoices) {
-        final chip = tester.widget<ChoiceChip>(
+        final chip = tester.widget<WholeChip>(
           find.byKey(ValueKey('set-lock-$m')),
         );
         expect(chip.onSelected, isNull);
@@ -472,7 +473,7 @@ void main() {
       expect(find.byKey(const ValueKey('set-lock-reason')), findsNothing);
       expect(
         tester
-            .widget<ChoiceChip>(find.byKey(const ValueKey('set-lock-0')))
+            .widget<WholeChip>(find.byKey(const ValueKey('set-lock-0')))
             .selected,
         isTrue,
         reason: 'Off by default',

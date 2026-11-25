@@ -8,6 +8,7 @@ import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
+import '../../presentation/widgets/whole_chip.dart';
 
 /// Nutrition (F007 slice 5): what the person ate or drank, in their words,
 /// with nutrients only as copied from a label. A nutrient not given is not
@@ -214,9 +215,9 @@ class _FoodSheetState extends State<_FoodSheet> {
             runSpacing: 4,
             children: [
               for (final b in LabelBasis.values)
-                ChoiceChip(
+                WholeChip.choice(
                   key: ValueKey('food-per-${b.name}'),
-                  label: Text(s.foodBasis(b)),
+                  label: s.foodBasis(b),
                   selected: _per == b,
                   onSelected: (on) => setState(() => _per = on ? b : null),
                 ),

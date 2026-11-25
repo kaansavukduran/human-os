@@ -22,6 +22,7 @@ import '../../presentation/widgets/record_row.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/status_chip.dart';
+import '../../presentation/widgets/whole_chip.dart';
 
 /// Timeline (ladder F003): every fact once, newest first, with its versions.
 /// Corrections add versions; "entered in error" withdraws a version; delete
@@ -588,9 +589,10 @@ class _EntryDetailState extends State<_EntryDetail> {
               runSpacing: 8,
               children: [
                 for (final u in kind.units)
-                  ChoiceChip(
+                  WholeChip.choice(
                     key: ValueKey('correct-unit-$u'),
-                    label: Text(s.unit(u), semanticsLabel: s.spokenUnit(u)),
+                    label: s.unit(u),
+                    semanticsLabel: s.spokenUnit(u),
                     selected: _unit == u,
                     onSelected: _busy ? null : (_) => setState(() => _unit = u),
                   ),
@@ -620,9 +622,9 @@ class _EntryDetailState extends State<_EntryDetail> {
             runSpacing: 8,
             children: [
               for (final t in GlucoseTiming.values)
-                ChoiceChip(
+                WholeChip.choice(
                   key: ValueKey('correct-timing-${t.code}'),
-                  label: Text(s.glucoseTiming(t)),
+                  label: s.glucoseTiming(t),
                   selected: _timing == t,
                   onSelected: _busy
                       ? null

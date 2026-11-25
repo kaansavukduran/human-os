@@ -5,6 +5,7 @@
 // kind, and the sheet at 320 dp with 2x text.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:human_health_os/src/presentation/widgets/whole_chip.dart';
 import 'package:human_health_os/src/app/human_os_app.dart';
 import 'package:human_health_os/src/application/heartbeat_service.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
@@ -37,7 +38,7 @@ final RegExp judgedBeyondSign = RegExp(
 );
 
 bool selected(WidgetTester tester, LabValueKind k) => tester
-    .widget<ChoiceChip>(find.byKey(ValueKey('lab-kind-${k.code}')))
+    .widget<WholeChip>(find.byKey(ValueKey('lab-kind-${k.code}')))
     .selected;
 
 bool valueFocused(WidgetTester tester) => tester

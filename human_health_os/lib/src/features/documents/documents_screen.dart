@@ -7,6 +7,7 @@ import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
 import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
+import '../../presentation/widgets/whole_chip.dart';
 
 /// Documents (F010 slice 1): references to the documents the person keeps,
 /// each field as typed: a title, what kind of document it is, its own date,
@@ -164,9 +165,9 @@ class _DocumentSheetState extends State<_DocumentSheet> {
             runSpacing: 4,
             children: [
               for (final v in DocumentType.values)
-                ChoiceChip(
+                WholeChip.choice(
                   key: ValueKey('doc-nature-${v.name}'),
-                  label: Text(s.docNature(v)),
+                  label: s.docNature(v),
                   selected: v == _nature,
                   onSelected: (_) => setState(() => _nature = v),
                 ),

@@ -2,6 +2,7 @@
 // in the measurement sheet; no fixed vocabulary is added.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:human_health_os/src/presentation/widgets/whole_chip.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
 import 'package:human_health_os/src/features/measurements/measurement_format.dart';
 import 'package:human_health_os/src/l10n/strings.dart';
@@ -24,12 +25,12 @@ void main() {
     await tapKey(tester, 'measure-tile-vital.body_temperature');
     await tapKey(tester, 'measure-more');
     final chips = [
-      for (final e in find.byType(ActionChip).evaluate())
+      for (final e in find.byType(WholeChip).evaluate())
         if ((e.widget.key as ValueKey?)?.value.toString().startsWith(
               'measure-note-',
             ) ??
             false)
-          ((e.widget as ActionChip).label as Text).data,
+          (e.widget as WholeChip).label,
     ];
     expect(chips, ['After walk', 'Fasting'], reason: 'newest first, once each');
     await tapKey(tester, 'measure-note-1');

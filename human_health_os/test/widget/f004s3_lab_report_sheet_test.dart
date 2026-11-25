@@ -5,6 +5,7 @@
 // opening with the stored details, and the sheet at 320 dp with 2x text.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:human_health_os/src/presentation/widgets/whole_chip.dart';
 import 'package:human_health_os/src/app/human_os_app.dart';
 import 'package:human_health_os/src/application/heartbeat_service.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
@@ -394,10 +395,10 @@ void main() {
       () => s.heartbeat.labTimeline(s.self.id),
     ))!;
     expect(rows, isEmpty);
-    final chips = tester.widgetList<ActionChip>(
+    final chips = tester.widgetList<WholeChip>(
       find.byWidgetPredicate(
         (w) =>
-            w is ActionChip &&
+            w is WholeChip &&
             w.key is ValueKey<String> &&
             (w.key! as ValueKey<String>).value.startsWith(
               'lab-report-time-pick-',

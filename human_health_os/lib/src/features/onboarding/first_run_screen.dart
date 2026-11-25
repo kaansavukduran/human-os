@@ -6,6 +6,7 @@ import '../../domain/settings/appearance.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/whole_words.dart';
+import '../../presentation/widgets/whole_chip.dart';
 
 /// A calm first run (U014, shortened by U037): two short steps, each
 /// skippable, then Today, where the first value is typed. Step 1 says what
@@ -43,9 +44,9 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
       runSpacing: 8,
       children: [
         for (final (v, label) in options)
-          ChoiceChip(
+          WholeChip.choice(
             key: ValueKey('first-$prefix-${v.name}'),
-            label: Text(label),
+            label: label,
             selected: v == current,
             onSelected: (_) => pick(v),
           ),

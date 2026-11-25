@@ -27,6 +27,7 @@ import '../presentation/theme/spacing.dart';
 import '../presentation/widgets/build_profile_banner.dart';
 import 'destination_switch.dart';
 import 'destinations.dart';
+import '../presentation/widgets/whole_words.dart';
 
 const double kRailBreakpoint = 840;
 const double kExtendedRailBreakpoint = 1200;
@@ -329,14 +330,13 @@ class _RailSettingsItem extends StatelessWidget {
                     children: [
                       icon,
                       const SizedBox(height: 2),
-                      Text(
+                      // Wraps between words and is never cut (U043).
+                      WholeWordText(
                         label,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: color,
                         ),
                         textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -402,14 +402,13 @@ class _PlannedRailItem extends StatelessWidget {
                     children: [
                       icon,
                       const SizedBox(height: 2),
-                      Text(
+                      // Wraps between words and is never cut (U043).
+                      WholeWordText(
                         label,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: color,
                         ),
                         textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

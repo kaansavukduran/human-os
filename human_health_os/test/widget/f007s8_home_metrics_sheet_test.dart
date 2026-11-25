@@ -6,6 +6,7 @@
 // glucose only; no judgement words (EN and TR); 320 dp at 2x text.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:human_health_os/src/presentation/widgets/whole_chip.dart';
 import 'package:human_health_os/src/app/app_services.dart';
 import 'package:human_health_os/src/application/heartbeat_service.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
@@ -34,7 +35,7 @@ Future<List<HealthRecord>> _records(WidgetTester tester, AppServices s) async =>
     (await tester.runAsync(() => s.heartbeat.repository.records(s.self.id)))!;
 
 bool _chosen(WidgetTester tester, String key) =>
-    tester.widget<ChoiceChip>(find.byKey(ValueKey(key))).selected;
+    tester.widget<WholeChip>(find.byKey(ValueKey(key))).selected;
 
 /// Saves a glucose from Today: the value, then the unit and timing chips.
 Future<void> saveGlucose(

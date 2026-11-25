@@ -1,6 +1,7 @@
 // F009 slice 2: the Preventive screen.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:human_health_os/src/presentation/widgets/whole_chip.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
 import 'package:human_health_os/src/l10n/strings.dart';
 
@@ -26,8 +27,8 @@ void main() {
     expect(find.byKey(const ValueKey('prev-none')), findsOneWidget);
     await tapKey(tester, 'prev-add');
     // Nothing is pre-selected as done.
-    ChoiceChip chip(String key) =>
-        tester.widget<ChoiceChip>(find.byKey(ValueKey(key)));
+    WholeChip chip(String key) =>
+        tester.widget<WholeChip>(find.byKey(ValueKey(key)));
     expect(chip('prev-status-unsure').selected, isTrue);
     expect(chip('prev-status-done').selected, isFalse);
     expect(chip('prev-status-planned').selected, isFalse);

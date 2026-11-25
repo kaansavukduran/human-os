@@ -9,6 +9,7 @@ import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/whole_label_field.dart';
 import '../../presentation/widgets/sheet_parts.dart';
+import '../../presentation/widgets/whole_chip.dart';
 
 /// Conditions and symptoms (F009 slice 1): as the person names them, with
 /// whether they are current, past or unsure and who they come from. A
@@ -178,9 +179,9 @@ class _ConditionSheetState extends State<_ConditionSheet> {
             runSpacing: Space.s,
             children: [
               for (final v in values)
-                ChoiceChip(
+                WholeChip.choice(
                   key: ValueKey('cond-$name-${v.name}'),
-                  label: Text(word(v)),
+                  label: word(v),
                   selected: v == value,
                   onSelected: (_) => setState(() => onPick(v)),
                 ),

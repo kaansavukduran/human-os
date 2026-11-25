@@ -10,6 +10,7 @@ import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/whole_label_field.dart';
 import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
+import '../../presentation/widgets/whole_chip.dart';
 
 /// Medicines and supplements (F008): what the person uses, how it is meant
 /// to be taken, and each dose they record as taken or skipped. Kept as
@@ -429,9 +430,9 @@ Widget _choices<T>({
             runSpacing: Space.s,
             children: [
               for (final v in values)
-                ChoiceChip(
+                WholeChip.choice(
                   key: ValueKey(key(v)),
-                  label: Text(word(v)),
+                  label: word(v),
                   selected: v == selected,
                   onSelected: (_) => onPick(v),
                 ),

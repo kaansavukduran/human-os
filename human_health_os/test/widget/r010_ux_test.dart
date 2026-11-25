@@ -3,6 +3,7 @@
 // all in Turkish when the app is.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:human_health_os/src/presentation/widgets/whole_chip.dart';
 import 'package:human_health_os/src/application/heartbeat_service.dart';
 import 'package:human_health_os/src/core/capabilities.dart';
 import 'package:human_health_os/src/data/local/log_repository.dart';
@@ -69,7 +70,7 @@ void main() {
     );
     await settle(tester);
     expect(find.text('Correct this check-in'), findsOneWidget);
-    final low = tester.widget<ChoiceChip>(
+    final low = tester.widget<WholeChip>(
       find.byKey(const ValueKey('feel-energy-low')),
     );
     expect(low.selected, isTrue);

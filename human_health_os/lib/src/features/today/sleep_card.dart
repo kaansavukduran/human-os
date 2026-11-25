@@ -7,6 +7,7 @@ import '../../l10n/strings.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
+import '../../presentation/widgets/whole_chip.dart';
 
 /// Sleep on Today (F007 slice 3): the last nights as typed, going to bed and
 /// waking up, the time in bed between them and, if said, how waking felt.
@@ -286,9 +287,9 @@ class _NightSheetState extends State<_NightSheet> {
             runSpacing: 8,
             children: [
               for (final f in WakeFeeling.values)
-                ChoiceChip(
+                WholeChip.choice(
                   key: ValueKey('sleep-feeling-${f.name}'),
-                  label: Text(s.sleepFeelingLabel(f)),
+                  label: s.sleepFeelingLabel(f),
                   selected: _feeling == f,
                   // Tapping the chosen one again clears it: not said.
                   onSelected: (on) => setState(() => _feeling = on ? f : null),

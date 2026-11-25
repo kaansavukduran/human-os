@@ -5,6 +5,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/tool_row.dart';
+import '../../presentation/widgets/whole_chip.dart';
 
 String _pick(S s, Bilingual b) => s.lang == AppLang.tr ? b.$2 : b.$1;
 
@@ -114,7 +115,8 @@ class BodySystemScreen extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final p in system.parts) Chip(label: Text(_pick(s, p))),
+                for (final p in system.parts)
+                  WholeChip.plain(label: _pick(s, p)),
               ],
             ),
             heading(s.guideWhoCares),

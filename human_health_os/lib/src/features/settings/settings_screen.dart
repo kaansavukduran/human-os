@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../app/human_os_app.dart' show fontFamilyFor;
@@ -15,6 +17,8 @@ import '../../presentation/widgets/record_row.dart';
 import '../../presentation/widgets/whole_label_field.dart';
 import '../onboarding/first_run_screen.dart';
 import 'about_screen.dart';
+import '../../presentation/widgets/whole_chip.dart';
+import '../../presentation/widgets/whole_words.dart';
 
 /// Language, light or dark, accent colour and text size (U005). Every choice
 /// applies at once and is one click; nothing here touches health data.
@@ -72,9 +76,9 @@ class SettingsScreen extends StatelessWidget {
       runSpacing: 8,
       children: [
         for (final (value, label) in options)
-          ChoiceChip(
+          WholeChip.choice(
             key: ValueKey('$keyPrefix-${(value as Enum).name}'),
-            label: Text(label),
+            label: label,
             selected: value == current,
             onSelected: (_) => onPick(value),
           ),
@@ -137,26 +141,37 @@ class SettingsScreen extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        for (final p in PaletteChoice.values)
-                          _PaletteSwatch(
-                            choice: p,
-                            label: s.paletteName(p),
-                            sample: s.paletteSample,
-                            tokens:
-                                tokensFor(p, highContrast: a.highContrast) ??
-                                standardTokens(
-                                  _standardBrightness(context, a.theme),
-                                  a.accent,
-                                  highContrast: a.highContrast,
-                                ),
-                            selected: a.palette == p,
-                            onTap: () => set(a.copyWith(palette: p)),
-                          ),
-                      ],
+                    LayoutBuilder(
+                      builder: (context, box) => Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          for (final p in PaletteChoice.values)
+                            _PaletteSwatch(
+                              width: _PaletteSwatch.widthFor(
+                                context,
+                                [
+                                  for (final q in PaletteChoice.values)
+                                    s.paletteName(q),
+                                ],
+                                box.maxWidth,
+                                gap: 12,
+                              ),
+                              choice: p,
+                              label: s.paletteName(p),
+                              sample: s.paletteSample,
+                              tokens:
+                                  tokensFor(p, highContrast: a.highContrast) ??
+                                  standardTokens(
+                                    _standardBrightness(context, a.theme),
+                                    a.accent,
+                                    highContrast: a.highContrast,
+                                  ),
+                              selected: a.palette == p,
+                              onTap: () => set(a.copyWith(palette: p)),
+                            ),
+                        ],
+                      ),
                     ),
                     if (a.palette != PaletteChoice.standard) ...[
                       const SizedBox(height: 8),
@@ -469,9 +484,9 @@ class _AppLockSettings extends StatelessWidget {
           runSpacing: 8,
           children: [
             for (final m in AppearanceSettings.lockMinuteChoices)
-              ChoiceChip(
+              WholeChip.choice(
                 key: ValueKey('set-lock-$m'),
-                label: Text(m == 0 ? s.lockOff : s.lockMinutes(m)),
+                label: m == 0 ? s.lockOff : s.lockMinutes(m),
                 tooltip: m == 0 ? null : s.lockMinutesSpoken(m),
                 selected: on && settings.lockAfterMinutes == m,
                 onSelected: on
@@ -606,9 +621,9 @@ class _ScaleControlState extends State<_ScaleControl> {
           runSpacing: 8,
           children: [
             for (final n in [80, 100, 125, 150, 175, 200])
-              ChoiceChip(
+              WholeChip.choice(
                 key: ValueKey('set-interface-$n'),
-                label: Text(s.interfacePercent(n)),
+                label: s.interfacePercent(n),
                 selected: widget.percent == n,
                 onSelected: (_) => widget.onChange(n),
               ),
@@ -680,6 +695,7 @@ Brightness _standardBrightness(BuildContext context, ThemeChoice theme) =>
 /// pill (the accent marks actions only).
 class _PaletteSwatch extends StatelessWidget {
   const _PaletteSwatch({
+    required this.width,
     required this.choice,
     required this.label,
     required this.sample,
@@ -688,9 +704,45 @@ class _PaletteSwatch extends StatelessWidget {
     required this.onTap,
   });
 
+  /// The card's width: the same for every card ([widthFor]).
+  final double width;
   final PaletteChoice choice;
   final String label;
   final String sample;
+
+  /// The name's style on a card.
+  static TextStyle? nameStyle(BuildContext context) =>
+      Theme.of(context).textTheme.labelLarge
+          ?.copyWith(fontWeight: FontWeight.w700);
+
+  /// The width of every card (U043): 132 dp, or wider when the longest
+  /// word of a palette name would not fit beside the tick at the person's
+  /// text size. When two such cards no longer fit side by side, each takes
+  /// the whole line, so the cards stack and the names stay whole and at
+  /// the chosen size wherever the line allows.
+  static double widthFor(
+    BuildContext context,
+    List<String> names,
+    double maxWidth, {
+    required double gap,
+  }) {
+    final style = nameStyle(context);
+    var word = 0.0;
+    for (final name in names) {
+      for (final w in name.split(RegExp(r'\s+'))) {
+        if (w.isEmpty) continue;
+        word = math.max(word, oneLineWidth(context, w, style));
+      }
+    }
+    // Border 3 + padding 10 on each side, the tick 18 and its gap 6, and
+    // a hair so rounding never pushes a letter onto its own line.
+    final needed = word + 2 * 13 + 18 + 6 + 2;
+    if (!maxWidth.isFinite) return math.max(132, needed);
+    if (needed <= 132) return math.min(132, maxWidth);
+    if (2 * needed + gap <= maxWidth) return needed;
+    return maxWidth;
+  }
+
   final PaletteTokens tokens;
   final bool selected;
   final VoidCallback onTap;
@@ -711,7 +763,7 @@ class _PaletteSwatch extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Container(
-          width: 132,
+          width: width,
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: t.surface,
@@ -728,17 +780,18 @@ class _PaletteSwatch extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Text(
+                    child: WholeWordText(
                       label,
-                      style: base.labelLarge?.copyWith(
-                        color: t.ink,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: nameStyle(context)?.copyWith(color: t.ink),
                     ),
                   ),
-                  if (selected) Icon(Icons.check, color: t.ink, size: 18),
+                  if (selected) ...[
+                    const SizedBox(width: 6),
+                    Icon(Icons.check, color: t.ink, size: 18),
+                  ],
                 ],
               ),
               const SizedBox(height: 6),
@@ -845,6 +898,80 @@ class _TodayLayout extends StatelessWidget {
   final AppearanceSettings settings;
   final void Function(AppearanceSettings) onChange;
 
+  /// One kind in Today's order: its checkbox and name, and Up and Down.
+  /// [stacked] puts Up and Down under the name, so the name has the row.
+  Widget _orderRow(
+    BuildContext context,
+    int i,
+    List<String> order,
+    List<String> defaults,
+    RecordKind Function(String) kindOf,
+    bool stacked,
+  ) {
+    final s = S.of(context);
+    final code = order[i];
+    final name = s.recordKind(kindOf(code));
+    // One node for the screen reader: "Blood pressure, checked".
+    final shown = MergeSemantics(
+      child: Row(
+        children: [
+          Checkbox(
+            key: ValueKey('set-tile-show-$code'),
+            value: !settings.hiddenTiles.contains(code),
+            onChanged: (on) {
+              final hidden = {...settings.hiddenTiles};
+              on == true ? hidden.remove(code) : hidden.add(code);
+              onChange(settings.copyWith(hiddenTiles: hidden));
+            },
+          ),
+          Expanded(child: WholeWordText(name)),
+        ],
+      ),
+    );
+    final buttons = [
+      IconButton(
+        key: ValueKey('set-tile-up-$code'),
+        tooltip: s.settingsMoveUp(name),
+        icon: const Icon(Icons.arrow_upward),
+        onPressed: i == 0
+            ? null
+            : () => onChange(settings.move(defaults, code, -1)),
+      ),
+      IconButton(
+        key: ValueKey('set-tile-down-$code'),
+        tooltip: s.settingsMoveDown(name),
+        icon: const Icon(Icons.arrow_downward),
+        onPressed: i == order.length - 1
+            ? null
+            : () => onChange(settings.move(defaults, code, 1)),
+      ),
+    ];
+    if (!stacked) {
+      return Row(
+        key: ValueKey('set-tile-$code'),
+        children: [
+          Expanded(child: shown),
+          ...buttons,
+        ],
+      );
+    }
+    return Padding(
+      key: ValueKey('set-tile-$code'),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          shown,
+          // Under the name, past the checkbox.
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 48),
+            child: Row(children: buttons),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -858,49 +985,30 @@ class _TodayLayout extends StatelessWidget {
       children: [
         Text(s.settingsTiles, style: text.bodyMedium),
         const SizedBox(height: 4),
-        for (var i = 0; i < order.length; i++)
-          Row(
-            key: ValueKey('set-tile-${order[i]}'),
-            children: [
-              // One node for the screen reader: "Blood pressure, checked".
-              Expanded(
-                child: MergeSemantics(
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        key: ValueKey('set-tile-show-${order[i]}'),
-                        value: !settings.hiddenTiles.contains(order[i]),
-                        onChanged: (on) {
-                          final hidden = {...settings.hiddenTiles};
-                          on == true
-                              ? hidden.remove(order[i])
-                              : hidden.add(order[i]);
-                          onChange(settings.copyWith(hiddenTiles: hidden));
-                        },
-                      ),
-                      Expanded(child: Text(s.recordKind(kindOf(order[i])))),
-                    ],
-                  ),
-                ),
-              ),
-              IconButton(
-                key: ValueKey('set-tile-up-${order[i]}'),
-                tooltip: s.settingsMoveUp(s.recordKind(kindOf(order[i]))),
-                icon: const Icon(Icons.arrow_upward),
-                onPressed: i == 0
-                    ? null
-                    : () => onChange(settings.move(defaults, order[i], -1)),
-              ),
-              IconButton(
-                key: ValueKey('set-tile-down-${order[i]}'),
-                tooltip: s.settingsMoveDown(s.recordKind(kindOf(order[i]))),
-                icon: const Icon(Icons.arrow_downward),
-                onPressed: i == order.length - 1
-                    ? null
-                    : () => onChange(settings.move(defaults, order[i], 1)),
-              ),
-            ],
-          ),
+        LayoutBuilder(
+          builder: (context, box) {
+            final style = DefaultTextStyle.of(context).style;
+            var word = 0.0;
+            for (final c in order) {
+              for (final w in s.recordKind(kindOf(c)).split(RegExp(r'\s+'))) {
+                if (w.isEmpty) continue;
+                word = math.max(word, oneLineWidth(context, w, style));
+              }
+            }
+            // The checkbox and the two buttons take 48 dp each. When the
+            // longest word of a label would not fit in what they leave
+            // (320 dp, 2× text), every label gets the row's width and
+            // the buttons move under it, lined up from row to row (U043).
+            final stacked = word + 2 > box.maxWidth - 3 * 48;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var i = 0; i < order.length; i++)
+                  _orderRow(context, i, order, defaults, kindOf, stacked),
+              ],
+            );
+          },
+        ),
         const SizedBox(height: 12),
         Text(s.settingsSections, style: text.bodyMedium),
         for (final x in TodaySection.values)

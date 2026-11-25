@@ -24,6 +24,7 @@ import '../../presentation/widgets/whole_label_field.dart';
 import '../measurements/measurement_format.dart' show labReportLines;
 import '../timeline/timeline_screen.dart' show fmtValue, fmtWhen;
 import 'lab_group_screen.dart';
+import '../../presentation/widgets/whole_chip.dart';
 
 /// Labs (ladder F004): the list of current results first, and a sheet to
 /// enter a result exactly as the report printed it (U030: results before
@@ -772,9 +773,9 @@ class _LabSheetState extends State<_LabSheet> {
                 runSpacing: Space.s,
                 children: [
                   for (final k in LabValueKind.values)
-                    ChoiceChip(
+                    WholeChip.choice(
                       key: ValueKey('lab-kind-${k.code}'),
-                      label: Text(s.labKind(k)),
+                      label: s.labKind(k),
                       selected: _f.kind == k,
                       onSelected: _f.notReported
                           ? null

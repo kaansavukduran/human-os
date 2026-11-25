@@ -15,6 +15,7 @@ import '../../domain/genetics/uniprot.dart';
 import '../guide/glossary_screen.dart' show foldForSearch;
 import '../../l10n/strings.dart';
 import 'genome_file_picker.dart';
+import '../../presentation/widgets/whole_chip.dart';
 
 GenomeFile _parseBytes(Uint8List bytes) => parseRawGenomeBytes(bytes);
 
@@ -702,15 +703,15 @@ class _GeneticsScreenState extends State<GeneticsScreen> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            FilterChip(
+            WholeChip.choice(
               key: const ValueKey('dbsnp-only-missense'),
-              label: Text(s.dbsnpOnlyMissense),
+              label: s.dbsnpOnlyMissense,
               selected: _onlyMissense,
               onSelected: (v) => setState(() => _onlyMissense = v),
             ),
-            FilterChip(
+            WholeChip.choice(
               key: const ValueKey('dbsnp-only-clinical'),
-              label: Text(s.dbsnpOnlyClinical),
+              label: s.dbsnpOnlyClinical,
               selected: _onlyClinical,
               onSelected: (v) => setState(() => _onlyClinical = v),
             ),
@@ -820,9 +821,9 @@ class _GeneticsScreenState extends State<GeneticsScreen> {
           style: text.bodySmall?.copyWith(color: scheme.outline),
         ),
         const SizedBox(height: 8),
-        FilterChip(
+        WholeChip.choice(
           key: const ValueKey('clinvar-only-listed'),
-          label: Text(s.clinvarOnlyListed),
+          label: s.clinvarOnlyListed,
           selected: _clinvarOnlyListed,
           onSelected: (v) => setState(() => _clinvarOnlyListed = v),
         ),
@@ -832,16 +833,16 @@ class _GeneticsScreenState extends State<GeneticsScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              ChoiceChip(
+              WholeChip.choice(
                 key: const ValueKey('clinvar-label-all'),
-                label: Text(s.trendRange('all')),
+                label: s.trendRange('all'),
                 selected: _clinvarLabel == null,
                 onSelected: (_) => setState(() => _clinvarLabel = null),
               ),
               for (final l in labels)
-                ChoiceChip(
+                WholeChip.choice(
                   key: ValueKey('clinvar-label-$l'),
-                  label: Text(l),
+                  label: l,
                   selected: _clinvarLabel == l,
                   onSelected: (_) => setState(() => _clinvarLabel = l),
                 ),

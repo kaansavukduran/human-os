@@ -13,6 +13,7 @@
 //    skipped it" only open the dose sheet, nothing is recorded until Save.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:human_health_os/src/presentation/widgets/whole_chip.dart';
 import 'package:human_health_os/src/app/app_services.dart';
 import 'package:human_health_os/src/domain/settings/appearance.dart';
 import 'package:human_health_os/src/domain/records/health_record.dart';
@@ -466,7 +467,7 @@ void main() {
       await tapKey(tester, 'meds-skip-$id');
       expect(
         tester
-            .widget<ChoiceChip>(
+            .widget<WholeChip>(
               find.byKey(const ValueKey('meds-status-skipped')),
             )
             .selected,
@@ -487,7 +488,7 @@ void main() {
       await tapKey(tester, 'meds-dose-$id');
       expect(
         tester
-            .widget<ChoiceChip>(find.byKey(const ValueKey('meds-status-taken')))
+            .widget<WholeChip>(find.byKey(const ValueKey('meds-status-taken')))
             .selected,
         isTrue,
       );

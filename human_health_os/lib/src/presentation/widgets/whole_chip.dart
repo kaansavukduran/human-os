@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import 'whole_words.dart';
@@ -155,7 +156,10 @@ class WholeChip extends StatelessWidget {
       container: true,
       button: _kind != _Kind.plain,
       enabled: _kind == _Kind.plain ? null : enabled,
-      selected: _kind == _Kind.choice ? selected : null,
+      // As Material's chip: on the web aria-selected is ignored on a button,
+      // so a selected chip is announced as checked there (a checkbox).
+      selected: _kind == _Kind.choice && !kIsWeb ? selected : null,
+      checked: _kind == _Kind.choice && kIsWeb ? selected : null,
       label: semanticsLabel ?? label,
       // The 8 dp above and below the drawn chip are part of its target,
       // so a one-line chip is 48 dp tall, like Material's.

@@ -1006,7 +1006,6 @@ class S {
       _t('As printed, e.g. 500 mg', 'Kutuda yazdığı gibi, ör. 500 mg');
   String get medsForm => _t('Form (optional)', 'Şekil (isteğe bağlı)');
   String get medsFormHelp => _t('E.g. tablet, drops', 'Ör. tablet, damla');
-  String get medsSectionPack => _t('From the pack', 'Kutudan');
   String get medsSectionMore =>
       _t('Details (optional)', 'Ayrıntılar (isteğe bağlı)');
   String get medsSave => _t('Save', 'Kaydet');
@@ -1640,8 +1639,9 @@ class S {
     '80–200%. Text, buttons, icons and spacing scale together. The slider moves in steps of 5. On a narrow screen, scroll sideways if needed. Text size below is independent.',
     '%80–%200. Yazılar, düğmeler, simgeler ve boşluklar birlikte ölçeklenir. Kaydırıcı 5 puanlık adımlarla ilerler. Dar ekranda gerekirse yana kaydır. Aşağıdaki yazı boyutu ayarı bağımsızdır.',
   );
+  // A word joiner after the dash: the range never breaks at it (U044).
   String get interfaceExact =>
-      _t('Exact scale (80–200)', 'Ölçeği elle gir (80–200)');
+      _t('Exact scale (80–\u2060200)', 'Ölçeği elle gir (80–\u2060200)');
   String get interfaceInvalid => _t(
     'Enter a whole number from 80 to 200, for example 135.',
     '80 ile 200 arasında bir tam sayı yaz, örneğin 135.',
@@ -2248,7 +2248,6 @@ class S {
   );
 
   // Sections of the lab sheet (U037): small labels instead of paragraphs.
-  String get labSectionResult => _t('The result', 'Sonuç');
   String get labSectionAlso =>
       _t('Also on the report (optional)', 'Raporda ayrıca (isteğe bağlı)');
   String get labValue => _t('Value', 'Değer');

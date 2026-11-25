@@ -7,6 +7,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../../navigation/destinations.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
@@ -134,29 +135,32 @@ class _ActivitySheetState extends State<_ActivitySheet> {
     TextInputType? keyboard,
   }) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
-    child: TextField(
-      key: ValueKey(key),
-      controller: c,
-      focusNode: _focus[field],
-      keyboardType: keyboard,
-      inputFormatters: keyboard == TextInputType.number
-          ? [FilteringTextInputFormatter.digitsOnly]
-          : null,
-      onChanged: (_) {
-        if (_error != null) {
-          setState(() => _error = _errorField = null);
-        }
-      },
-      textCapitalization: keyboard == null
-          ? TextCapitalization.sentences
-          : TextCapitalization.none,
-      decoration: InputDecoration(
-        labelText: label,
-        helperText: _errorField == field ? null : help,
-        helperMaxLines: 3,
-        errorText: _errorField == field ? _error : null,
-        errorMaxLines: 4,
-        border: const OutlineInputBorder(),
+    child: WholeLabelField(
+      label: label,
+      field: (labelText) => TextField(
+        key: ValueKey(key),
+        controller: c,
+        focusNode: _focus[field],
+        keyboardType: keyboard,
+        inputFormatters: keyboard == TextInputType.number
+            ? [FilteringTextInputFormatter.digitsOnly]
+            : null,
+        onChanged: (_) {
+          if (_error != null) {
+            setState(() => _error = _errorField = null);
+          }
+        },
+        textCapitalization: keyboard == null
+            ? TextCapitalization.sentences
+            : TextCapitalization.none,
+        decoration: InputDecoration(
+          labelText: labelText,
+          helperText: _errorField == field ? null : help,
+          helperMaxLines: 3,
+          errorText: _errorField == field ? _error : null,
+          errorMaxLines: 4,
+          border: const OutlineInputBorder(),
+        ),
       ),
     ),
   );

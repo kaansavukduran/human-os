@@ -742,7 +742,8 @@ class _LabSheetState extends State<_LabSheet> {
           ),
         ),
         const SizedBox(height: Space.l),
-        SheetSection(s.labSectionResult, first: true),
+        // The title names the first group: no heading of its own under it
+        // (U044, a heading on a heading).
         _field(
           s,
           _f.analyte,

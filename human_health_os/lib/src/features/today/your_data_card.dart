@@ -10,6 +10,7 @@ import '../../data/crypto/recovery_key.dart' show RecoveryKeyFormatError;
 import '../../data/local/vault_envelope.dart' show KeyKind;
 import '../../l10n/strings.dart';
 import '../../presentation/widgets/status_chip.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 import 'backup_file_picker.dart';
 import 'save_copy.dart';
@@ -285,15 +286,19 @@ class _YourDataCardState extends State<YourDataCard> {
                 children: [
                   Text(s.openBackupExplain),
                   const SizedBox(height: 12),
-                  TextField(
-                    key: const ValueKey('backup-secret'),
-                    controller: field,
-                    obscureText: !recovery,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      labelText: recovery ? s.recoveryKeyLabel : s.passphrase,
-                      border: const OutlineInputBorder(),
+                  WholeLabelField(
+                    label: recovery ? s.recoveryKeyLabel : s.passphrase,
+                    knownWidth: dialogContentWidth(c),
+                    field: (labelText) => TextField(
+                      key: const ValueKey('backup-secret'),
+                      controller: field,
+                      obscureText: !recovery,
+                      enableSuggestions: false,
+                      autocorrect: false,
+                      decoration: InputDecoration(
+                        labelText: labelText,
+                        border: const OutlineInputBorder(),
+                      ),
                     ),
                   ),
                   CheckboxListTile(

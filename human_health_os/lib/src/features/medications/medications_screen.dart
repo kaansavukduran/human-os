@@ -496,7 +496,8 @@ class _AddItemSheetState extends State<_AddItemSheet>
       onSave: _save,
       saveKey: 'meds-item-save',
       children: [
-        SheetSection(s.medsSectionPack, first: true),
+        // The sheet's title names the first group: no heading of its own
+        // under it (U044, a heading on a heading).
         field('meds-name', 'name', s.medsName, _name),
         _choices(
           label: s.medsCategory,

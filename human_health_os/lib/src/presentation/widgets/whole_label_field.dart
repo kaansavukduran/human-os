@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'whole_words.dart';
+
 /// A text field whose label is never cut (U035). Material draws a field's
 /// label on one line and ellipsizes it ("Ağırlı" at 320 dp, 2× text,
 /// Turkish). When the label fits inside the field at the person's text
@@ -12,6 +14,7 @@ class WholeLabelField extends StatelessWidget {
     required this.label,
     required this.field,
     this.reserve = 0,
+    this.knownWidth,
   });
 
   /// The field's name.
@@ -24,24 +27,57 @@ class WholeLabelField extends StatelessWidget {
   /// Width the field's own decorations take beside the label (a suffix).
   final double reserve;
 
-  @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, box) {
-      if (labelFitsField(context, label, box.maxWidth - reserve)) {
-        return field(label);
-      }
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ExcludeSemantics(
-            child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+  /// A width the field is known to have at least, used instead of
+  /// measuring it. Only for a place that sizes its content by intrinsic
+  /// widths (an [AlertDialog]), where a [LayoutBuilder] cannot be used
+  /// (U044). The label goes above the field unless it fits in this width.
+  final double? knownWidth;
+
+  Widget _build(BuildContext context, double width) {
+    if (labelFitsField(context, label, width - reserve)) {
+      return field(label);
+    }
+    final style = Theme.of(context).textTheme.bodyMedium;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Wraps between words; a single word wider than the line draws the
+        // label just small enough for it (U042), never broken inside it.
+        ExcludeSemantics(
+          child: Text(
+            label,
+            style: style,
+            textScaler: wholeWordScaler(
+              text: label,
+              style: DefaultTextStyle.of(context).style.merge(style),
+              base: MediaQuery.textScalerOf(context),
+              maxWidth: width,
+              textDirection: Directionality.of(context),
+              locale: Localizations.maybeLocaleOf(context),
+            ),
           ),
-          const SizedBox(height: 4),
-          Semantics(label: label, child: field(null)),
-        ],
-      );
-    },
-  );
+        ),
+        const SizedBox(height: 4),
+        Semantics(label: label, child: field(null)),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => switch (knownWidth) {
+    final w? => _build(context, w),
+    null => LayoutBuilder(
+      builder: (context, box) => _build(context, box.maxWidth),
+    ),
+  };
+}
+
+/// The narrowest content width an [AlertDialog] with the default insets
+/// (40 dp each side, at least 280 dp wide, 24 dp content padding) has in
+/// this window: a lower bound for [WholeLabelField.knownWidth].
+double dialogContentWidth(BuildContext context) {
+  final window = MediaQuery.sizeOf(context).width - 80;
+  return (window < 280 ? window : 280) - 48;
 }
 
 /// The width [text] takes on one line in [style] at the current text size.

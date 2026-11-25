@@ -20,6 +20,7 @@ import '../../presentation/widgets/midnight_refresh.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/record_row.dart';
 import '../../presentation/widgets/sheet_parts.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/status_chip.dart';
 import '../../presentation/widgets/whole_chip.dart';
@@ -441,22 +442,25 @@ class _EntryDetailState extends State<_EntryDetail> {
     String? helper,
   }) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
-    child: TextField(
-      key: ValueKey(key),
-      controller: c,
-      autofocus: autofocus,
-      keyboardType: number
-          ? const TextInputType.numberWithOptions(decimal: true)
-          : TextInputType.text,
-      inputFormatters: number ? null : const [ContextLengthFormatter()],
-      decoration: InputDecoration(
-        labelText: label,
-        helperText: helper,
-        helperMaxLines: 3,
-        border: const OutlineInputBorder(),
-        errorText: _errorFor(s, field),
-        errorMaxLines: 3,
-        counterText: '',
+    child: WholeLabelField(
+      label: label,
+      field: (labelText) => TextField(
+        key: ValueKey(key),
+        controller: c,
+        autofocus: autofocus,
+        keyboardType: number
+            ? const TextInputType.numberWithOptions(decimal: true)
+            : TextInputType.text,
+        inputFormatters: number ? null : const [ContextLengthFormatter()],
+        decoration: InputDecoration(
+          labelText: labelText,
+          helperText: helper,
+          helperMaxLines: 3,
+          border: const OutlineInputBorder(),
+          errorText: _errorFor(s, field),
+          errorMaxLines: 3,
+          counterText: '',
+        ),
       ),
     ),
   );

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../app/app_services.dart';
 import '../../domain/phyto/phyto_table.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../genetics/genome_file_picker.dart';
 import '../guide/glossary_screen.dart' show foldForSearch;
 
@@ -153,14 +154,18 @@ class _PhytoScreenState extends State<PhytoScreen> {
               style: text.bodySmall?.copyWith(color: scheme.outline),
             ),
             const SizedBox(height: 12),
-            TextField(
-              key: const ValueKey('phyto-search'),
-              controller: _search,
-              decoration: InputDecoration(
-                labelText: s.phytoSearch,
-                prefixIcon: const Icon(Icons.search),
+            WholeLabelField(
+              label: s.phytoSearch,
+              reserve: 48,
+              field: (labelText) => TextField(
+                key: const ValueKey('phyto-search'),
+                controller: _search,
+                decoration: InputDecoration(
+                  labelText: labelText,
+                  prefixIcon: const Icon(Icons.search),
+                ),
+                onChanged: (v) => setState(() => _q = v),
               ),
-              onChanged: (v) => setState(() => _q = v),
             ),
             const SizedBox(height: 8),
             if (rows.isEmpty)

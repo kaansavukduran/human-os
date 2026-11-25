@@ -18,6 +18,7 @@ import '../../data/local/vault_envelope.dart' show VaultEnvelopeError;
 import '../../data/local/vault_log.dart' show VaultFormatError;
 import '../../domain/ports/storage_status.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 
 enum _Mode {
   create,
@@ -361,40 +362,46 @@ class _VaultGateScreenState extends State<VaultGateScreen> {
     VoidCallback? onSubmit,
   }) => Padding(
     padding: const EdgeInsets.only(top: 12),
-    child: TextField(
-      key: ValueKey(key),
-      controller: c,
-      focusNode: focusNode,
-      // Read-only (not disabled) while a key is derived: the field keeps
-      // its focus, so after a wrong passphrase the user can type again
-      // without clicking back into it.
-      readOnly: _busy,
-      obscureText: secret && _obscure,
-      enableSuggestions: false,
-      autocorrect: false,
-      keyboardType: secret ? TextInputType.visiblePassword : TextInputType.text,
-      textCapitalization: secret
-          ? TextCapitalization.none
-          : TextCapitalization.characters,
-      autofillHints: secret
-          ? [newSecret ? AutofillHints.newPassword : AutofillHints.password]
-          : null,
-      onSubmitted: onSubmit == null ? null : (_) => onSubmit(),
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-        suffixIcon: toggle
-            ? IconButton(
-                key: ValueKey('$key-show'),
-                tooltip: S.of(context).showPassphrase,
-                icon: Icon(
-                  _obscure
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined,
-                ),
-                onPressed: () => setState(() => _obscure = !_obscure),
-              )
+    child: WholeLabelField(
+      label: label,
+      reserve: toggle ? 48 : 0,
+      field: (labelText) => TextField(
+        key: ValueKey(key),
+        controller: c,
+        focusNode: focusNode,
+        // Read-only (not disabled) while a key is derived: the field keeps
+        // its focus, so after a wrong passphrase the user can type again
+        // without clicking back into it.
+        readOnly: _busy,
+        obscureText: secret && _obscure,
+        enableSuggestions: false,
+        autocorrect: false,
+        keyboardType: secret
+            ? TextInputType.visiblePassword
+            : TextInputType.text,
+        textCapitalization: secret
+            ? TextCapitalization.none
+            : TextCapitalization.characters,
+        autofillHints: secret
+            ? [newSecret ? AutofillHints.newPassword : AutofillHints.password]
             : null,
+        onSubmitted: onSubmit == null ? null : (_) => onSubmit(),
+        decoration: InputDecoration(
+          labelText: labelText,
+          border: const OutlineInputBorder(),
+          suffixIcon: toggle
+              ? IconButton(
+                  key: ValueKey('$key-show'),
+                  tooltip: S.of(context).showPassphrase,
+                  icon: Icon(
+                    _obscure
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
+                  onPressed: () => setState(() => _obscure = !_obscure),
+                )
+              : null,
+        ),
       ),
     ),
   );
@@ -517,32 +524,35 @@ class _VaultGateScreenState extends State<VaultGateScreen> {
       required bool last,
     }) => Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: TextField(
-        key: ValueKey('gate-confirm-group-$n'),
-        controller: c,
-        focusNode: focus,
-        readOnly: _busy,
-        autocorrect: false,
-        enableSuggestions: false,
-        keyboardType: TextInputType.visiblePassword,
-        textCapitalization: TextCapitalization.characters,
-        textInputAction: last ? TextInputAction.done : TextInputAction.next,
-        onChanged: (_) {
-          if (error != null) {
-            setState(() {
-              clearError();
-              _error = null;
-            });
-          }
-        },
-        onSubmitted: (_) => last ? create() : _group2Focus.requestFocus(),
-        decoration: InputDecoration(
-          labelText: s.confirmGroupLabel(n),
-          helperText: s.confirmGroupHint,
-          errorText: error,
-          errorMaxLines: 4,
-          helperMaxLines: 2,
-          border: const OutlineInputBorder(),
+      child: WholeLabelField(
+        label: s.confirmGroupLabel(n),
+        field: (labelText) => TextField(
+          key: ValueKey('gate-confirm-group-$n'),
+          controller: c,
+          focusNode: focus,
+          readOnly: _busy,
+          autocorrect: false,
+          enableSuggestions: false,
+          keyboardType: TextInputType.visiblePassword,
+          textCapitalization: TextCapitalization.characters,
+          textInputAction: last ? TextInputAction.done : TextInputAction.next,
+          onChanged: (_) {
+            if (error != null) {
+              setState(() {
+                clearError();
+                _error = null;
+              });
+            }
+          },
+          onSubmitted: (_) => last ? create() : _group2Focus.requestFocus(),
+          decoration: InputDecoration(
+            labelText: labelText,
+            helperText: s.confirmGroupHint,
+            errorText: error,
+            errorMaxLines: 4,
+            helperMaxLines: 2,
+            border: const OutlineInputBorder(),
+          ),
         ),
       ),
     );

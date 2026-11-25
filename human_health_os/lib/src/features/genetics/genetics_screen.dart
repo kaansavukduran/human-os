@@ -16,6 +16,7 @@ import '../guide/glossary_screen.dart' show foldForSearch;
 import '../../l10n/strings.dart';
 import 'genome_file_picker.dart';
 import '../../presentation/widgets/whole_chip.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 
 GenomeFile _parseBytes(Uint8List bytes) => parseRawGenomeBytes(bytes);
 
@@ -482,21 +483,25 @@ class _GeneticsScreenState extends State<GeneticsScreen> {
         ],
       ),
       const SizedBox(height: 20),
-      TextField(
-        key: const ValueKey('genetics-search'),
-        controller: _search,
-        // Typed ids stay out of the keyboard's learned words.
-        autocorrect: false,
-        enableSuggestions: false,
-        enableIMEPersonalizedLearning: false,
-        decoration: InputDecoration(
-          labelText: s.geneticsSearchHint,
-          prefixIcon: const Icon(Icons.search),
+      WholeLabelField(
+        label: s.geneticsSearchHint,
+        reserve: 48,
+        field: (labelText) => TextField(
+          key: const ValueKey('genetics-search'),
+          controller: _search,
+          // Typed ids stay out of the keyboard's learned words.
+          autocorrect: false,
+          enableSuggestions: false,
+          enableIMEPersonalizedLearning: false,
+          decoration: InputDecoration(
+            labelText: labelText,
+            prefixIcon: const Icon(Icons.search),
+          ),
+          onChanged: (v) => setState(() {
+            _query = v;
+            _page = 0;
+          }),
         ),
-        onChanged: (v) => setState(() {
-          _query = v;
-          _page = 0;
-        }),
       ),
       const SizedBox(height: 8),
       if (rows.isEmpty)
@@ -922,13 +927,16 @@ class _GeneticsScreenState extends State<GeneticsScreen> {
           style: text.bodySmall?.copyWith(color: scheme.outline),
         ),
         const SizedBox(height: 8),
-        TextField(
-          key: const ValueKey('uniprot-search'),
-          decoration: InputDecoration(
-            labelText: s.uniprotSearch,
-            border: const OutlineInputBorder(),
+        WholeLabelField(
+          label: s.uniprotSearch,
+          field: (labelText) => TextField(
+            key: const ValueKey('uniprot-search'),
+            decoration: InputDecoration(
+              labelText: labelText,
+              border: const OutlineInputBorder(),
+            ),
+            onChanged: (v) => setState(() => _uniprotQuery = v.trim()),
           ),
-          onChanged: (v) => setState(() => _uniprotQuery = v.trim()),
         ),
         const SizedBox(height: 8),
         if (shown.isEmpty)

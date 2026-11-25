@@ -234,7 +234,6 @@ void main() {
           expect(find.text(text), findsNothing, reason: id);
         }
         // Sections are small labels, not paragraphs.
-        expect(find.text(s.labSectionResult), findsOneWidget);
         expect(find.text(s.labSectionAlso), findsOneWidget);
       });
 
@@ -246,7 +245,6 @@ void main() {
           expect(_label(tester, k), contains(optional), reason: k);
         }
         expect(_label(tester, 'meds-name'), isNot(contains(optional)));
-        expect(find.text(s.medsSectionPack), findsOneWidget);
         expect(find.text(s.medsSectionMore), findsOneWidget);
         shortHelpers(tester);
         await tapKey(tester, 'meds-cancel');
@@ -308,7 +306,6 @@ void main() {
 
   group('errors are said next to their field, which takes focus', () {
     testWidgets('Labs: a value that is not a number', (tester) async {
-      final s = S(AppLang.en);
       await launch(tester);
       await open(tester, DestinationId.labs);
       await tapKey(tester, 'lab-add');
@@ -339,7 +336,6 @@ void main() {
             .hasFocus,
         isTrue,
       );
-      expect(find.text(s.labSectionResult), findsOneWidget);
     });
 
     testWidgets('Conditions: a name left empty', (tester) async {
@@ -512,9 +508,7 @@ void main() {
           s.medsFormHelp,
           s.medsDoseAmountHelp,
           s.medsDoseWhenHelp,
-          s.medsSectionPack,
           s.medsSectionMore,
-          s.labSectionResult,
           s.labSectionAlso,
           s.labAnalyteHelp,
           s.labAnalyteDetails,

@@ -167,19 +167,18 @@ class TimePicks extends StatelessWidget {
 /// A small section label inside a form sheet (U037): it groups the fields
 /// under it, so a sheet reads as two or three short parts instead of one
 /// long column, and no paragraph is needed to say what a group is for.
+/// The first group under a sheet's title has none: the title names it, and
+/// a heading straight under a heading says nothing (U044).
 class SheetSection extends StatelessWidget {
-  const SheetSection(this.label, {super.key, this.first = false});
+  const SheetSection(this.label, {super.key});
 
   final String label;
-
-  /// The first section sits right under the sheet's title.
-  final bool first;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: EdgeInsets.only(top: first ? 0 : Space.l, bottom: Space.s),
+      padding: const EdgeInsets.only(top: Space.l, bottom: Space.s),
       child: Semantics(
         header: true,
         child: Text(

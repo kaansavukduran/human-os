@@ -6,6 +6,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/sheet_parts.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 import '../../presentation/widgets/whole_chip.dart';
 
@@ -229,19 +230,22 @@ class _NightSheetState extends State<_NightSheet> {
     String field,
   ) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
-    child: TextField(
-      key: ValueKey(key),
-      controller: c,
-      focusNode: _focus[field],
-      keyboardType: TextInputType.datetime,
-      decoration: InputDecoration(
-        labelText: label,
-        helperText: _errorField == field ? null : help,
-        helperMaxLines: 3,
-        // The field the error is about shows it too, not only the line.
-        errorText: _errorField == field ? _error : null,
-        errorMaxLines: 4,
-        border: const OutlineInputBorder(),
+    child: WholeLabelField(
+      label: label,
+      field: (labelText) => TextField(
+        key: ValueKey(key),
+        controller: c,
+        focusNode: _focus[field],
+        keyboardType: TextInputType.datetime,
+        decoration: InputDecoration(
+          labelText: labelText,
+          helperText: _errorField == field ? null : help,
+          helperMaxLines: 3,
+          // The field the error is about shows it too, not only the line.
+          errorText: _errorField == field ? _error : null,
+          errorMaxLines: 4,
+          border: const OutlineInputBorder(),
+        ),
       ),
     ),
   );

@@ -3,48 +3,9 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "IMPLEMENTING",
+  "development_state": "READY",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": {
-    "forge_id": "U039",
-    "contract": "v0.32",
-    "run_id": "U039@v0.32",
-    "slice": "The page scrolls wherever the pointer is on wide windows, with the reading column kept at 840 dp",
-    "goal": "The page scrolls wherever the pointer is on wide windows, with the reading column kept at 840 dp",
-    "status": "IMPLEMENTING",
-    "baseline_commit": "aa26f6a",
-    "app_revision": null,
-    "started_at": "2026-11-25T05:23:04Z",
-    "finished_at": null,
-    "scope": [
-      "human_health_os/lib",
-      "human_health_os/test",
-      "tools"
-    ],
-    "acceptance_criteria": [
-      "AC-1 each fix has a regression test",
-      "AC-2 full suites, web smoke, Linux build and runtime pass"
-    ],
-    "completed_steps": [
-      "implementation 72ec675"
-    ],
-    "last_verified_gate": null,
-    "next_action": "gates",
-    "files_touched": [],
-    "migration_ids": [],
-    "evidence_ids": [],
-    "verified_gates": [],
-    "blocker": null,
-    "result": null,
-    "limitations": [
-      "real devices, Firefox, Safari, real screen readers NOT TESTED"
-    ],
-    "depends_on": [
-      "Q004"
-    ],
-    "review": null,
-    "out_of_scope": []
-  },
+  "active_forge": null,
   "suspended_forges": [
     {
       "forge_id": "F015-L1",
@@ -55,7 +16,7 @@
       "next_action": "add libgles2 / libGLESv2.so.2()(64bit) dependencies, adopt D-012 names, rebuild staging3, rerun the Linux matrix incl. Ubuntu 22.04"
     }
   ],
-  "last_completed_forge": "Q004@v0.32 (2026-11-25, source revision bd77c803adbd)",
+  "last_completed_forge": "U039@v0.32 (2026-11-25, source revision b4fd20052b66)",
   "baseline": {
     "git_commit": "254c534f10b0a5d01e96edcc0bcb5630fbba6936",
     "working_tree": "clean at v0.32 Phase 0 start (only docs/handoff/v0.32 untracked)",
@@ -68,100 +29,100 @@
   "verified_gates": [
     {
       "gate": "flutter pub get",
-      "evidence_id": "EV-TEST-F007-1496",
+      "evidence_id": "EV-TEST-F007-1510",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "dart format --set-exit-if-changed . (0 changed)",
-      "evidence_id": "EV-TEST-F007-1497",
+      "evidence_id": "EV-TEST-F007-1511",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "flutter analyze (no issues)",
-      "evidence_id": "EV-TEST-F007-1498",
+      "evidence_id": "EV-TEST-F007-1512",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
-      "gate": "flutter test, TZ=UTC (1402 PASS, 1 skipped)",
-      "evidence_id": "EV-TEST-F007-1499",
+      "gate": "flutter test, TZ=UTC (1407 PASS, 1 skipped)",
+      "evidence_id": "EV-TEST-F007-1513",
       "criterion": "AC-1..AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "state/evidence tooling unit tests",
-      "evidence_id": "EV-TEST-F007-1500",
+      "evidence_id": "EV-TEST-F007-1514",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "flutter build web --release --no-web-resources-cdn (development profile) COMPILED",
-      "evidence_id": "EV-BUILD-F007-1501",
+      "evidence_id": "EV-BUILD-F007-1515",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "Playwright smoke in Chromium (182 checks): Learn and its three entries in desktop-en, phone-en and phone-tr, About, the loading view, every area, backup and restore; no console errors, no external requests",
-      "evidence_id": "EV-RUNTIME-F007-1502",
+      "evidence_id": "EV-RUNTIME-F007-1516",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "Appearance smoke in Chromium (24 checks: interface scale presets and exact scale, fonts; en-US, tr-TR, de-DE), also run by CI",
-      "evidence_id": "EV-RUNTIME-F007-1509",
+      "evidence_id": "EV-RUNTIME-F007-1523",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "Linux integration on real files (13 PASS, with a development vault imported into an encrypted vault, relaunched and unlocked, no plaintext marker in the vault file)",
-      "evidence_id": "EV-TEST-F007-1503",
+      "evidence_id": "EV-TEST-F007-1517",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "flutter build linux --release (development profile) COMPILED",
-      "evidence_id": "EV-BUILD-F007-1504",
+      "evidence_id": "EV-BUILD-F007-1518",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
-      "gate": "flutter test with TZ=America/New_York (1403 PASS)",
-      "evidence_id": "EV-RUNTIME-F007-1505",
+      "gate": "flutter test with TZ=America/New_York (1408 PASS)",
+      "evidence_id": "EV-RUNTIME-F007-1519",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "flutter test with TZ=America/New_York (1205 PASS)",
-      "evidence_id": "EV-TEST-F007-1506",
+      "evidence_id": "EV-TEST-F007-1520",
       "criterion": "AC-1..AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "contracts verification with the per-engine parity table: 73/73 vectors in TS and Python, Dart from its receipt",
-      "evidence_id": "EV-TEST-F007-1507",
+      "evidence_id": "EV-TEST-F007-1521",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     },
     {
       "gate": "pnpm test",
-      "evidence_id": "EV-TEST-F007-1508",
+      "evidence_id": "EV-TEST-F007-1522",
       "criterion": "AC-4",
-      "source_revision": "bd77c803adbd17740d283e7389189ebdbc8bc2b1",
+      "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
       "result": "PASS"
     }
   ],
@@ -194,16 +155,16 @@
     }
   ],
   "next_recommended_forge": {
-    "forge_id": "U039",
+    "forge_id": "F005-S4",
     "contract": "v0.32",
-    "run_id": "U039@v0.32",
-    "slice": "The page scrolls wherever the pointer is on wide windows, with the reading column kept at 840 dp",
-    "why": "Q004: the mouse wheel does nothing over the side margins outside the reading column.",
+    "run_id": "F005-S4@v0.32",
+    "slice": "Development records merge into an encrypted vault that already holds records: identical ones skipped, conflicts refused, nothing rewritten (G-76)",
+    "why": "Closes G-76: people who started in the encrypted build can still bring their try-out records.",
     "depends_on": [
-      "Q004"
+      "U039"
     ]
   },
-  "updated_at": "2026-11-25T06:30:00Z",
+  "updated_at": "2026-11-25T08:10:00Z",
   "authoritative_sources": {
     "product_semantics": "docs/handoff/v0.24/LONGEVITY_APP_MASTER_HANDOFF_v0.24.md",
     "process_master": "docs/handoff/v0.32/ (D-013); v0.31 superseded (D-011)",
@@ -19299,6 +19260,177 @@
         "U038"
       ],
       "review": "Screen matrix 204/204 PASS (report at 8601ce9ca554); no app code changed; tool fixes for the reading column, row buttons, palette clicks and the scrim strip",
+      "out_of_scope": []
+    },
+    "U039@v0.32": {
+      "forge_id": "U039",
+      "contract": "v0.32",
+      "run_id": "U039@v0.32",
+      "slice": "The page scrolls wherever the pointer is on wide windows, with the reading column kept at 840 dp",
+      "goal": "The page scrolls wherever the pointer is on wide windows, with the reading column kept at 840 dp",
+      "status": "DONE",
+      "baseline_commit": "aa26f6a",
+      "app_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+      "started_at": "2026-11-25T05:23:04Z",
+      "finished_at": "2026-11-25T08:10:00Z",
+      "scope": [
+        "human_health_os/lib",
+        "human_health_os/test",
+        "tools"
+      ],
+      "acceptance_criteria": [
+        "AC-1 each fix has a regression test",
+        "AC-2 full suites, web smoke, Linux build and runtime pass"
+      ],
+      "completed_steps": [
+        "implementation 72ec675",
+        "GATES: 14 receipts on clean tree b4fd200, all PASS"
+      ],
+      "last_verified_gate": "EV-TEST-F007-1522",
+      "next_action": null,
+      "files_touched": [
+        "human_health_os/lib/src/features/guide/body_guide_screen.dart",
+        "human_health_os/lib/src/features/guide/glossary_screen.dart",
+        "human_health_os/lib/src/features/help/how_to_screen.dart",
+        "human_health_os/lib/src/features/labs/lab_group_screen.dart",
+        "human_health_os/lib/src/features/learn/learn_screen.dart",
+        "human_health_os/lib/src/features/settings/about_screen.dart",
+        "human_health_os/lib/src/features/settings/settings_screen.dart",
+        "human_health_os/lib/src/features/today/today_screen.dart",
+        "human_health_os/lib/src/presentation/theme/spacing.dart",
+        "human_health_os/lib/src/presentation/widgets/entry_list.dart",
+        "human_health_os/test/widget/u036_breathing_room_test.dart",
+        "human_health_os/test/widget/u038_reading_test.dart",
+        "human_health_os/test/widget/u039_scroll_anywhere_test.dart",
+        "project_state/CURRENT_STATE.json",
+        "tools/flutter_screen_matrix.mjs"
+      ],
+      "migration_ids": [],
+      "evidence_ids": [
+        "EV-TEST-F007-1510",
+        "EV-TEST-F007-1511",
+        "EV-TEST-F007-1512",
+        "EV-TEST-F007-1513",
+        "EV-TEST-F007-1514",
+        "EV-BUILD-F007-1515",
+        "EV-RUNTIME-F007-1516",
+        "EV-RUNTIME-F007-1523",
+        "EV-TEST-F007-1517",
+        "EV-BUILD-F007-1518",
+        "EV-RUNTIME-F007-1519",
+        "EV-TEST-F007-1520",
+        "EV-TEST-F007-1521",
+        "EV-TEST-F007-1522"
+      ],
+      "verified_gates": [
+        {
+          "gate": "flutter pub get",
+          "evidence_id": "EV-TEST-F007-1510",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "dart format --set-exit-if-changed . (0 changed)",
+          "evidence_id": "EV-TEST-F007-1511",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter analyze (no issues)",
+          "evidence_id": "EV-TEST-F007-1512",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test, TZ=UTC (1407 PASS, 1 skipped)",
+          "evidence_id": "EV-TEST-F007-1513",
+          "criterion": "AC-1..AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "state/evidence tooling unit tests",
+          "evidence_id": "EV-TEST-F007-1514",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter build web --release --no-web-resources-cdn (development profile) COMPILED",
+          "evidence_id": "EV-BUILD-F007-1515",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "Playwright smoke in Chromium (182 checks): Learn and its three entries in desktop-en, phone-en and phone-tr, About, the loading view, every area, backup and restore; no console errors, no external requests",
+          "evidence_id": "EV-RUNTIME-F007-1516",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "Appearance smoke in Chromium (24 checks: interface scale presets and exact scale, fonts; en-US, tr-TR, de-DE), also run by CI",
+          "evidence_id": "EV-RUNTIME-F007-1523",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "Linux integration on real files (13 PASS, with a development vault imported into an encrypted vault, relaunched and unlocked, no plaintext marker in the vault file)",
+          "evidence_id": "EV-TEST-F007-1517",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter build linux --release (development profile) COMPILED",
+          "evidence_id": "EV-BUILD-F007-1518",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test with TZ=America/New_York (1408 PASS)",
+          "evidence_id": "EV-RUNTIME-F007-1519",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "flutter test with TZ=America/New_York (1205 PASS)",
+          "evidence_id": "EV-TEST-F007-1520",
+          "criterion": "AC-1..AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "contracts verification with the per-engine parity table: 73/73 vectors in TS and Python, Dart from its receipt",
+          "evidence_id": "EV-TEST-F007-1521",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        },
+        {
+          "gate": "pnpm test",
+          "evidence_id": "EV-TEST-F007-1522",
+          "criterion": "AC-4",
+          "source_revision": "b4fd20052b66227be69acdcc5eba30e64c3b8fbd",
+          "result": "PASS"
+        }
+      ],
+      "blocker": null,
+      "result": "U039_COMPLETE",
+      "limitations": [
+        "real devices, Firefox, Safari, real screen readers NOT TESTED"
+      ],
+      "depends_on": [
+        "Q004"
+      ],
+      "review": "Owner-visible fix from the Q004 matrix: wheel and trackpad over the side margins scroll the page; Playwright wheel check on Settings and Today at 1440x900",
       "out_of_scope": []
     }
   },

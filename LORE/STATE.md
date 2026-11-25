@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · Q004@v0.32 closed: screen matrix 204/204 PASS after U036–U038; 14 gates PASS at bd77c80 (EV-*-F007-1496…1509).
+- CONFIRMED · 2026-11-25 · U039@v0.32 closed (scroll anywhere on wide windows); 14 gates PASS at b4fd200 (EV-*-F007-1510…1523).
 
 ## Next step
-- PLANNED · U039@v0.32: the page scrolls wherever the pointer is on wide windows (running).
+- PLANNED · F005-S4@v0.32: merge development records into a non-empty encrypted vault (G-76; running).
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

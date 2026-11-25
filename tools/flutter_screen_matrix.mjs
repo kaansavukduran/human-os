@@ -595,6 +595,7 @@ async function runPass(root, mode) {
         return Math.min(...bs.map(({ r }) => r.top)) - 9;
       }, [vp.height, SHEET_BAR[g.locale], SHEET_SAVE[g.locale]]).catch(() => null) : null;
       const bottom = sheetBar ?? barTop ?? vp.height - 10;
+      if (inSheet) log('reveal', 'limit', sheetBar != null ? `sheet Save bar at ${Math.round(sheetBar)}` : `no sheet bar, window bottom ${bottom}`);
       // The bar's own Save or Cancel button is always in view; any other
       // target lying inside the bar's band is hidden by it (U044 review).
       const isBarButton = sheetBar != null && await locator.evaluate(
@@ -608,7 +609,7 @@ async function runPass(root, mode) {
         // Flutter clips a semantics box at the list's edge, so a box that
         // ends exactly at the bar may be cut: it must end 2 px above it.
         if (b && b.y >= top && b.y + b.height <= bottom - 2) return true;
-        if (b && inBar(b)) return true;
+        if (b && inBar(b)) { log('reveal', 'in view: the sheet bar\'s own button', `${Math.round(b.y)} ${Math.round(b.height)}, bar top ${Math.round(sheetBar)}`); return true; }
         // Taller than the space between the bars (Q005: the Timeline switch
         // with its help line at 2× text): its top is in the upper third.
         if (b && b.height > bottom - top && b.y >= top && b.y <= top + (bottom - top) / 3) return true;

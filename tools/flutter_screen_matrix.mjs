@@ -136,6 +136,31 @@ for (const locale of LOCALES) {
   GROUPS.push({ variant: 'sheets', vp: 'desktop', locale, screens: EXTRA_IDS });
   GROUPS.push({ variant: 'sheets-text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: EXTRA_IDS });
 }
+// Q005 (after U041): the empty states that now name the first step, the
+// empty visit summary, the weight card's empty state, the how-to without
+// numbers, the Timeline switch with its help line, and first run, Summary
+// and Derived in the reading column (their titles wrap at 2× text). Each
+// group starts on a fresh page, so first run is still showing and every
+// area is empty. At 320x640 (1× and 2× text) and on the desktop.
+const U041_IDS = [
+  'First run: welcome',
+  'First run: look',
+  'Nutrition: empty',
+  'Activity: empty',
+  'Conditions: empty',
+  'Preventive: empty',
+  'Documents: empty',
+  'Today: weight empty',
+  'Summary: empty',
+  'Derived',
+  'Timeline: show deleted',
+  'Learn: how-to',
+];
+for (const locale of LOCALES) {
+  GROUPS.push({ variant: 'u041', vp: 'small-phone', locale, screens: U041_IDS, firstRun: true });
+  GROUPS.push({ variant: 'u041', vp: 'desktop', locale, screens: U041_IDS, firstRun: true });
+  GROUPS.push({ variant: 'u041-text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: U041_IDS, firstRun: true });
+}
 // The words the extra cells look for (lib/src/l10n/strings.dart).
 const X_TEXT = {
   'en-US': {
@@ -153,6 +178,20 @@ const X_TEXT = {
     labAnalyteDetails: 'Similar names are kept apart: Human OS never guesses that two different names are the same test.',
     medsAdd: 'Add a medicine or supplement', medsName: /^Name \(as on the pack\)/, medsTookIt: 'I took it', medsDose: 'Record a dose',
     versions: 'Versions', detailsToggle: /^Details: HbA1c$/, enteredOn: 'entered',
+    firstWelcome: 'What Human OS does', firstLook: 'Choose how it looks', firstNext: 'Next', firstLeave: /^(Skip|Start)$/, firstAgain: 'Show the introduction again',
+    empty: {
+      Nutrition: 'Nothing recorded yet. To start, add a meal or a drink in your words.',
+      Activity: 'Nothing recorded yet. To start, add a walk or a workout.',
+      Conditions: 'Nothing recorded yet. To start, add a condition or a symptom in your words.',
+      Preventive: 'Nothing recorded yet. To start, add a vaccination, a screening or a check-up.',
+      Documents: 'Nothing recorded yet. To start, add a document you keep and where you keep it.',
+    },
+    noWeight: 'No weight recorded yet. Type it in the field and press Save.',
+    summaryTitle: 'Summary for a visit', summaryEmpty: 'Nothing recorded yet. Weights, measurements and lab results you save appear here.',
+    derivedTitle: 'Worked out from your records',
+    showHidden: 'Show deleted and withdrawn',
+    showHiddenHelp: 'Records you deleted or marked as entered in error stay in history; switch this on to see them.',
+    howTo: 'How to use Human OS', howToFirst: 'Add a number',
   },
   'tr-TR': {
     labAdd: 'Sonuç ekle', labAddTitle: 'Rapordan sonuç ekle', labMore: 'Rapordaki diğer bilgiler',
@@ -169,7 +208,36 @@ const X_TEXT = {
     labAnalyteDetails: 'Benzer adlar ayrı tutulur: Human OS farklı iki adın aynı test olduğunu tahmin etmez.',
     medsAdd: 'İlaç ya da takviye ekle', medsName: /^Adı \(kutudaki gibi\)/, medsTookIt: 'Aldım', medsDose: 'Doz kaydet',
     versions: 'Sürümler', detailsToggle: /^Ayrıntılar: HbA1c$/, enteredOn: 'kayıt zamanı:',
+    firstWelcome: 'Human OS ne yapar', firstLook: 'Görünüşünü seç', firstNext: 'İleri', firstLeave: /^(Atla|Başla)$/, firstAgain: 'Tanıtımı yeniden göster',
+    empty: {
+      Nutrition: 'Henüz kayıt yok. Başlamak için bir öğünü ya da içeceği kendi sözlerinle ekle.',
+      Activity: 'Henüz kayıt yok. Başlamak için bir yürüyüş ya da antrenman ekle.',
+      Conditions: 'Henüz kayıt yok. Başlamak için bir durumu ya da belirtiyi kendi sözlerinle ekle.',
+      Preventive: 'Henüz kayıt yok. Başlamak için bir aşı, tarama ya da kontrol ekle.',
+      Documents: 'Henüz kayıt yok. Başlamak için sakladığın bir belgeyi ve nerede durduğunu ekle.',
+    },
+    noWeight: 'Henüz ağırlık kaydı yok. Değeri alana yaz ve Kaydet\'e bas.',
+    summaryTitle: 'Muayene için özet', summaryEmpty: 'Henüz kayıt yok. Kaydettiğin ağırlık, ölçüm ve tahlil sonuçları burada görünür.',
+    derivedTitle: 'Kayıtlarından hesaplananlar',
+    showHidden: 'Silinenleri ve geri çekilenleri göster',
+    showHiddenHelp: 'Sildiğin ya da yanlışlıkla girildi diye işaretlediğin kayıtlar geçmişte kalır; görmek için bunu aç.',
+    howTo: 'Human OS nasıl kullanılır', howToFirst: 'Bir sayı ekle',
   },
+};
+// English words that must not appear on a Turkish screen (Q005). Tokens are
+// whole words; names that are the same in both languages are allowed
+// (the product name, test names typed by the matrix, the language chip
+// "English", palette names).
+const EN_WORDS = new Set(('the and of to your you add save saved record records recorded nothing yet with from this that is are show more back next skip '
+  + 'start open close cancel delete edit settings today labs timeline about help how what when where which for none no yes done step steps '
+  + 'value values measurement measurements weight summary visit worked out press type tap click choose select field here there its be '
+  + 'will new old time date note notes chart result results entered details version versions build device data file files backup restore '
+  + 'light dark system palette standard lock learn guide body medicines supplements nutrition activity conditions symptoms documents '
+  + 'preventive vaccinations screenings check ups more menu search clear dismiss scrim').split(/\s+/));
+const EN_ALLOWED = new Set(['human', 'os', 'hba1c', 'english', 'matrix', 'axolotl', 'trans', 'vitamin', 'd']);
+const englishIn = (label) => {
+  const words = label.toLowerCase().split(/[^\p{L}\p{N}']+/u).map((w) => w.replace(/'.*$/, '')).filter(Boolean);
+  return words.filter((w) => EN_WORDS.has(w) && !EN_ALLOWED.has(w));
 };
 
 // MATRIX_ONLY=<regex> limits the run to groups whose "variant vp locale"
@@ -178,9 +246,15 @@ if (process.env.MATRIX_ONLY) {
   const re = new RegExp(process.env.MATRIX_ONLY);
   GROUPS.splice(0, GROUPS.length, ...GROUPS.filter((g) => re.test(`${g.variant} ${g.vp} ${g.locale}`)));
 }
+// MATRIX_CELLS=<regex> keeps only the screens whose id matches.
+if (process.env.MATRIX_CELLS) {
+  const re = new RegExp(process.env.MATRIX_CELLS);
+  for (const g of GROUPS) g.screens = g.screens.filter((id) => re.test(id));
+}
 const log = (...a) => { if (process.env.MATRIX_VERBOSE) console.log(new Date().toISOString().slice(11, 19), ...a); };
 
-const MIN_TARGET = 44;
+// 48 dp: Material's minimum touch target (Q005; Q001–Q004 measured 44).
+const MIN_TARGET = 48;
 const TARGET_ROLES = ['button', 'link', 'tab', 'checkbox', 'switch', 'radio', 'menuitem', 'slider', 'option'];
 const NAMED_ROLES = ['button', 'link', 'tab'];
 // Flutter's MaterialLocalizations.scrimLabel (en, tr): the modal barrier.
@@ -257,6 +331,11 @@ async function runPass(root, mode) {
     await H(names.Today.heading).waitFor({ timeout: 60_000 }).catch(() => {});
     const skip = page.getByRole('button', { name: /^(Skip|Atla)$/ }).first();
     if ((await skip.count()) > 0) await skip.click().catch(() => {});
+    // A development web build keeps nothing between visits, so it never
+    // offers first run at start (main.dart: offerFirstRun only with a
+    // persistent store); U041 groups open it from Settings, "Show the
+    // introduction again", the same screen pushed above Settings.
+    let onFirstRun = false;
 
     const navItem = (name) => page.getByRole('tab', { name, exact: true }).or(page.getByRole('button', { name: new RegExp(`^${esc(name)}( |$)`) })).first();
     // After a palette change (and on desktop Settings since U038) Chromium
@@ -351,7 +430,7 @@ async function runPass(root, mode) {
     // edge (the rail's right edge on a shell screen, the window edge on a
     // pushed page or without a rail) and the content: over the side margin
     // on a wide window, over the 16 dp page padding on a narrow one.
-    const bodyLeft = () => (pushed > 0 || vp.width < 840 ? 0 : vp.width >= 1200 ? 257 : 81);
+    const bodyLeft = () => (pushed > 0 || onFirstRun || vp.width < 840 ? 0 : vp.width >= 1200 ? 257 : 81);
     const marginX = (left) => { const b = bodyLeft(); return Math.max(b + 2, Math.round((b + left) / 2)); };
     const pageX = async () => {
       const b = bodyLeft();
@@ -604,6 +683,122 @@ async function runPass(root, mode) {
       },
     };
 
+    // Q005 (U041) cells.
+    // A sentence may be its own text node, or part of a control's name (the
+    // Timeline switch reads its title and its help line as one).
+    const textLoc = (t) => page.getByText(t, { exact: true }).or(page.getByLabel(t, { exact: true })).or(page.getByText(new RegExp(`^${esc(t)}`))).or(page.getByLabel(new RegExp(esc(t)))).first();
+    // First run announces the step and its title as one live-region heading
+    // ("Step 1 of 2 What Human OS does"), so its title ends that name.
+    const fh = (t) => page.getByRole('heading', { name: new RegExp(`${esc(t)}$`) }).first();
+    const headX = async (name) => { const b = await fh(name).boundingBox({ timeout: 2_000 }).catch(() => null); return b ? marginX(b.x) : bodyLeft() + 6; };
+    const leaveFirstRun = async () => {
+      if (!onFirstRun) return;
+      const b = page.getByRole('button', { name: T.firstLeave }).first();
+      await reveal(b, await headX(T.firstWelcome).catch(() => 6));
+      await tap(b);
+      onFirstRun = false;
+      await page.waitForTimeout(800);
+    };
+    const pushTool = async (area, name, title) => {
+      await open(area);
+      await H(names[area].heading).waitFor({ timeout: 15_000 });
+      const ax = await wheelX(area);
+      await toTop(ax);
+      const row = page.getByRole('button', { name: new RegExp(`^${esc(name)}`) }).first();
+      await reveal(row, ax);
+      await tap(row);
+      pushed = 1;
+      await xh(title).waitFor({ timeout: 15_000 });
+      await page.waitForTimeout(600);
+    };
+    for (const area of ['Nutrition', 'Activity', 'Conditions', 'Preventive', 'Documents']) {
+      EXTRA[`${area}: empty`] = {
+        label: T.empty[area],
+        target: () => textLoc(T.empty[area]),
+        probe: () => H(names[area].heading),
+        x: () => null,
+        area,
+        go: async () => { await open(area); await H(names[area].heading).waitFor({ timeout: 15_000 }); },
+      };
+    }
+    Object.assign(EXTRA, {
+      'First run: welcome': {
+        label: T.firstWelcome,
+        target: () => fh(T.firstWelcome),
+        x: () => null,
+        firstRun: true,
+        title: () => fh(T.firstWelcome),
+        go: async () => {
+          await open('Settings');
+          await H(names.Settings.heading).waitFor({ timeout: 15_000 });
+          const again = page.getByRole('button', { name: T.firstAgain, exact: true }).first();
+          await reveal(again, await pageX());
+          await tap(again);
+          onFirstRun = true;
+          await fh(T.firstWelcome).waitFor({ timeout: 15_000 });
+          await page.waitForTimeout(600);
+        },
+      },
+      'First run: look': {
+        label: T.firstLook,
+        target: () => fh(T.firstLook),
+        x: () => null,
+        firstRun: true,
+        title: () => fh(T.firstLook),
+        go: async () => {
+          const next = page.getByRole('button', { name: T.firstNext, exact: true }).first();
+          await reveal(next, await headX(T.firstWelcome));
+          await tap(next);
+          await fh(T.firstLook).waitFor({ timeout: 15_000 });
+          await page.waitForTimeout(600);
+        },
+      },
+      'Today: weight empty': {
+        label: T.noWeight,
+        target: () => textLoc(T.noWeight),
+        probe: () => H(names.Today.heading),
+        x: () => null,
+        area: 'Today',
+        go: async () => { await open('Today'); await H(names.Today.heading).waitFor({ timeout: 15_000 }); },
+      },
+      'Summary: empty': {
+        label: T.summaryEmpty,
+        target: () => textLoc(T.summaryEmpty),
+        probe: () => xh(T.summaryTitle),
+        title: () => xh(T.summaryTitle),
+        x: () => null,
+        col: true,
+        go: async () => pushTool('Today', T.summaryTitle, T.summaryTitle),
+      },
+      Derived: {
+        label: T.derivedTitle,
+        target: () => xh(T.derivedTitle),
+        title: () => xh(T.derivedTitle),
+        x: () => null,
+        col: true,
+        go: async () => pushTool('Today', T.derivedTitle, T.derivedTitle),
+      },
+      'Timeline: show deleted': {
+        label: T.showHiddenHelp,
+        target: () => textLoc(T.showHiddenHelp),
+        probe: () => H(names.Timeline.heading),
+        x: () => null,
+        area: 'Timeline',
+        go: async () => { await open('Timeline'); await H(names.Timeline.heading).waitFor({ timeout: 15_000 }); },
+      },
+      'Learn: how-to': {
+        label: T.howTo,
+        target: () => xh(T.howTo),
+        title: () => xh(T.howTo),
+        // AppBar caps this title near 1.34× (kept, drawn smaller if long);
+        // the first task's heading shows whether 2× text reached the page.
+        probe: () => xh(T.howToFirst),
+        x: () => null,
+        col: true,
+        go: async () => pushTool('Learn', T.howTo, T.howTo),
+      },
+    });
+
     // Palette groups set the palette through Settings first.
     let paletteApplied = null;
     if (g.palette) {
@@ -648,10 +843,12 @@ async function runPass(root, mode) {
       let lockReasonSeen = false;
       try {
         if (ex) {
+          if (!ex.firstRun) await leaveFirstRun();
           await ex.go();
-          x = ex.x() ?? (ex.col ? await pageX() : await wheelX('Today'));
+          x = ex.x() ?? (ex.firstRun ? await headX(ex.label) : ex.area ? await wheelX(ex.area) : ex.col ? await pageX() : await wheelX('Today'));
           if (ex.probe) { await toTop(x); probeHeight = (await ex.probe().boundingBox({ timeout: 2_000 }).catch(() => null))?.height ?? null; }
-          reached = await reveal(ex.target(), x, !!ex.sheet);
+          // A title sits in the top bar (from y 0), like a sheet's content.
+          reached = await reveal(ex.target(), x, !!ex.sheet || !!ex.title);
           if (!reached) cell.navError = 'target not brought into view';
           // Read while the section is on screen (lazy lists drop it later).
           if (reached && id === 'Settings: app lock') {
@@ -659,6 +856,7 @@ async function runPass(root, mode) {
             lockReasonSeen = (await page.getByText(T.lockReason, { exact: true }).count()) + (await page.getByLabel(T.lockReason, { exact: true }).count()) > 0;
           }
         } else {
+          await leaveFirstRun();
           if (!(g.palette && id === 'Settings' && inSettings)) await open(id);
           await H(names[id].heading).waitFor({ timeout: 15_000 });
           reached = await H(names[id].heading).isVisible();
@@ -683,6 +881,15 @@ async function runPass(root, mode) {
         const shot = `${g.variant}_${g.vp}_${g.locale}_${id.replace(/[^A-Za-z]+/g, '-')}.png`;
         await page.screenshot({ path: join(out, shot) }).catch(() => {});
         cell.screenshot = shot;
+        // A title (first run, Summary, Derived, the how-to) is drawn whole:
+        // its box lies inside the window, at the top of the page.
+        if (ex?.title && reached) {
+          await toTop(x);
+          const tb = await ex.title().boundingBox({ timeout: 2_000 }).catch(() => null);
+          cell.titleBox = tb;
+          set('title_whole', tb && tb.x >= 0 && tb.y >= 0 && tb.x + tb.width <= vp.width + 0.5 && tb.y + tb.height <= vp.height ? 'PASS' : 'FAIL',
+            tb ? `title box ${Math.round(tb.x)},${Math.round(tb.y)} ${Math.round(tb.width)}x${Math.round(tb.height)} in ${vp.width}x${vp.height}` : 'title not found');
+        }
       }
       // Sweep the screen top to bottom: Flutter builds lazy lists only near
       // the viewport and clips semantics rects at the list's edges, so each
@@ -690,6 +897,7 @@ async function runPass(root, mode) {
       const seen = new Map();
       const headingsSeen = new Set();
       const labelsSeen = new Set();
+      const stackedSeen = new Set();
       let hscroll = { max: 0, width: vp.width };
       if (reached && ex) await toTop(x);
       if (reached) {
@@ -735,15 +943,39 @@ async function runPass(root, mode) {
             // and whether the window really moves sideways. (Flutter's body
             // is fixed with overflow hidden, so content clipped inside it is
             // not page scroll.)
+            // Headings stacked one above another (Q005): a heading whose
+            // next visible text below it, in the same column, is another
+            // heading with no other text between them.
+            const isHead = (e) => e.getAttribute('role') === 'heading' || /^H[1-6]$/.test(e.tagName);
+            const leaves = [];
+            for (const e of document.querySelectorAll('flt-semantics-host flt-semantics, flt-semantics-host [role="heading"], flt-semantics-host h1, flt-semantics-host h2, flt-semantics-host h3, flt-semantics-host h4, flt-semantics-host h5, flt-semantics-host h6')) {
+              const n = nameOf(e);
+              if (!n) continue;
+              const head = isHead(e);
+              if (!head && [...e.querySelectorAll('flt-semantics, [role="heading"]')].some((c) => nameOf(c))) continue;
+              const r = e.getBoundingClientRect();
+              if (r.width <= 0 || r.height <= 0 || r.bottom <= 0 || r.top >= vh || r.right <= 0 || r.left >= vw) continue;
+              leaves.push({ n: n.slice(0, 60), head, top: r.top, bottom: r.bottom, left: r.left, right: r.right });
+            }
+            leaves.sort((a, b) => a.top - b.top || a.left - b.left);
+            const stacked = [];
+            // The top bar's title (above y 56) stands over the whole page
+            // and is not counted.
+            for (const a of leaves.filter((l) => l.head && l.top >= 56)) {
+              const below = leaves.filter((b) => b !== a && b.top >= a.bottom - 2 && b.left < a.right && b.right > a.left && b.n !== a.n && !a.n.includes(b.n));
+              const next = below[0];
+              if (next && next.head && next.top - a.bottom < 32) stacked.push(`"${a.n}" / "${next.n}"`);
+            }
             const de = document.documentElement;
             const y = window.scrollY;
             window.scrollTo(100000, y);
             const sx = window.scrollX;
             window.scrollTo(0, y);
-            return { nodes, headings, labels, visible, sw: Math.max(de.scrollWidth, window.innerWidth + sx), iw: window.innerWidth };
+            return { nodes, headings, labels, visible, stacked, sw: Math.max(de.scrollWidth, window.innerWidth + sx), iw: window.innerWidth };
           }, { TARGET_ROLES, vw: vp.width, vh: vp.height });
           hscroll = { max: Math.max(hscroll.max, snap.sw), width: snap.iw };
           for (const h of snap.headings) headingsSeen.add(h);
+          for (const p of snap.stacked) stackedSeen.add(p);
           for (const l of snap.labels) labelsSeen.add(l);
           for (const n of snap.nodes) {
             const k = `${n.role}|${n.name}|${n.x}`;
@@ -760,6 +992,24 @@ async function runPass(root, mode) {
           await page.waitForTimeout(mode === 'debug' ? 300 : 250);
         }
         await toTop(x);
+      }
+      if (mode === 'release' && reached) {
+        set('no_stacked_headings', stackedSeen.size === 0 ? 'PASS' : 'FAIL', stackedSeen.size ? [...stackedSeen].slice(0, 6).join('; ') : 'no heading directly above another');
+        if (g.locale === 'tr-TR') {
+          const hits = [...new Set([...labelsSeen, ...headingsSeen].filter((l) => englishIn(l).length).map((l) => `"${l.slice(0, 70)}" (${englishIn(l).join(', ')})`))];
+          set('no_english_on_tr', hits.length === 0 ? 'PASS' : 'FAIL', hits.length ? hits.slice(0, 6).join('; ') : `${labelsSeen.size} labels read, no English word`);
+        }
+      }
+      // The how-to (U041): its tasks carry no numbers in front of them.
+      if (mode === 'release' && reached && id === 'Learn: how-to') {
+        const heads = [...headingsSeen].filter((h) => h !== T.howTo);
+        const numbered = [...headingsSeen, ...labelsSeen].filter((l) => /^\d{1,2}([.)]|\s|$)/.test(l));
+        set('howto_no_numbers', heads.length >= 6 && numbered.length === 0 ? 'PASS' : 'FAIL', `${heads.length} task headings; numbered: ${numbered.length ? numbered.slice(0, 4).map((l) => `"${l.slice(0, 40)}"`).join(', ') : 'none'}`);
+      }
+      // The Timeline switch (U041): its help line is read out with it.
+      if (mode === 'release' && reached && id === 'Timeline: show deleted') {
+        const sw = [...seen.values()].filter((n) => n.role === 'switch' || n.role === 'checkbox' || n.tappable).find((n) => n.name.includes(T.showHidden));
+        set('switch_help_read_with_switch', sw && sw.name.includes(T.showHiddenHelp) ? 'PASS' : 'FAIL', sw ? `switch "${sw.name.slice(0, 120)}" ${sw.w}x${sw.h}` : 'no switch named with the title');
       }
       // The app lock in a development build: the reason is shown and every
       // lock control is disabled (none looks usable).
@@ -925,7 +1175,7 @@ const meta = {
     no_failed_requests: 'no failed request and no HTTP status >= 400',
     no_horizontal_scroll: 'document scrollWidth <= viewport width at every scroll position',
     controls_named: 'every semantics button, link and tab has a non-empty accessible name',
-    touch_targets: `touch viewports: every enabled semantics button/link/tab/checkbox/switch/radio/slider or tappable node is >= ${MIN_TARGET}x${MIN_TARGET} CSS px (largest size seen while scrolling the whole screen); the modal barrier above a sheet ("Scrim") is not counted`,
+    touch_targets: `touch viewports: every enabled semantics button/link/tab/checkbox/switch/radio/slider or tappable node is >= ${MIN_TARGET}x${MIN_TARGET} CSS px (48 dp since Q005) (largest size seen while scrolling the whole screen); the modal barrier above a sheet ("Scrim") is not counted`,
     no_flutter_overflow: 'debug build of the same revision: the console has no "overflowed by N pixels" report while the screen is opened and scrolled',
     no_flutter_exceptions: 'debug build: no other Flutter framework exception report',
     lock_state_clear: 'Settings: app lock: in a build without an encrypted vault the reason text is shown and every lock control (minute chips, lock-when-hidden switch) is disabled',
@@ -933,6 +1183,11 @@ const meta = {
     lab_group_chart_spoken: 'Labs: same test over time: "Same test over time" is exposed as its own heading on Labs and the group chart carries its spoken dated-values summary',
     restore_chooser_opens: 'Today: restore from file: tapping the entry opens the browser file chooser',
     restore_cancel_reported: 'Today: restore from file: closing the chooser without a file shows "No file chosen. Nothing was changed." on screen within 1 s',
+    no_stacked_headings: 'Q005: no heading has another heading as the next visible text directly below it in the same column (less than 32 px between them, nothing in between)',
+    no_english_on_tr: 'Q005, tr-TR cells: no accessible label or heading seen while sweeping the screen contains an English word from a fixed list (names shared by both languages allowed)',
+    title_whole: 'Q005: first run, Summary, Derived and how-to titles: the title box lies wholly inside the window at the top of the page',
+    howto_no_numbers: 'Q005 (U041): the how-to has at least six task headings and no heading or label starts with a number',
+    switch_help_read_with_switch: 'Q005 (U041): the Timeline "show deleted and withdrawn" switch is one control whose accessible name includes its help line',
     text_scaled_2x: '2× text cells only: the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app',
   },
   counts,

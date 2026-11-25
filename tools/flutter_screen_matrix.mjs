@@ -457,11 +457,24 @@ async function runPass(root, mode) {
         await page.mouse.wheel(0, 300);
         await page.waitForTimeout(150);
       }
+      const top = inSheet ? 0 : 64;
+      // Above the bottom navigation bar on touch layouts (its tabs' top),
+      // which is 80 px at 320x640; 85 when it is not found.
+      const barTop = vp.touch && !inSheet ? await page.evaluate((vh) => Math.min(...[...document.querySelectorAll('flt-semantics-host [role="tab"]')]
+        .map((e) => e.getBoundingClientRect().top).filter((t) => t > vh / 2), vh - 85), vp.height).catch(() => vp.height - 85) : null;
+      const bottom = barTop ?? vp.height - 10;
       for (let i = 0; i < 30; i++) {
         const b = await locator.boundingBox({ timeout: 1_000 }).catch(() => null);
-        if (b && b.y >= (inSheet ? 0 : 64) && b.y + b.height <= vp.height - (vp.touch && !inSheet ? 85 : 10)) return true;
+        if (b && b.y >= top && b.y + b.height <= bottom + 1) return true;
+        // Taller than the space between the bars (Q005: the Timeline switch
+        // with its help line at 2× text): its top is in the upper third.
+        if (b && b.height > bottom - top && b.y >= top && b.y <= top + (bottom - top) / 3) return true;
+        log('reveal', i, b ? `${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}` : 'no box');
         await page.mouse.move(x, vp.height / 2);
-        await page.mouse.wheel(0, b ? Math.max(-400, Math.min(400, b.y - vp.height / 3)) : 300);
+        // Move by what is missing (a target already at a third of the window
+        // but cut at the bottom moved by 0 before, Q005).
+        const d = !b ? 300 : b.y < top ? b.y - top - 8 : b.y + b.height > bottom ? Math.min(b.y - top, Math.max(40, b.y + b.height - bottom + 8)) : b.y - vp.height / 3;
+        await page.mouse.wheel(0, Math.max(-400, Math.min(400, d)));
         await page.waitForTimeout(200);
       }
       return false;
@@ -701,11 +714,16 @@ async function runPass(root, mode) {
     };
     const pushTool = async (area, name, title) => {
       await open(area);
+      // Back from a pushed page, the tab keeps its offset (Today stays at its
+      // tools), so its heading may have no semantics yet: go to the top first.
+      await toTop(bodyLeft() + 6);
       await H(names[area].heading).waitFor({ timeout: 15_000 });
       const ax = await wheelX(area);
       await toTop(ax);
       const row = page.getByRole('button', { name: new RegExp(`^${esc(name)}`) }).first();
       await reveal(row, ax);
+      await page.waitForTimeout(400);
+      log('tool row', JSON.stringify(await row.boundingBox().catch(() => null)), await row.getAttribute('aria-label').catch(() => null));
       await tap(row);
       pushed = 1;
       await xh(title).waitFor({ timeout: 15_000 });
@@ -749,6 +767,10 @@ async function runPass(root, mode) {
           const next = page.getByRole('button', { name: T.firstNext, exact: true }).first();
           await reveal(next, await headX(T.firstWelcome));
           await tap(next);
+          // The list keeps its offset, so step 2's title can start above
+          // the window, where Flutter keeps no semantics for it.
+          await page.waitForTimeout(500);
+          await toTop(await headX(T.firstWelcome));
           await fh(T.firstLook).waitFor({ timeout: 15_000 });
           await page.waitForTimeout(600);
         },
@@ -935,7 +957,10 @@ async function runPass(root, mode) {
               const role = e.tagName === 'A' ? 'link' : (e.getAttribute('role') ?? '');
               const tappable = e.hasAttribute('flt-tappable');
               if (!TARGET_ROLES.includes(role) && !tappable) continue;
-              const r = e.getBoundingClientRect();
+              // A slider's semantics node holds the engine's own range
+              // <input> (4 px shorter than the node, Q005); the node is what
+              // Flutter reports, so measure it.
+              const r = (e.tagName === 'INPUT' && e.parentElement?.tagName === 'FLT-SEMANTICS' ? e.parentElement : e).getBoundingClientRect();
               if (r.width <= 0 || r.height <= 0 || r.bottom <= 0 || r.top >= vh || r.right <= 0 || r.left >= vw) continue;
               nodes.push({ role: role || 'tappable', tappable, name: nameOf(e), x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height), disabled: e.getAttribute('aria-disabled') === 'true' });
             }

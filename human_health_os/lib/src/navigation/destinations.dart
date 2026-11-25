@@ -247,7 +247,7 @@ const List<Destination> destinations = [
     icon: Icons.school_outlined,
     selectedIcon: Icons.school,
     purposeEn: 'Plain explanations of the words in your records and of the body, and how to do things in Human OS.',
-    purposeTr: 'Kayıtlarındaki kelimelerin ve bedenin sade açıklamaları; Human OS\'ta işlerin nasıl yapıldığı.',
+    purposeTr: 'Kayıtlarındaki sözcüklerin ve bedenin sade açıklamaları; uygulamada işlerin nasıl yapıldığı.',
     // U034: hosts the glossary, the body guide and the how-to. The shared
     // lesson pack moves to JSON with F021 (ROADMAP); what this area says it
     // does is built.
@@ -255,7 +255,7 @@ const List<Destination> destinations = [
     principleEn: 'An explanation is not a diagnosis or medical advice. Human OS never diagnoses and never tells you what to do about your health.',
     principleTr: 'Bir açıklama tanı ya da tıbbi tavsiye değildir. Human OS asla tanı koymaz, sağlığın için ne yapman gerektiğini söylemez.',
     canDoEn: 'Look up a word, find which specialist looks after which part of the body, or read how to do things in the app.',
-    canDoTr: 'Bir kelimeye bak, bedenin hangi bölümüyle hangi uzmanın ilgilendiğini bul ya da uygulamada işlerin nasıl yapıldığını oku.',
+    canDoTr: 'Bir sözcüğe bak, bedenin hangi bölümüyle hangi uzmanın ilgilendiğini bul ya da uygulamada işlerin nasıl yapıldığını oku.',
   ),
 ];
 

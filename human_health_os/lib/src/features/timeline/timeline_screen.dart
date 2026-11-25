@@ -113,6 +113,12 @@ class _TimelineScreenState extends State<TimelineScreen>
           key: const ValueKey('timeline-show-hidden'),
           contentPadding: EdgeInsets.zero,
           title: Text(s.showHidden),
+          // The two words in plain terms, for someone who has never
+          // deleted anything yet (U041).
+          subtitle: Text(
+            s.showHiddenHelp,
+            key: const ValueKey('timeline-show-hidden-help'),
+          ),
           value: _showHidden,
           onChanged: (v) {
             setState(() => _showHidden = v);

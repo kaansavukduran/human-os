@@ -164,8 +164,10 @@ class S {
   String get weightField => _t('Weight (kg)', 'Ağırlık (kg)');
   String get save => _t('Save', 'Kaydet');
   String get saved => _t('Saved', 'Kaydedildi');
-  String get noWeightYet =>
-      _t('No weight recorded yet.', 'Henüz kilo kaydı yok.');
+  String get noWeightYet => _t(
+    'No weight recorded yet. Type it in the field and press Save.',
+    'Henüz ağırlık kaydı yok. Alana yaz ve Kaydet\'e bas.',
+  );
   String get latest => _t('Latest', 'Son');
   String get history => _t('History', 'Geçmiş');
   String get enteredAs => _t('entered as', 'girilen değer:');
@@ -539,6 +541,10 @@ class S {
     'Show deleted and withdrawn',
     'Silinenleri ve geri çekilenleri göster',
   );
+  String get showHiddenHelp => _t(
+    'Records you deleted or marked as entered in error stay in history.',
+    'Sildiğin ya da yanlışlıkla girildi diye işaretlediğin kayıtlar geçmişte kalır.',
+  );
   String get versionsDisagree => _t('Versions disagree', 'Sürümler çelişiyor');
   String get versions => _t('Versions', 'Sürümler');
   String get enteredOn => _t('entered', 'kayıt zamanı:');
@@ -631,7 +637,10 @@ class S {
   );
   String get docAdd => _t('Add a document', 'Belge ekle');
   String get docCorrectTitle => _t('Correct this entry', 'Bu kaydı düzelt');
-  String get docNone => _t('Nothing recorded yet.', 'Henüz kayıt yok.');
+  String get docNone => _t(
+    'Nothing recorded yet. To start, add a document you keep and where you keep it.',
+    'Henüz kayıt yok. Başlamak için sakladığın bir belgeyi ve nerede durduğunu ekle.',
+  );
   String get docTitleField => _t(
     'Title, in your words (e.g. blood test report)',
     'Başlık, kendi sözlerinle (ör. kan tahlili raporu)',
@@ -679,7 +688,10 @@ class S {
   );
   String get prevAdd => _t('Add an item', 'Kayıt ekle');
   String get prevCorrectTitle => _t('Correct this entry', 'Bu kaydı düzelt');
-  String get prevNone => _t('Nothing recorded yet.', 'Henüz kayıt yok.');
+  String get prevNone => _t(
+    'Nothing recorded yet. To start, add a vaccination, a screening or a check-up.',
+    'Henüz kayıt yok. Başlamak için bir aşı, tarama ya da kontrol ekle.',
+  );
   String get prevName => _t(
     'What it is, in your words (e.g. tetanus vaccine)',
     'Ne olduğu, kendi sözlerinle (ör. tetanoz aşısı)',
@@ -732,7 +744,10 @@ class S {
   String get condAdd =>
       _t('Add a condition or symptom', 'Durum ya da belirti ekle');
   String get condCorrectTitle => _t('Correct this entry', 'Bu kaydı düzelt');
-  String get condNone => _t('Nothing recorded yet.', 'Henüz kayıt yok.');
+  String get condNone => _t(
+    'Nothing recorded yet. To start, add a condition or a symptom in your words.',
+    'Henüz kayıt yok. Başlamak için bir durumu ya da belirtiyi kendi sözlerinle ekle.',
+  );
   String get condName =>
       _t('What it is, in your words', 'Ne olduğu, kendi sözlerinle');
   String get condSince =>
@@ -783,7 +798,10 @@ class S {
   String get actAdd => _t('Add an activity', 'Aktivite ekle');
   String get actCorrectTitle =>
       _t('Correct this activity', 'Bu aktiviteyi düzelt');
-  String get actNone => _t('Nothing recorded yet.', 'Henüz kayıt yok.');
+  String get actNone => _t(
+    'Nothing recorded yet. To start, add a walk or a workout.',
+    'Henüz kayıt yok. Başlamak için bir yürüyüş ya da antrenman ekle.',
+  );
   String get actWhat => _t(
     'What it was (e.g. walk, cycling)',
     'Ne olduğu (ör. yürüyüş, bisiklet)',
@@ -805,7 +823,10 @@ class S {
   );
   String get foodAdd => _t('Add food or drink', 'Yiyecek ya da içecek ekle');
   String get foodCorrectTitle => _t('Correct this entry', 'Bu kaydı düzelt');
-  String get foodNone => _t('Nothing recorded yet.', 'Henüz kayıt yok.');
+  String get foodNone => _t(
+    'Nothing recorded yet. To start, add a meal or a drink in your words.',
+    'Henüz kayıt yok. Başlamak için bir öğünü ya da içeceği kendi sözlerinle ekle.',
+  );
   String get foodWhat => _t('What it was', 'Ne olduğu');
   String get foodAmount => _t(
     'How much (optional, e.g. 1 bowl, 250 g)',
@@ -1201,8 +1222,8 @@ class S {
   String get measurementNotYet => _t('Not recorded yet', 'Henüz kayıt yok');
   String get addMeasurement => _t('Add a measurement', 'Ölçüm ekle');
   String get yourNotes => _t(
-    'Your earlier notes (click to use)',
-    'Önceki notların (kullanmak için tıkla)',
+    'Your earlier notes (choose one to use it)',
+    'Önceki notların (kullanmak için birini seç)',
   );
   String get moreDetails => _t('More details', 'Daha fazla ayrıntı');
   String get timePresetsLabel => _t('Quick pick', 'Hızlı seçim');
@@ -1273,8 +1294,8 @@ class S {
 
   // One short line for the whole section (U036), not a sentence per tile.
   String get measurementsNote => _t(
-    'Tap one to add a value. Kept as typed, with its time; never judged, and an empty field is never saved as 0.',
-    'Eklemek için birine dokun. Yazdığın gibi, zamanıyla saklanır; yorumlanmaz, boş alan asla 0 sayılmaz.',
+    'Choose one to add a value. Kept as typed, with its time; never judged, and an empty field is never saved as 0.',
+    'Eklemek için birini seç. Yazdığın gibi, zamanıyla saklanır; yorumlanmaz, boş alan asla 0 sayılmaz.',
   );
   String moreMeasurements(int n) =>
       _t('More measurements ($n)', 'Diğer ölçümler ($n)');
@@ -1416,7 +1437,10 @@ class S {
     'Recorded by the person, not by a clinic. Human OS does not interpret or score these values.',
     'Kişinin kendisi kaydetti, bir klinik değil. Human OS bu değerleri yorumlamaz ve puanlamaz.',
   );
-  String get summaryEmpty => _t('Nothing recorded yet.', 'Henüz kayıt yok.');
+  String get summaryEmpty => _t(
+    'Nothing recorded yet. What you save on Today and in the other areas appears here.',
+    'Henüz kayıt yok. Bugün ekranında ve diğer alanlarda kaydettiklerin burada görünür.',
+  );
   String get summarySave =>
       _t('Save as a page to print', 'Yazdırmak için sayfa olarak kaydet');
   String get summarySaveNotHere => _t(
@@ -1449,12 +1473,12 @@ class S {
   String get trendNone =>
       _t('Nothing saved in this period.', 'Bu dönemde kayıt yok.');
   String get trendLegend => _t(
-    'Each dot is a saved reading. A break in the line means more than 7 days without one; nothing is drawn in between. Click the chart to see a reading.',
-    'Her nokta kaydedilmiş bir ölçümdür. Çizgideki kopukluk 7 günden uzun süre ölçüm olmadığını gösterir; arası doldurulmaz. Bir ölçümü görmek için grafiğe tıkla.',
+    'Each dot is a saved reading. A break in the line means more than 7 days without one; nothing is drawn in between. To see a reading, select it on the chart.',
+    'Her nokta kaydedilmiş bir ölçümdür. Çizgideki kopukluk 7 günden uzun süre ölçüm olmadığını gösterir; arası doldurulmaz. Bir ölçümü görmek için onu grafikte seç.',
   );
   String get trendLegendBp => _t(
-    'Circles: systolic. Squares: diastolic. A break in the line means more than 7 days without a reading; nothing is drawn in between. Click the chart to see a reading.',
-    'Daireler: sistolik. Kareler: diyastolik. Çizgideki kopukluk 7 günden uzun süre ölçüm olmadığını gösterir; arası doldurulmaz. Bir ölçümü görmek için grafiğe tıkla.',
+    'Circles: systolic. Squares: diastolic. A break in the line means more than 7 days without a reading; nothing is drawn in between. To see a reading, select it on the chart.',
+    'Daireler: sistolik. Kareler: diyastolik. Çizgideki kopukluk 7 günden uzun süre ölçüm olmadığını gösterir; arası doldurulmaz. Bir ölçümü görmek için onu grafikte seç.',
   );
   String trendChartSpoken(int n, {String? unit}) => _t(
     'Chart of $n saved readings${unit == null ? '' : ' in $unit'}; every reading is listed after it.',
@@ -1538,8 +1562,8 @@ class S {
     'Her vücut sisteminin ne yaptığı ve hangi hekimlerin ilgilendiği',
   );
   String get guideIntro => _t(
-    'Click a body system to see what it does, its main parts, which medical specialties care for it, and what you can record for it here.',
-    'Bir vücut sistemine tıkla: ne yaptığını, ana parçalarını, hangi tıp uzmanlıklarının ilgilendiğini ve burada onunla ilgili ne kaydedebileceğini gör.',
+    'Choose a body system to see what it does, its main parts, which medical specialties care for it, and what you can record for it here.',
+    'Bir vücut sistemini seç: ne yaptığını, ana parçalarını, hangi tıp uzmanlıklarının ilgilendiğini ve burada onunla ilgili ne kaydedebileceğini gör.',
   );
   String get guideParts => _t('Main parts', 'Ana parçalar');
   String get guideWhoCares => _t('Who looks after it', 'Kim ilgilenir');
@@ -1791,22 +1815,22 @@ class S {
   String get howToTitle =>
       _t('How to use Human OS', 'Human OS nasıl kullanılır');
   String get howToTileHint => _t(
-    'Six short steps, all with the mouse',
-    'Fareyle yapılan altı kısa adım',
+    'Add, find and fix a value, add a lab result, keep a copy',
+    'Değer ekle, bul ve düzelt, tahlil sonucu ekle, kopya sakla',
   );
   List<(String, String)> get howToSteps => [
     (
       _t('Add a number', 'Bir sayı ekle'),
       _t(
-        'On Today, click a tile such as Blood pressure. Type the value, or click "Show number pad" and click the digits. Click "Save measurement".',
-        'Bugün ekranında Tansiyon gibi bir kutuya tıkla. Değeri yaz ya da "Sayı tuşlarını göster"e tıklayıp rakamlara tıkla. "Ölçümü kaydet"e tıkla.',
+        'On Today, choose a tile such as Blood pressure. Type the value, or press "Show number pad" and use its digits. Then press "Save measurement".',
+        'Bugün ekranında Tansiyon gibi bir kutuyu seç. Değeri yaz ya da "Sayı tuşlarını göster"e basıp rakamları kullan. Sonra "Ölçümü kaydet"e bas.',
       ),
     ),
     (
       _t('Say when it was measured', 'Ne zaman ölçüldüğünü söyle'),
       _t(
-        'Open "More details" and click a quick pick such as "1 hour ago", or type the time. Empty means now.',
-        '"Daha fazla ayrıntı"yı aç ve "1 saat önce" gibi bir hızlı seçime tıkla ya da saati yaz. Boş bırakırsan şimdi sayılır.',
+        'Open "More details" and choose a quick pick such as "1 hour ago", or type the time. Empty means now.',
+        '"Daha fazla ayrıntı"yı aç ve "1 saat önce" gibi bir hazır seçeneğe bas ya da saati yaz. Boş bırakırsan şimdi sayılır.',
       ),
     ),
     (
@@ -1819,8 +1843,8 @@ class S {
     (
       _t('Fix a mistake', 'Bir hatayı düzelt'),
       _t(
-        'On the Timeline, open the entry and click Correct. The old value is kept as history and the new one is shown.',
-        'Zaman çizelgesinde kaydı aç ve Düzelt\'e tıkla. Eski değer geçmiş olarak saklanır, yenisi gösterilir.',
+        'On the Timeline, open the entry and press Correct. The old value is kept as history and the new one is shown.',
+        'Zaman çizelgesinde kaydı aç ve Düzelt\'e bas. Eski değer geçmiş olarak saklanır, yenisi gösterilir.',
       ),
     ),
     (
@@ -1833,8 +1857,8 @@ class S {
     (
       _t('Keep a copy', 'Bir kopya sakla'),
       _t(
-        'Under "Your data" on Today, click "Create backup". Keep the file somewhere safe.',
-        'Bugün ekranındaki "Verilerin" bölümünde "Yedek oluştur"a tıkla. Dosyayı güvenli bir yerde sakla.',
+        'Under "Your data" on Today, press "Create backup". Keep the file somewhere safe.',
+        'Bugün ekranındaki "Verilerin" bölümünde "Yedek oluştur"a bas. Dosyayı güvenli bir yerde sakla.',
       ),
     ),
   ];
@@ -3108,7 +3132,7 @@ class S {
       _t('Repeat the passphrase', 'Parolayı tekrar yaz');
   String passphraseHint(int n) => _t(
     'At least $n characters. A few unrelated words are easy to remember and hard to guess.',
-    'En az $n karakter. Birbiriyle ilgisiz birkaç kelime hem kolay hatırlanır hem zor tahmin edilir.',
+    'En az $n karakter. Birbiriyle ilgisiz birkaç sözcük hem kolay hatırlanır hem zor tahmin edilir.',
   );
   String passphraseTooShort(int n) =>
       _t('Use at least $n characters.', 'En az $n karakter kullan.');

@@ -7,6 +7,7 @@ import '../../domain/engines/core_derived.dart'
 import '../../domain/records/health_record.dart';
 import '../../l10n/casing.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../measurements/measurement_format.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
@@ -66,7 +67,14 @@ class _DerivedScreenState extends State<DerivedScreen> {
     final text = Theme.of(context).textTheme;
     final rows = _rows;
     return Scaffold(
-      appBar: AppBar(title: Text(s.derivedTitle)),
+      appBar: AppBar(
+        // Scaled down rather than cut at 320 dp with large text (U041).
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(s.derivedTitle),
+        ),
+      ),
       body: _failed
           ? Padding(
               padding: const EdgeInsets.all(16),
@@ -80,22 +88,25 @@ class _DerivedScreenState extends State<DerivedScreen> {
             )
           : rows == null
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              key: const ValueKey('screen-derived'),
-              padding: const EdgeInsets.all(16),
-              children: [
-                Text(s.derivedIntro, style: text.bodyMedium),
-                const SizedBox(height: 4),
-                Text(
-                  s.derivedPack(coreDerivedPackId, coreDerivedPackVersion),
-                  style: text.bodySmall,
-                ),
-                const SizedBox(height: 16),
-                for (final r in rows) ...[
-                  _DerivedCard(row: r),
-                  const SizedBox(height: 12),
+          // One centred reading column on a wide window (U041).
+          : ReadingWidth.builder(
+              builder: (context) => ListView(
+                key: const ValueKey('screen-derived'),
+                padding: readingPadding(context, const EdgeInsets.all(16)),
+                children: [
+                  Text(s.derivedIntro, style: text.bodyMedium),
+                  const SizedBox(height: 4),
+                  Text(
+                    s.derivedPack(coreDerivedPackId, coreDerivedPackVersion),
+                    style: text.bodySmall,
+                  ),
+                  const SizedBox(height: 16),
+                  for (final r in rows) ...[
+                    _DerivedCard(row: r),
+                    const SizedBox(height: 12),
+                  ],
                 ],
-              ],
+              ),
             ),
     );
   }

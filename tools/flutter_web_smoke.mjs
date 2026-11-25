@@ -557,7 +557,8 @@ for (const { label, viewport, locale, today: todayLabel, timeline: timelineLabel
         await openArea(item);
         await heading(title).waitFor({ timeout: 15_000 }).catch(() => {});
         check(`${label}: opens ${item} from the more areas`, await heading(title).isVisible().catch(() => false));
-        check(`${label}: ${item} empty state says nothing recorded`, await named(new RegExp(`^${esc(A.none)}$`)).isVisible().catch(() => false));
+        // U041: the sentence goes on to name the first step.
+        check(`${label}: ${item} empty state says nothing recorded`, await named(new RegExp(`^${esc(A.none)} `)).isVisible().catch(() => false));
       } catch (e) {
         check(`${label}: opens ${item} from the more areas`, false, e.message.split('\n')[0]);
       }

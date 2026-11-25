@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/app_services.dart';
 import '../../data/backup/data_files.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/theme/spacing.dart';
 import '../today/save_copy.dart';
 import 'doctor_summary.dart';
 
@@ -94,103 +95,116 @@ class _SummaryScreenState extends State<SummaryScreen> {
         !files.sessionOnly &&
         !widget.services.storage.encrypted;
     return Scaffold(
-      appBar: AppBar(title: Text(s.summaryTitle)),
+      appBar: AppBar(
+        // Scaled down rather than cut at 320 dp with large text (U041).
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(s.summaryTitle),
+        ),
+      ),
       body: summary == null
           ? const SizedBox.shrink()
-          : ListView(
-              key: const ValueKey('screen-summary'),
-              padding: const EdgeInsets.all(16),
-              children: [
-                Text(summary.createdAt, style: text.bodySmall),
-                const SizedBox(height: 12),
-                if (canSave)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: FilledButton.tonalIcon(
-                      key: const ValueKey('summary-save'),
-                      onPressed: _busy || summary.sections.isEmpty
-                          ? null
-                          : () => _save(s),
-                      icon: const Icon(Icons.print_outlined),
-                      label: Text(s.summarySave),
-                    ),
-                  )
-                else if (widget.services.storage.encrypted)
-                  Text(
-                    s.summarySaveNotHere,
-                    key: const ValueKey('summary-not-saved'),
-                    style: text.bodySmall?.copyWith(color: scheme.outline),
-                  ),
-                if (_message != null) ...[
-                  const SizedBox(height: 8),
-                  Semantics(
-                    liveRegion: true,
-                    child: Text(
-                      _message!,
-                      key: const ValueKey('summary-message'),
-                    ),
-                  ),
-                  if (_copyable != null) ...[
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      key: const ValueKey('summary-save-copy'),
-                      onPressed: _busy ? null : () => _saveCopy(s),
-                      icon: const Icon(Icons.save_alt),
-                      label: Text(s.saveCopy),
-                    ),
-                  ],
-                ],
-                const SizedBox(height: 12),
-                if (summary.sections.isEmpty)
-                  Text(s.summaryEmpty, key: const ValueKey('summary-empty')),
-                for (final sec in summary.sections) ...[
+          // One centred reading column on a wide window (U041).
+          : ReadingWidth.builder(
+              builder: (context) => ListView(
+                key: const ValueKey('screen-summary'),
+                padding: readingPadding(context, const EdgeInsets.all(16)),
+                children: [
+                  Text(summary.createdAt, style: text.bodySmall),
                   const SizedBox(height: 12),
-                  Semantics(
-                    header: true,
-                    child: Text(sec.title, style: text.titleMedium),
-                  ),
-                  if (sec.partNote.isNotEmpty)
+                  if (canSave)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: FilledButton.tonalIcon(
+                        key: const ValueKey('summary-save'),
+                        onPressed: _busy || summary.sections.isEmpty
+                            ? null
+                            : () => _save(s),
+                        icon: const Icon(Icons.print_outlined),
+                        label: Text(s.summarySave),
+                      ),
+                    )
+                  else if (widget.services.storage.encrypted)
                     Text(
-                      sec.partNote,
+                      s.summarySaveNotHere,
+                      key: const ValueKey('summary-not-saved'),
                       style: text.bodySmall?.copyWith(color: scheme.outline),
                     ),
-                  if (sec.missNote.isNotEmpty)
-                    Text(
-                      sec.missNote,
-                      style: text.bodySmall?.copyWith(color: scheme.outline),
+                  if (_message != null) ...[
+                    const SizedBox(height: 8),
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        _message!,
+                        key: const ValueKey('summary-message'),
+                      ),
                     ),
-                  for (final r in sec.rows)
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(color: scheme.outlineVariant),
+                    if (_copyable != null) ...[
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        key: const ValueKey('summary-save-copy'),
+                        onPressed: _busy ? null : () => _saveCopy(s),
+                        icon: const Icon(Icons.save_alt),
+                        label: Text(s.saveCopy),
+                      ),
+                    ],
+                  ],
+                  const SizedBox(height: 12),
+                  if (summary.sections.isEmpty)
+                    Text(s.summaryEmpty, key: const ValueKey('summary-empty')),
+                  for (final sec in summary.sections) ...[
+                    const SizedBox(height: 12),
+                    Semantics(
+                      header: true,
+                      child: Text(sec.title, style: text.titleMedium),
+                    ),
+                    if (sec.partNote.isNotEmpty)
+                      Text(
+                        sec.partNote,
+                        style: text.bodySmall?.copyWith(color: scheme.outline),
+                      ),
+                    if (sec.missNote.isNotEmpty)
+                      Text(
+                        sec.missNote,
+                        style: text.bodySmall?.copyWith(color: scheme.outline),
+                      ),
+                    for (final r in sec.rows)
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: scheme.outlineVariant),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(r.value, style: text.bodyLarge),
+                            Text(
+                              [
+                                r.when,
+                                if (r.note.isNotEmpty) r.note,
+                              ].join(' · '),
+                              style: text.bodySmall?.copyWith(
+                                color: scheme.outline,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(r.value, style: text.bodyLarge),
-                          Text(
-                            [r.when, if (r.note.isNotEmpty) r.note].join(' · '),
-                            style: text.bodySmall?.copyWith(
-                              color: scheme.outline,
-                            ),
-                          ),
-                        ],
+                  ],
+                  const SizedBox(height: 16),
+                  for (final f in summary.footer)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        f,
+                        style: text.bodySmall?.copyWith(color: scheme.outline),
                       ),
                     ),
                 ],
-                const SizedBox(height: 16),
-                for (final f in summary.footer)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(
-                      f,
-                      style: text.bodySmall?.copyWith(color: scheme.outline),
-                    ),
-                  ),
-              ],
+              ),
             ),
     );
   }

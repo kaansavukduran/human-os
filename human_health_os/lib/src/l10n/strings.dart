@@ -18,6 +18,16 @@ import 'casing.dart';
 
 enum AppLang { en, tr }
 
+/// The typed-date patterns of help lines and errors (U045). A line never
+/// breaks inside the date: a word joiner (U+2060, drawn as nothing) follows
+/// each hyphen. The hyphens stay ordinary hyphens, since the bundled fonts
+/// have no non-breaking hyphen (U+2011). The date and the time may go on
+/// two lines, between them, when both do not fit on one.
+const String ymdEn = 'YYYY-\u2060MM-\u2060DD';
+const String ymdTr = 'YYYY-\u2060AA-\u2060GG';
+const String ymdHmEn = '$ymdEn HH:MM';
+const String ymdHmTr = '$ymdTr SS:DD';
+
 AppLang langOf(BuildContext context) {
   final code = Localizations.maybeLocaleOf(context)?.languageCode;
   return code == 'tr' ? AppLang.tr : AppLang.en;
@@ -69,6 +79,10 @@ class S {
   }
 
   String _t(String en, String tr) => lang == AppLang.tr ? tr : en;
+
+  /// The typed-date pattern in this language, whole on one line (U045).
+  String get _ymd => _t(ymdEn, ymdTr);
+  String get _ymdHm => _t(ymdHmEn, ymdHmTr);
 
   String get appTitle => 'Human OS';
   String get more => _t('More', 'Diğer');
@@ -278,8 +292,8 @@ class S {
     // More from the lab report (F004-S3, D-045): about the typing only,
     // never about the result.
     'REPORT_TIME_NEEDS_DATE' => _t(
-      'Type the date the lab printed too: YYYY-MM-DD HH:MM, e.g. 2026-03-10 14:30.',
-      'Laboratuvarın yazdığı tarihi de yaz: YYYY-AA-GG SS:DD, ör. 2026-03-10 14:30.',
+      'Type the date the lab printed too: $_ymdHm, e.g. 2026-03-10 14:30.',
+      'Laboratuvarın yazdığı tarihi de yaz: $_ymdHm, ör. 2026-03-10 14:30.',
     ),
     'REPORT_BEFORE_SAMPLE' => _t(
       'The report time is before the sample date. Check both dates.',
@@ -314,8 +328,8 @@ class S {
       'Raporda yazan test adını gir.',
     ),
     'DATE_INVALID' => _t(
-      'Use the date format YYYY-MM-DD, e.g. 2026-10-03.',
-      'Tarihi YYYY-AA-GG biçiminde yaz, ör. 2026-10-03.',
+      'Use the date format $_ymd, e.g. 2026-10-03.',
+      'Tarihi $_ymd biçiminde yaz, ör. 2026-10-03.',
     ),
     'TARGET_NOT_FOUND' => _t(
       'This entry no longer exists here.',
@@ -345,8 +359,8 @@ class S {
       'Yüzde 100\'ü geçemez. Hiçbir şey kaydedilmedi.',
     ),
     'TIME_FORMAT' => _t(
-      'Write the time on a 24-hour clock as YYYY-MM-DD HH:MM or HH:MM, e.g. 2026-11-07 07:30 or 07:30.',
-      'Zamanı 24 saatlik düzende YYYY-AA-GG SS:DD ya da SS:DD yaz, ör. 2026-11-07 07:30 ya da 07:30.',
+      'Write the time on a 24-hour clock as $_ymdHm or HH:MM, e.g. 2026-11-07 07:30 or 07:30.',
+      'Zamanı 24 saatlik düzende $_ymdHm ya da SS:DD yaz, ör. 2026-11-07 07:30 ya da 07:30.',
     ),
     'TIME_TOO_OLD' => _t(
       'Enter a date from the year 1900 on.',
@@ -357,8 +371,8 @@ class S {
       'Bu saat yoktu (saat o gün ileri alındı). Başka bir saat yaz.',
     ),
     'TIME_AMBIGUOUS' => _t(
-      'That clock time happened twice (the clock moved back). Type the full date and time, then the offset of the hour you mean: YYYY-MM-DD HH:MM +HH:MM.',
-      'Bu saat iki kez yaşandı (saat geri alındı). Tam tarih ve saati, ardından kastettiğin saatin farkını yaz: YYYY-AA-GG SS:DD +SS:DD.',
+      'That clock time happened twice (the clock moved back). Type the full date and time, then the offset of the hour you mean: $_ymdHm +HH:MM.',
+      'Bu saat iki kez yaşandı (saat geri alındı). Tam tarih ve saati, ardından kastettiğin saatin farkını yaz: $_ymdHm +SS:DD.',
     ),
     'CONTEXT_TOO_LONG' => _t(
       'Keep the note to at most 500 characters.',
@@ -833,10 +847,8 @@ class S {
     'Ne kadar (isteğe bağlı, ör. 1 kase, 250 g)',
   );
   String get foodWhen => _t('When', 'Ne zaman');
-  String get foodWhenHelp => _t(
-    'HH:MM, or YYYY-MM-DD HH:MM; blank = now',
-    'SS:DD ya da YYYY-AA-GG SS:DD; boş = şimdi',
-  );
+  String get foodWhenHelp =>
+      _t('HH:MM, or $_ymdHm; blank = now', 'SS:DD ya da $_ymdHm; boş = şimdi');
   String get foodLabelTitle =>
       _t('From the label (optional)', 'Etiketten (isteğe bağlı)');
   String get foodLabelHelp => _t(
@@ -941,13 +953,10 @@ class S {
   String get sleepNone =>
       _t('No nights recorded yet.', 'Henüz gece kaydı yok.');
   String get sleepBed => _t('Went to bed', 'Yattım');
-  String get sleepBedHelp =>
-      _t('HH:MM, or YYYY-MM-DD HH:MM', 'SS:DD ya da YYYY-AA-GG SS:DD');
+  String get sleepBedHelp => _t('HH:MM, or $_ymdHm', 'SS:DD ya da $_ymdHm');
   String get sleepWoke => _t('Woke up', 'Uyandım');
-  String get sleepWokeHelp => _t(
-    'HH:MM, or YYYY-MM-DD HH:MM; blank = now',
-    'SS:DD ya da YYYY-AA-GG SS:DD; boş = şimdi',
-  );
+  String get sleepWokeHelp =>
+      _t('HH:MM, or $_ymdHm; blank = now', 'SS:DD ya da $_ymdHm; boş = şimdi');
   String get saveFailed => _t(
     'This could not be saved. Nothing was written.',
     'Bu kaydedilemedi. Hiçbir şey yazılmadı.',
@@ -1048,7 +1057,7 @@ class S {
   String get medsDoseAmountHelp => _t('E.g. 1 tablet', 'Ör. 1 tablet');
   String get medsDoseWhen => _t('When (optional)', 'Ne zaman (isteğe bağlı)');
   String get medsDoseWhenHelp =>
-      _t('YYYY-MM-DD HH:MM · empty = now', 'YYYY-AA-GG SS:DD · boş = şimdi');
+      _t('$_ymdHm · empty = now', '$_ymdHm · boş = şimdi');
   String get medsDoseStatusLabel => _t('This dose was', 'Bu doz');
 
   // The calmer card (U037): today first, the plan after it. Each button
@@ -1177,8 +1186,8 @@ class S {
 
   String get whenField => _t('When (optional)', 'Ne zaman (isteğe bağlı)');
   String get whenHint => _t(
-    'Device time, YYYY-MM-DD HH:MM or HH:MM; empty = now',
-    'Cihaz saati, YYYY-AA-GG SS:DD ya da SS:DD; boş = şimdi',
+    'Device time, $_ymdHm or HH:MM; empty = now',
+    'Cihaz saati, $_ymdHm ya da SS:DD; boş = şimdi',
   );
   String measuredAtLabel(String when) => _t('measured $when', 'ölçüm: $when');
 
@@ -1194,16 +1203,16 @@ class S {
     'Ölçülmediğini not ettiğin zaman',
   );
   String get correctWhenNotMeasuredHint => _t(
-    'YYYY-MM-DD HH:MM, your device\'s time. Change it if you noted this at another time; the earlier version is kept.',
-    'YYYY-AA-GG SS:DD, cihazının saati. Bunu başka bir zamanda not ettiysen değiştir; önceki sürüm saklanır.',
+    '$_ymdHm, your device\'s time. Change it if you noted this at another time; the earlier version is kept.',
+    '$_ymdHm, cihazının saati. Bunu başka bir zamanda not ettiysen değiştir; önceki sürüm saklanır.',
   );
   String get correctNotMeasuredValueHint => _t(
     'Leave empty to keep it as "Not measured", or type the value you measured.',
     '"Ölçülmedi" olarak kalması için boş bırak ya da ölçtüğün değeri yaz.',
   );
   String get correctWhenHint => _t(
-    'YYYY-MM-DD HH:MM, your device\'s time. Change it only if the reading was taken at another time; the earlier version is kept.',
-    'YYYY-AA-GG SS:DD, cihazının saati. Yalnızca ölçüm başka bir zamanda yapıldıysa değiştir; önceki sürüm saklanır.',
+    '$_ymdHm, your device\'s time. Change it only if the reading was taken at another time; the earlier version is kept.',
+    '$_ymdHm, cihazının saati. Yalnızca ölçüm başka bir zamanda yapıldıysa değiştir; önceki sürüm saklanır.',
   );
   String notMeasuredOn(String when) =>
       _t('Not measured $when', 'Ölçülmedi: $when');
@@ -1703,8 +1712,8 @@ class S {
   String get settingsUnits => _t('Units', 'Birimler');
   String get settingsDates => _t('Date and time', 'Tarih ve saat');
   String get datesNote => _t(
-    'Changes how dates and times are shown. When you type a time, the format stays YYYY-MM-DD HH:MM.',
-    'Tarih ve saatlerin nasıl gösterildiğini değiştirir. Bir saat yazarken biçim YYYY-AA-GG SS:DD olarak kalır.',
+    'Changes how dates and times are shown. When you type a time, the format stays $_ymdHm.',
+    'Tarih ve saatlerin nasıl gösterildiğini değiştirir. Bir saat yazarken biçim $_ymdHm olarak kalır.',
   );
   String get unitsMetric => _t('kg, cm, °C', 'kg, cm, °C');
   String get unitsUs => _t('Also show lb, in, °F', 'lb, inç, °F de göster');
@@ -2453,8 +2462,8 @@ class S {
   String get labReportTime =>
       _t('Report time (optional)', 'Rapor zamanı (isteğe bağlı)');
   String get labReportTimeHelp => _t(
-    'YYYY-MM-DD HH:MM, apart from the sample date',
-    'YYYY-AA-GG SS:DD, numune tarihinden ayrı',
+    '$_ymdHm, apart from the sample date',
+    '$_ymdHm, numune tarihinden ayrı',
   );
   String get labMethod =>
       _t('Method as printed (optional)', 'Raporda yazan yöntem (isteğe bağlı)');

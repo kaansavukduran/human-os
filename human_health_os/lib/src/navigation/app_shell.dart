@@ -172,6 +172,17 @@ class _ScrollableRail extends StatelessWidget {
     final lang = langOf(context);
     final primary = kPrimaryDestinations.map(destinationById).toList();
     final selected = kPrimaryDestinations.indexOf(current);
+    // Selected and unselected labels share one style (U045): the theme's
+    // labelMedium as Material localizes it, so the chosen font, its size
+    // and its spacing, with the rail theme's colour and weight on top. The
+    // rail theme's own selected style carries only those two, and Material
+    // used it in place of labelMedium, so the selected label alone lost
+    // the font and was drawn at 14 instead of 12.
+    final theme = Theme.of(context);
+    final label = theme.textTheme.labelMedium!.copyWith(
+      color: theme.colorScheme.onSurface,
+    );
+    final railTheme = theme.navigationRailTheme;
     // `scrollable` lets the framework scroll destinations + the planned group
     // on short windows (an IntrinsicHeight wrapper under-measured the
     // trailing group and overflowed at 1024×700).
@@ -181,6 +192,8 @@ class _ScrollableRail extends StatelessWidget {
       minWidth: kRailMinWidth,
       minExtendedWidth: kRailMinExtendedWidth,
       extended: extended,
+      unselectedLabelTextStyle: label.merge(railTheme.unselectedLabelTextStyle),
+      selectedLabelTextStyle: label.merge(railTheme.selectedLabelTextStyle),
       labelType: extended
           ? NavigationRailLabelType.none
           : NavigationRailLabelType.all,

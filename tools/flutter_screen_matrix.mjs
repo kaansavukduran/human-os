@@ -114,12 +114,18 @@ for (const locale of LOCALES) GROUPS.push({ variant: 'text-2x', fontSize: '32px'
 // Q002/Q003: sheets, sub-pages and deep sections that a screen's first view
 // does not show: the Labs add sheet, "More from the report", "Same test over
 // time" (F004-S4), Settings palettes, app lock and About Human OS (U032), and
-// the restore-from-file entry of Today's "Your data" card. At 320x640 (1× and
+// the restore-from-file entry of Today's "Your data" card; Q004 (after
+// U036–U038): the lab sheet with a field's "What to type here" open, the
+// dose sheet a Medications card's "I took it" opens, and a Timeline record's
+// sheet with its Details open. At 320x640 (1× and
 // 2× text) and on the desktop, in both languages.
 const EXTRA_IDS = [
   'Labs: add sheet',
+  'Labs: field details',
   'Labs: more from the report',
   'Labs: same test over time',
+  'Medications: I took it',
+  'Timeline: record details',
   'Settings: palettes',
   'Settings: app lock',
   'Settings: about',
@@ -143,6 +149,10 @@ const X_TEXT = {
     lockControls: /^(Off|\d+ min|Lock when the app is hidden)/,
     about: 'About Human OS', aboutBuild: 'This build', aboutCaps: 'Capabilities on this device',
     restore: 'Restore from a backup file', noFile: 'No file chosen. Nothing was changed.',
+    fieldDetailsAnalyte: /^What to type here: Test name as printed/,
+    labAnalyteDetails: 'Similar names are kept apart: Human OS never guesses that two different names are the same test.',
+    medsAdd: 'Add a medicine or supplement', medsName: /^Name \(as on the pack\)/, medsTookIt: 'I took it', medsDose: 'Record a dose',
+    versions: 'Versions', detailsToggle: /^Details: HbA1c$/, enteredOn: 'entered',
   },
   'tr-TR': {
     labAdd: 'Sonuç ekle', labAddTitle: 'Rapordan sonuç ekle', labMore: 'Rapordaki diğer bilgiler',
@@ -155,6 +165,10 @@ const X_TEXT = {
     lockControls: /^(Kapalı|\d+ dk|Uygulama gizlenince kilitle)/,
     about: 'Human OS hakkında', aboutBuild: 'Bu sürüm', aboutCaps: 'Bu cihazda neler çalışıyor',
     restore: 'Bir yedek dosyasından geri yükle', noFile: 'Dosya seçilmedi. Hiçbir şey değişmedi.',
+    fieldDetailsAnalyte: /^Ne yazılır\?: Raporda yazan test adı/,
+    labAnalyteDetails: 'Benzer adlar ayrı tutulur: Human OS farklı iki adın aynı test olduğunu tahmin etmez.',
+    medsAdd: 'İlaç ya da takviye ekle', medsName: /^Adı \(kutudaki gibi\)/, medsTookIt: 'Aldım', medsDose: 'Doz kaydet',
+    versions: 'Sürümler', detailsToggle: /^Ayrıntılar: HbA1c$/, enteredOn: 'kayıt zamanı:',
   },
 };
 
@@ -169,6 +183,8 @@ const log = (...a) => { if (process.env.MATRIX_VERBOSE) console.log(new Date().t
 const MIN_TARGET = 44;
 const TARGET_ROLES = ['button', 'link', 'tab', 'checkbox', 'switch', 'radio', 'menuitem', 'slider', 'option'];
 const NAMED_ROLES = ['button', 'link', 'tab'];
+// Flutter's MaterialLocalizations.scrimLabel (en, tr): the modal barrier.
+const SCRIM = /^(Scrim|opaklık katmanı)$/i;
 
 // ---- one pass over every group -----------------------------------------------
 const browser = await chromium.launch(process.env.CHROME_EXECUTABLE ? { executablePath: process.env.CHROME_EXECUTABLE } : {});
@@ -243,12 +259,20 @@ async function runPass(root, mode) {
     if ((await skip.count()) > 0) await skip.click().catch(() => {});
 
     const navItem = (name) => page.getByRole('tab', { name, exact: true }).or(page.getByRole('button', { name: new RegExp(`^${esc(name)}( |$)`) })).first();
-    // After a palette change Chromium reports an empty full-window
-    // semantics node (pointer-events: auto) above the page, so Playwright's
-    // actionability check refuses the click; Flutter hit-tests by position
-    // (the event still reaches the flutter-view), so a positional click is
-    // what a person's tap does.
+    // After a palette change (and on desktop Settings since U038) Chromium
+    // reports an empty full-window semantics node (pointer-events: auto)
+    // above the page, so Playwright's actionability check refuses the
+    // click. Retrying makes Playwright scroll the element into view through
+    // the DOM, which moves Flutter's scrollables (a page jump and a shifted
+    // palette row were seen, Q004) so a later click lands on another
+    // control. Flutter hit-tests by position, so a control already on
+    // screen is clicked at its centre, as a person's tap or click is.
     const tap = async (locator, timeout = 10_000) => {
+      const b = await locator.boundingBox({ timeout: 3_000 }).catch(() => null);
+      if (b && b.y >= 0 && b.y + b.height <= vp.height && b.x >= 0 && b.x + b.width <= vp.width) {
+        await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+        return;
+      }
       try {
         await locator.click({ timeout: 3_000 });
       } catch {
@@ -321,10 +345,18 @@ async function runPass(root, mode) {
       await page.mouse.move(vp.width - 4, vp.height / 2).catch(() => {});
       await page.waitForTimeout(700);
     };
+    // Pushed pages (Settings, About, a lab group) scroll only inside their
+    // centred reading column (U036, at most 840 dp wide): wheel just left of
+    // the leftmost heading below the top bar, i.e. in the column's padding.
+    const columnX = async () => {
+      const xs = await page.evaluate(() => [...document.querySelectorAll('flt-semantics-host [role="heading"], flt-semantics-host h1, flt-semantics-host h2, flt-semantics-host h3, flt-semantics-host h4, flt-semantics-host h5, flt-semantics-host h6')]
+        .map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.top >= 64 && r.top < window.innerHeight).map((r) => r.left)).catch(() => []);
+      return xs.length ? Math.max(2, Math.min(...xs) - 8) : 6;
+    };
     // Wheel over the list padding: left of the heading (inside the content
     // column on every layout), or the page's left gutter on Settings.
     const wheelX = async (id) => {
-      if (names[id].kind === 'settings') return 6;
+      if (names[id].kind === 'settings') return columnX();
       const b = await H(names[id].heading).boundingBox().catch(() => null);
       return b ? Math.max(2, b.x - 8) : 6;
     };
@@ -423,7 +455,8 @@ async function runPass(root, mode) {
       'Labs: same test over time': {
         label: T.labGroupEvery,
         target: () => xh(T.labGroupEvery),
-        x: () => 6,
+        x: () => null,
+        col: true,
         go: async () => {
           await open('Labs');
           // Previous Labs cells may have scrolled the lazy list past its heading.
@@ -445,27 +478,112 @@ async function runPass(root, mode) {
           await page.waitForTimeout(600);
         },
       },
+      'Labs: field details': {
+        label: T.labAnalyteDetails,
+        target: () => page.getByText(T.labAnalyteDetails, { exact: true }).or(page.getByLabel(T.labAnalyteDetails, { exact: true })).first(),
+        sheet: true,
+        x: () => sheetX,
+        go: async () => {
+          if (!sheetOpen) await EXTRA['Labs: add sheet'].go();
+          const t = page.getByRole('button', { name: T.fieldDetailsAnalyte }).first();
+          await reveal(t, sheetX, true);
+          if ((await t.getAttribute('aria-expanded').catch(() => null)) !== 'true') await tap(t);
+          await page.waitForTimeout(700);
+        },
+      },
+      'Medications: I took it': {
+        label: T.medsDose,
+        target: () => xh(T.medsDose),
+        sheet: true,
+        x: () => sheetX,
+        go: async () => {
+          await open('Medications');
+          await H(names.Medications.heading).waitFor({ timeout: 15_000 });
+          const mx = await wheelX('Medications');
+          const took = page.getByRole('button', { name: T.medsTookIt, exact: true }).first();
+          if ((await took.count()) === 0) {
+            const add = page.getByRole('button', { name: T.medsAdd, exact: true }).first();
+            await reveal(add, mx);
+            await tap(add);
+            sheetOpen = true;
+            await xh(T.medsAdd).waitFor({ timeout: 15_000 });
+            await page.waitForTimeout(500);
+            const b = await xh(T.medsAdd).boundingBox({ timeout: 2_000 }).catch(() => null);
+            sheetX = b ? Math.max(2, b.x - 8) : 6;
+            await fillInSheet(T.medsName, 'Vitamin D');
+            const save = page.getByRole('button', { name: T.save, exact: true }).first();
+            await reveal(save, sheetX, true);
+            await tap(save);
+            await xh(T.medsAdd).waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {});
+            sheetOpen = false;
+            await page.waitForTimeout(600);
+          }
+          await reveal(took, mx);
+          await tap(took);
+          sheetOpen = true;
+          await xh(T.medsDose).waitFor({ timeout: 15_000 });
+          await page.waitForTimeout(600);
+          const b = await xh(T.medsDose).boundingBox({ timeout: 2_000 }).catch(() => null);
+          sheetX = b ? Math.max(2, b.x - 8) : 6;
+        },
+      },
+      'Timeline: record details': {
+        label: `${T.enteredOn} …`,
+        target: () => page.getByText(new RegExp(`^${esc(T.enteredOn)} `)).first(),
+        sheet: true,
+        x: () => sheetX,
+        go: async () => {
+          await open('Timeline');
+          await H(names.Timeline.heading).waitFor({ timeout: 15_000 });
+          let tx = await wheelX('Timeline');
+          // The row is one button whose name starts with the test and value.
+          const row = page.getByRole('button', { name: /^HbA1c\s+\d/ }).first();
+          if (!(await reveal(row, tx))) {
+            // No lab result yet in this page: add one (as a person would).
+            await open('Labs');
+            await H(names.Labs.heading).waitFor({ timeout: 15_000 });
+            await addLab('HbA1c', '5,4', '%', '2025-01-10');
+            await open('Timeline');
+            await H(names.Timeline.heading).waitFor({ timeout: 15_000 });
+            tx = await wheelX('Timeline');
+            await reveal(row, tx);
+          }
+          await tap(row);
+          sheetOpen = true;
+          await xh(T.versions).waitFor({ timeout: 15_000 });
+          await page.waitForTimeout(500);
+          const b = await xh(T.versions).boundingBox({ timeout: 2_000 }).catch(() => null);
+          sheetX = b ? Math.max(2, b.x - 8) : 6;
+          const t = page.getByRole('button', { name: T.detailsToggle }).first();
+          await reveal(t, sheetX, true);
+          if ((await t.getAttribute('aria-expanded').catch(() => null)) !== 'true') await tap(t);
+          await page.waitForTimeout(700);
+        },
+      },
       'Settings: palettes': {
         label: T.palette,
         target: () => xh(T.palette),
-        x: () => 6,
+        x: () => null,
+        col: true,
         go: async () => { await open('Settings'); await H(names.Settings.heading).waitFor({ timeout: 15_000 }); },
       },
       'Settings: app lock': {
         label: T.lock,
         target: () => xh(T.lock),
-        x: () => 6,
+        x: () => null,
+        col: true,
         go: async () => { await open('Settings'); await H(names.Settings.heading).waitFor({ timeout: 15_000 }); },
       },
       'Settings: about': {
         label: T.aboutBuild,
         target: () => xh(T.aboutBuild),
-        x: () => 6,
+        x: () => null,
+        col: true,
         go: async () => {
           await open('Settings');
           await H(names.Settings.heading).waitFor({ timeout: 15_000 });
           const row = page.getByRole('button', { name: new RegExp(`^${esc(T.about)}`) }).or(page.getByText(T.about, { exact: true })).first();
-          await reveal(row, 6);
+          await reveal(row, await columnX());
           await tap(row);
           pushed = 2;
           await xh(T.about).waitFor({ timeout: 15_000 });
@@ -490,7 +608,7 @@ async function runPass(root, mode) {
         for (let i = 0; i < 30; i++) {
           const b = await swatch.boundingBox().catch(() => null);
           if (b && b.y > 60 && b.y + b.height < vp.height - 10) break;
-          await page.mouse.move(6, vp.height / 2);
+          await page.mouse.move(await columnX(), vp.height / 2);
           await page.mouse.wheel(0, b ? Math.max(-400, Math.min(400, b.y - vp.height / 2)) : 300);
           await page.waitForTimeout(200);
         }
@@ -501,7 +619,7 @@ async function runPass(root, mode) {
         const note = page.getByText(new RegExp(`${g.palette} has its own light or dark look`)).or(page.getByLabel(new RegExp(`${g.palette} has its own light or dark look`)));
         await note.first().waitFor({ state: 'attached', timeout: 5_000 }).catch(() => {});
         paletteApplied = (await note.count()) > 0;
-        await toTop(6);
+        await toTop(await columnX());
       } catch (e) {
         log('palette', e.message.split('\n')[0]);
         paletteApplied = false;
@@ -526,7 +644,7 @@ async function runPass(root, mode) {
       try {
         if (ex) {
           await ex.go();
-          x = ex.x() ?? await wheelX('Today');
+          x = ex.x() ?? (ex.col ? await columnX() : await wheelX('Today'));
           if (ex.probe) { await toTop(x); probeHeight = (await ex.probe().boundingBox({ timeout: 2_000 }).catch(() => null))?.height ?? null; }
           reached = await reveal(ex.target(), x, !!ex.sheet);
           if (!reached) cell.navError = 'target not brought into view';
@@ -712,9 +830,14 @@ async function runPass(root, mode) {
           const unnamed = all.filter((n) => NAMED_ROLES.includes(n.role) && !n.name);
           set('controls_named', unnamed.length === 0 ? 'PASS' : 'FAIL', unnamed.length ? `unnamed ${unnamed.map((n) => `${n.role} at ${n.x},${n.y} ${n.w}x${n.h}`).slice(0, 8).join('; ')}` : `${all.filter((n) => NAMED_ROLES.includes(n.role)).length} buttons/links/tabs named`);
           if (vp.touch) {
-            const small = all.filter((n) => !n.disabled && (n.w < MIN_TARGET || n.h < MIN_TARGET));
+            // The modal barrier above a sheet (Flutter's "Scrim") is the
+            // strip of page left above a sheet, as tall as the sheet leaves
+            // it; it is not a control, and the sheet's own Cancel, drag
+            // handle and the system back close it (WCAG 2.5.8 equivalent).
+            const scrims = all.filter((n) => SCRIM.test(n.name));
+            const small = all.filter((n) => !n.disabled && !SCRIM.test(n.name) && (n.w < MIN_TARGET || n.h < MIN_TARGET));
             cell.smallTargets = small;
-            set('touch_targets', small.length === 0 ? 'PASS' : 'FAIL', small.length ? small.map((n) => `"${n.name.slice(0, 50) || '(no name)'}" ${n.role} ${n.w}x${n.h}`).slice(0, 12).join('; ') : `${all.length} targets >= ${MIN_TARGET}x${MIN_TARGET}`);
+            set('touch_targets', small.length === 0 ? 'PASS' : 'FAIL', small.length ? small.map((n) => `"${n.name.slice(0, 50) || '(no name)'}" ${n.role} ${n.w}x${n.h}`).slice(0, 12).join('; ') : `${all.length - scrims.length} targets >= ${MIN_TARGET}x${MIN_TARGET}${scrims.length ? ` (modal barrier not counted: ${scrims.map((n) => `${n.w}x${n.h}`).join(', ')})` : ''}`);
           } else {
             set('touch_targets', 'NOT_APPLICABLE', 'desktop pointer viewport');
           }
@@ -797,7 +920,7 @@ const meta = {
     no_failed_requests: 'no failed request and no HTTP status >= 400',
     no_horizontal_scroll: 'document scrollWidth <= viewport width at every scroll position',
     controls_named: 'every semantics button, link and tab has a non-empty accessible name',
-    touch_targets: `touch viewports: every enabled semantics button/link/tab/checkbox/switch/radio/slider or tappable node is >= ${MIN_TARGET}x${MIN_TARGET} CSS px (largest size seen while scrolling the whole screen)`,
+    touch_targets: `touch viewports: every enabled semantics button/link/tab/checkbox/switch/radio/slider or tappable node is >= ${MIN_TARGET}x${MIN_TARGET} CSS px (largest size seen while scrolling the whole screen); the modal barrier above a sheet ("Scrim") is not counted`,
     no_flutter_overflow: 'debug build of the same revision: the console has no "overflowed by N pixels" report while the screen is opened and scrolled',
     no_flutter_exceptions: 'debug build: no other Flutter framework exception report',
     lock_state_clear: 'Settings: app lock: in a build without an encrypted vault the reason text is shown and every lock control (minute chips, lock-when-hidden switch) is disabled',

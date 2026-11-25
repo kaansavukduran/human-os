@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · U042@v0.32 closed (Q005 findings: one heading per Today tools section, titles break only between words, matrix check for targets cut at a list end); 14 gates PASS at c12493a (EV-*-F007-1594…1607). Q005 closed before it.
+- CONFIRMED · 2026-11-25 · Q006@v0.32 closed (screen matrix after U042: 198/198 by script, 193/5 by eye; U042 confirmed); 14 gates PASS at 013eedd (EV-*-F007-1608…1621). U042 closed before it.
 
 ## Next step
-- PLANNED · Q006@v0.32: screen matrix after U042 (real screenshots of the Today headings and whole-word titles, fresh cache).
+- PLANNED · U043@v0.32: Q006 by-eye findings: labels and chips at 2× text wrap between words and are never cut (Settings measurement order, palette card, first-run language chip).
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

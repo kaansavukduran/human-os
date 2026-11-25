@@ -1,0 +1,64 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-TEST-F007-1615",
+  "kind": "TEST",
+  "forge_id": "Q006@v0.32",
+  "source_revision": "013eedd292410b52dea04c3c7d68fc69792eb720",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "env LANG=C.UTF-8 timeout 900 xvfb-run -a -s '-screen 0 1280x1024x24' flutter test integration_test -d linux",
+  "argv": [
+    "env",
+    "LANG=C.UTF-8",
+    "timeout",
+    "900",
+    "xvfb-run",
+    "-a",
+    "-s",
+    "-screen 0 1280x1024x24",
+    "flutter",
+    "test",
+    "integration_test",
+    "-d",
+    "linux"
+  ],
+  "cwd": "human_health_os",
+  "started_at": "2026-11-25T15:10:14.036Z",
+  "finished_at": "2026-11-25T15:11:15.977Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.4",
+    "python": "Python 3.13.18"
+  },
+  "host": "Linux 6.18.44-fc-v880 x86_64",
+  "summary": "00:41 +13: All tests passed!",
+  "log_sha256": "bb294e18d3ed417904a1e4076e146f3650aac1b8cf7eee54b05f4ae8e125044e",
+  "log_lines": 53,
+  "log_tail": [
+    "[hhos] vault_unlocked warnings=0",
+    "00:14 +9: F006 on real files: recovery replaces the passphrase; key loss keeps the locked vault aside; a portable vault lives in UserData/ and keeps its identity when the folder moves",
+    "00:15 +10: F007 on real files: measurements typed on Today and a correction survive a relaunch; weight stays schema 3; the first measurement keeps a backup of the earlier vault on disk",
+    "00:26 +11: F007 in a production encrypted vault: measurements leave no plaintext, the checkpoint backup is encrypted, and after a relaunch the gate unlocks to the same readings",
+    "[hhos] vault_unlocked warnings=0",
+    "00:28 +12: F005-S3 on real files: a development vault is backed up, an encrypted vault in another folder brings it in through the screens, a relaunch and unlock shows the records, and the vault file holds no plaintext marker",
+    "[hhos] vault_created warnings=0",
+    "[hhos] vault_unlocked warnings=0",
+    "[hhos] vault_unlocked warnings=0",
+    "[hhos] vault_unlocked warnings=0",
+    "00:40 +13: (tearDownAll)",
+    "00:41 +13: All tests passed!"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "human_health_os"
+  ]
+}

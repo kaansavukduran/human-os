@@ -15,6 +15,7 @@ import 'package:human_health_os/src/data/backup/backup_bundle.dart';
 import 'package:human_health_os/src/data/backup/data_files.dart';
 import 'package:human_health_os/src/data/local/log_repository.dart';
 import 'package:human_health_os/src/domain/ports/health_repository.dart';
+import 'package:human_health_os/src/l10n/strings.dart';
 
 const dev = AppConfig(
   profile: BuildProfile.development,
@@ -59,9 +60,10 @@ class FirstReadFails extends MemoryDataFiles {
 /// The last move of a restore fails (another program holds the file); the
 /// previous vault is back in place.
 class SwitchFails extends MemoryDataFiles {
-  SwitchFails([this.code = 'RESTORE_SWITCH_FAILED']);
+  SwitchFails([this.code = 'RESTORE_SWITCH_FAILED', this.detail = '']);
 
   final String code;
+  final String detail;
 
   @override
   Future<RestoreOutcome> restore(
@@ -71,7 +73,7 @@ class SwitchFails extends MemoryDataFiles {
   }) async {
     target.checkKind(staged);
     beforeSwitch?.call();
-    throw BackupError(code, '');
+    throw BackupError(code, detail);
   }
 }
 
@@ -449,6 +451,35 @@ void main() {
           .widget<FilledButton>(find.byKey(const ValueKey('create-backup')))
           .onPressed,
       isNull,
+    );
+  });
+
+  testWidgets('U040: a restore refused because a record was saved meanwhile '
+      'says a restore needs a vault with no records, never to try again '
+      '(EN, TR)', (tester) async {
+    final bundle = await backupMadeElsewhere(tester);
+    final files = SwitchFails('RESTORE_NOT_SWITCHED', vaultChangedBeforeSwitch)
+      ..files['backup/b.hhosbackup.json'] = bundle
+      ..times['backup/b.hhosbackup.json'] = DateTime.utc(2026, 10, 7);
+    await start(tester, sink: MemoryLogSink(), files: files);
+    await tapKey(tester, 'restore-b.hhosbackup.json');
+    await tapKey(tester, 'confirm-restore');
+    expect(
+      message(tester),
+      'The restore was not finished: a record was saved while it was being '
+      'prepared, and Human OS never replaces it. Nothing was changed on '
+      'disk. Saving stays paused until Human OS restarts. A backup can be '
+      'restored only into a vault that holds no records, and this vault now '
+      'holds one.',
+    );
+    expect(message(tester), isNot(contains('try again')));
+    expect(
+      const S(AppLang.tr)
+          .backupError('RESTORE_NOT_SWITCHED', vaultChangedBeforeSwitch),
+      'Geri yükleme tamamlanmadı: hazırlanırken bir kayıt kaydedildi ve '
+      'Human OS onun üzerine asla yazmaz. Diskte hiçbir şey değişmedi. Human '
+      'OS yeniden başlayana kadar kayıt durduruldu. Bir yedek yalnız kayıt '
+      'olmayan bir kasaya geri yüklenebilir; bu kasada artık bir kayıt var.',
     );
   });
 }

@@ -101,6 +101,7 @@ class _YourDataCardState extends State<YourDataCard> {
     S s, {
     String? busy,
     bool chosenFile = false,
+    bool importing = false,
   }) async {
     setState(() {
       _busy = true;
@@ -114,7 +115,7 @@ class _YourDataCardState extends State<YourDataCard> {
       _messageIsError = false;
       await _reload();
     } catch (e) {
-      _message = _describe(e, s, chosenFile: chosenFile);
+      _message = _describe(e, s, chosenFile: chosenFile, importing: importing);
       _messageIsError = true;
     } finally {
       if (mounted) {
@@ -129,11 +130,21 @@ class _YourDataCardState extends State<YourDataCard> {
   /// The reason in words; for a chosen file also the way out. Once a
   /// restore has stopped this session's writes (even one that then failed)
   /// another file cannot be tried: the way out is a reload in the browser
-  /// (R018), a restart elsewhere (said by the message itself).
-  String _describe(Object e, S s, {bool chosenFile = false}) {
+  /// (R018), a restart elsewhere (said by the message itself). [importing]:
+  /// records were being brought in, so the words name that, not a restore.
+  String _describe(
+    Object e,
+    S s, {
+    bool chosenFile = false,
+    bool importing = false,
+  }) {
     final inBrowser = _files?.restoresChosenFile ?? false;
     if (e is BackupError && inBrowser) {
-      final browser = s.browserRestoreFailed(e.code, e.message);
+      final browser = s.browserRestoreFailed(
+        e.code,
+        e.message,
+        importing: importing,
+      );
       if (browser != null) return browser;
     }
     final again = !chosenFile
@@ -145,7 +156,7 @@ class _YourDataCardState extends State<YourDataCard> {
         : '';
     return switch (e) {
       ImportError() => s.importError(e.code, e.detail) + again,
-      BackupError() => s.backupError(e.code, e.message) + again,
+      BackupError() => s.backupError(e.code, e.message, importing) + again,
       RecoveryKeyFormatError() => s.recoveryKeyFormat,
       // A read, write or rename failed outside the restore gate's checks;
       // nothing was switched (review finding: it used to say "storage").
@@ -797,6 +808,7 @@ class _YourDataCardState extends State<YourDataCard> {
       s,
       busy: s.busyImporting,
       chosenFile: true,
+      importing: true,
     );
   }
 

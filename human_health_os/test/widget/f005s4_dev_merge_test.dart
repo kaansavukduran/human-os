@@ -4,21 +4,24 @@
 // conflicts (blocking); a conflict, a file with nothing new and records of
 // another profile are refused in words, with one way out; nothing changes
 // before the confirmation. EN and TR, and 320 dp at 2x text.
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:human_health_os/src/application/heartbeat_service.dart';
 import 'package:human_health_os/src/data/backup/backup_bundle.dart';
+import 'package:human_health_os/src/data/backup/data_files.dart';
 import 'package:human_health_os/src/data/local/log_repository.dart';
 import 'package:human_health_os/src/data/local/vault_log.dart';
 import 'package:human_health_os/src/domain/ports/health_repository.dart';
 
 import 'f005s2_web_restore_test.dart' show FakePicker;
-import 'f005s3_dev_import_test.dart' show enabled, launch, reveal;
+import 'f005s3_dev_import_test.dart' show FilesOn, enabled, launch, reveal;
 import 'f006_vault_gate_test.dart'
     show
         Disk,
+        LinkedFiles,
         createThroughGate,
         latest,
         pass,
@@ -88,6 +91,27 @@ String competing(String log) {
   return lines.join('\n');
 }
 
+/// U040: data files whose switch is refused once [refuse] is on, as when
+/// a record was saved while the import was being prepared.
+class SwitchRefused extends LinkedFiles {
+  SwitchRefused(super.raw, super.sink);
+
+  static bool refuse = false;
+
+  @override
+  Future<RestoreOutcome> restore(
+    StagedRestore staged, {
+    required DateTime now,
+    FutureOr<void> Function()? beforeSwitch,
+  }) async {
+    if (!refuse) {
+      return super.restore(staged, now: now, beforeSwitch: beforeSwitch);
+    }
+    await beforeSwitch?.call();
+    throw const BackupError('RESTORE_NOT_SWITCHED', vaultChangedBeforeSwitch);
+  }
+}
+
 /// An encrypted vault holding the development records (brought in while
 /// empty), reopened and unlocked.
 Future<void> vaultWithDevRecords(
@@ -97,6 +121,7 @@ Future<void> vaultWithDevRecords(
   Locale? locale,
   Size size = const Size(1280, 2600),
   double textScale = 1,
+  FilesOn? files,
 }) async {
   await launch(tester, disk, picker);
   await createThroughGate(tester);
@@ -110,6 +135,7 @@ Future<void> vaultWithDevRecords(
     locale: locale,
     size: size,
     textScale: textScale,
+    files: files,
   );
   await type(tester, 'gate-passphrase', pass);
   await tapKey(tester, 'gate-unlock');
@@ -394,25 +420,27 @@ void main() {
             ? 'Yeni, eklenecek: 1\n'
                   'Bu kasada zaten var, atlanacak: 2\n'
                   'Bu kasadakinden farklı, engelliyor: 0\n'
-                  'Bu kasada başka türlü düzeltilmiş bir kaydı düzeltiyor, '
-                  'engelliyor: 1'
+                  'Bu kasada başka türlü düzeltilmiş ya da kaldırılmış bir '
+                  'kaydı düzeltiyor ya da kaldırıyor, engelliyor: 1'
             : 'New, to be added: 1\n'
                   'Already in this vault, skipped: 2\n'
                   'Different from the record in this vault, blocking: 0\n'
-                  'Correcting a record this vault corrected another way, '
-                  'blocking: 1',
+                  'Correcting or removing a record this vault corrected or '
+                  'removed another way, blocking: 1',
       );
       final reason = tr
-          ? 'Bu kasada başka türlü düzeltilmiş bir kaydı dosyada da düzelten '
-                'kayıt sayısı: 1. Human OS bir kaydın iki düzeltmesi arasında '
-                'asla seçim yapmaz; bu yüzden hiçbir şey getirilmez. Tek bir '
-                'düzeltmeyi tek yerde tut, yeni bir yedek ya da dışa aktarım '
-                'al ve yeniden dene. Hiçbir şey değişmedi.'
-          : 'Records in the file that correct a record this vault already '
-                'corrected another way: 1. Human OS never chooses between two '
-                'corrections of one record, so nothing is brought in. Keep '
-                'one correction, in one place, make a new backup or export, '
-                'and try again. Nothing was changed.';
+          ? 'Bu kasada başka türlü düzeltilmiş ya da kaldırılmış bir kaydı '
+                'dosyada da düzelten ya da kaldıran kayıt sayısı: 1. Human OS '
+                'bir kayda yapılan iki değişiklik arasında asla seçim yapmaz; '
+                'bu yüzden hiçbir şey getirilmez. Kayıtlar hiç silinmez; bu '
+                'yüzden bu dosya buraya getirilemez. Bundan sonra kayıtları '
+                'yalnız tek bir yerden getir. Hiçbir şey değişmedi.'
+          : 'Records in the file that correct or remove a record this vault '
+                'already corrected or removed another way: 1. Human OS never '
+                'chooses between two changes to one record, so nothing is '
+                'brought in. Records are never deleted, so this file cannot '
+                'come in here. From now on, bring in records from only one '
+                'place. Nothing was changed.';
       expect(textOf(tester, 'import-stop-text'), reason);
       expect(find.byKey(const ValueKey('confirm-import')), findsNothing);
       expect(find.byKey(const ValueKey('import-understand')), findsNothing);
@@ -420,6 +448,55 @@ void main() {
       await tapKey(tester, 'close-import');
       expect(tester.takeException(), isNull);
       expect(textOf(tester, 'data-message'), reason);
+      expect(disk.raw.text, before);
+    });
+  }
+  for (final tr in [false, true]) {
+    testWidgets('U040 (${tr ? 'TR' : 'EN'}, 320 dp at 2x text): an import '
+        'whose switch is refused because a record was saved meanwhile says '
+        'the records were not brought in (not "restore"), with no advice to '
+        'try again; nothing written', (tester) async {
+      final dev = (await tester.runAsync(DevBuild.start))!;
+      final picker = FakePicker((await tester.runAsync(dev.backup))!);
+      final disk = Disk();
+      SwitchRefused.refuse = false;
+      addTearDown(() => SwitchRefused.refuse = false);
+      await vaultWithDevRecords(
+        tester,
+        disk,
+        picker,
+        locale: tr ? const Locale('tr') : const Locale('en'),
+        size: const Size(320, 4000),
+        textScale: 2,
+        files: SwitchRefused.new,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.runAsync(
+        () => dev.svc.recordWeightKg(profileId: dev.me, input: '79,9'),
+      );
+      picker.text = (await tester.runAsync(dev.backup))!;
+      final before = disk.raw.text;
+      SwitchRefused.refuse = true;
+      await reveal(tester, 'import-development');
+      await tapKey(tester, 'import-development');
+      await tapKey(tester, 'import-understand');
+      await tapKey(tester, 'confirm-import');
+      expect(tester.takeException(), isNull);
+      final message = textOf(tester, 'data-message');
+      expect(
+        message,
+        tr
+            ? 'Kayıtlar getirilmedi: hazırlanırken bir kayıt kaydedildi ve '
+                  'Human OS onun üzerine asla yazmaz. Diskte hiçbir şey '
+                  'değişmedi. Human OS yeniden başlayana kadar kayıt '
+                  'durduruldu.'
+            : 'The records were not brought in: a record was saved while '
+                  'they were being prepared, and Human OS never replaces it. '
+                  'Nothing was changed on disk. Saving stays paused until '
+                  'Human OS restarts.',
+      );
+      expect(message, isNot(contains(tr ? 'Geri yükleme' : 'restore')));
+      expect(message, isNot(contains(tr ? 'yeniden dene' : 'try again')));
       expect(disk.raw.text, before);
     });
   }

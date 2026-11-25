@@ -14,6 +14,7 @@ import 'package:human_health_os/src/data/backup/backup_bundle.dart';
 import 'package:human_health_os/src/data/backup/data_files.dart';
 import 'package:human_health_os/src/data/local/encrypted_vault.dart';
 import 'package:human_health_os/src/data/local/log_repository.dart';
+import 'package:human_health_os/src/data/local/vault_envelope.dart';
 import 'package:human_health_os/src/domain/ports/health_repository.dart';
 import 'package:human_health_os/src/domain/ports/storage_status.dart';
 
@@ -69,12 +70,23 @@ Future<String> devBackup() async {
   );
 }
 
-Future<VaultGate> gateWith(Disk disk, FakePicker picker) async {
+/// The data files of an unlocked vault on [raw]; [LinkedFiles] unless a
+/// test swaps them (U040: a switch that is refused).
+typedef FilesOn = MemoryDataFiles Function(
+  MemoryLogSink raw,
+  EncryptedLogSink sink,
+);
+
+Future<VaultGate> gateWith(
+  Disk disk,
+  FakePicker picker, {
+  FilesOn? files,
+}) async {
   final vault = EncryptedVault(
     raw: disk.raw,
     location: 'test vault',
     newKdf: cheap,
-    filesFor: (sink) => LinkedFiles(disk.raw, sink),
+    filesFor: (sink) => (files ?? LinkedFiles.new)(disk.raw, sink),
   );
   return VaultGate(
     vault: vault,
@@ -103,6 +115,7 @@ Future<void> launch(
   Locale? locale,
   Size size = const Size(1280, 2600),
   double textScale = 1,
+  FilesOn? files,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
@@ -113,7 +126,9 @@ Future<void> launch(
     tester.platformDispatcher.localesTestValue = [locale];
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   }
-  final gate = await tester.runAsync(() => gateWith(disk, picker));
+  final gate = await tester.runAsync(
+    () => gateWith(disk, picker, files: files),
+  );
   await tester.pumpWidget(HumanOsApp(gate: gate));
   await settle(tester);
 }

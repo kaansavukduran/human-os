@@ -2631,8 +2631,8 @@ class S {
       (competing == 0
           ? ''
           : _t(
-              '\nCorrecting a record this vault corrected another way, blocking: $competing',
-              '\nBu kasada başka türlü düzeltilmiş bir kaydı düzeltiyor, engelliyor: $competing',
+              '\nCorrecting or removing a record this vault corrected or removed another way, blocking: $competing',
+              '\nBu kasada başka türlü düzeltilmiş ya da kaldırılmış bir kaydı düzeltiyor ya da kaldırıyor, engelliyor: $competing',
             ));
 
   /// Why the preview stops (R026): records with the same identity but other
@@ -2641,15 +2641,15 @@ class S {
   String importBlocked({required int conflicts, required int competing}) {
     if (competing == 0) return importConflict(conflicts);
     final compete = _t(
-      'Records in the file that correct a record this vault already corrected another way: $competing.',
-      'Bu kasada başka türlü düzeltilmiş bir kaydı dosyada da düzelten kayıt sayısı: $competing.',
+      'Records in the file that correct or remove a record this vault already corrected or removed another way: $competing.',
+      'Bu kasada başka türlü düzeltilmiş ya da kaldırılmış bir kaydı dosyada da düzelten ya da kaldıran kayıt sayısı: $competing.',
     );
     if (conflicts == 0) {
-      return '$compete ${_t('Human OS never chooses between two corrections of one record, so nothing is brought in. Keep one correction, in one place, make a new backup or export, and try again. Nothing was changed.', 'Human OS bir kaydın iki düzeltmesi arasında asla seçim yapmaz; bu yüzden hiçbir şey getirilmez. Tek bir düzeltmeyi tek yerde tut, yeni bir yedek ya da dışa aktarım al ve yeniden dene. Hiçbir şey değişmedi.')}';
+      return '$compete ${_t('Human OS never chooses between two changes to one record, so nothing is brought in. Records are never deleted, so this file cannot come in here. From now on, bring in records from only one place. Nothing was changed.', 'Human OS bir kayda yapılan iki değişiklik arasında asla seçim yapmaz; bu yüzden hiçbir şey getirilmez. Kayıtlar hiç silinmez; bu yüzden bu dosya buraya getirilemez. Bundan sonra kayıtları yalnız tek bir yerden getir. Hiçbir şey değişmedi.')}';
     }
     return _t(
-      'Records in the file with the same identity as a record in this vault but different content: $conflicts. $compete Human OS never overwrites a record and never chooses between two corrections, so nothing is brought in. Keep the version you want in one place (correct it there), make a new backup or export, and try again. Nothing was changed.',
-      'Dosyada bu kasadaki bir kayıtla aynı kimliğe ama farklı içeriğe sahip kayıt sayısı: $conflicts. $compete Human OS bir kaydın üzerine asla yazmaz ve iki düzeltme arasında asla seçim yapmaz; bu yüzden hiçbir şey getirilmez. İstediğin hâli tek yerde tut (orada düzelt), yeni bir yedek ya da dışa aktarım al ve yeniden dene. Hiçbir şey değişmedi.',
+      'Records in the file with the same identity as a record in this vault but different content: $conflicts. $compete Human OS never overwrites a record and never chooses between two changes to one record, so nothing is brought in. Records are never deleted, so this file cannot come in here. From now on, bring in records from only one place. Nothing was changed.',
+      'Dosyada bu kasadaki bir kayıtla aynı kimliğe ama farklı içeriğe sahip kayıt sayısı: $conflicts. $compete Human OS bir kaydın üzerine asla yazmaz ve bir kayda yapılan iki değişiklik arasında asla seçim yapmaz; bu yüzden hiçbir şey getirilmez. Kayıtlar hiç silinmez; bu yüzden bu dosya buraya getirilemez. Bundan sonra kayıtları yalnız tek bir yerden getir. Hiçbir şey değişmedi.',
     );
   }
 
@@ -2906,15 +2906,20 @@ class S {
 
   /// A restore in the browser that failed after this session stopped
   /// writing (R018): browser storage, not files, and a reload, not a
-  /// restart. Null for any other code.
-  String? browserRestoreFailed(String code, String? detail) => switch (code) {
+  /// restart. Null for any other code. [importing]: the records of a
+  /// development build were being brought in, not a backup restored (U040).
+  String? browserRestoreFailed(
+    String code,
+    String? detail, {
+    bool importing = false,
+  }) => switch (code) {
     'RESTORE_NOT_SWITCHED' when detail == 'VAULT_CHANGED' => _t(
-      'The restore was not finished: a record was saved while it was being prepared, and Human OS never replaces it. Nothing was changed in this browser\'s storage. Reload the page to go on; saving is paused until then.',
-      'Geri yükleme tamamlanmadı: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Bu tarayıcının deposunda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kayıt durduruldu.',
+      '${importing ? 'The records were not brought in: a record was saved while they were' : 'The restore was not finished: a record was saved while it was'} being prepared, and Human OS never replaces it. Nothing was changed in this browser\'s storage. Reload the page to go on; saving is paused until then.',
+      '${importing ? 'Kayıtlar getirilmedi' : 'Geri yükleme tamamlanmadı'}: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Bu tarayıcının deposunda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kayıt durduruldu.',
     ),
     'RESTORE_NOT_SWITCHED' => _t(
-      'The restore could not be finished: this browser\'s storage refused the write (it may be full). Nothing was changed in it. Reload the page to go on; saving is paused until then.',
-      'Geri yükleme tamamlanamadı: bu tarayıcının deposu yazmayı reddetti (dolu olabilir). Depoda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kayıt durduruldu.',
+      '${importing ? 'The records could not be brought in' : 'The restore could not be finished'}: this browser\'s storage refused the write (it may be full). Nothing was changed in it. Reload the page to go on; saving is paused until then.',
+      '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: bu tarayıcının deposu yazmayı reddetti (dolu olabilir). Depoda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kayıt durduruldu.',
     ),
     'RESTORE_SWITCH_FAILED' when detail == null || detail.isEmpty => _t(
       'The restore could not be finished: this browser\'s storage refused the restored copy (it may be full). The data that was here before is back in place. Reload the page before saving anything.',
@@ -2991,7 +2996,14 @@ class S {
               ' The previous data file was kept at $keptAt.',
               ' Önceki veri dosyası şurada saklandı: $keptAt.',
             ));
-  String backupError(String code, [String? detail]) => switch (code) {
+
+  /// [importing]: the records of a development build were being brought
+  /// in, not a backup restored; the words name that (U040).
+  String backupError(
+    String code, [
+    String? detail,
+    bool importing = false,
+  ]) => switch (code) {
     'DIGEST_MISMATCH' => _t(
       'This backup is damaged: its content does not match its checksum. Nothing was changed.',
       'Bu yedek bozuk: içeriği sağlama toplamıyla eşleşmiyor. Hiçbir şey değişmedi.',
@@ -3050,13 +3062,17 @@ class S {
       'This backup does not match its own description. Nothing was changed.',
       'Bu yedek kendi tanımıyla uyuşmuyor. Hiçbir şey değişmedi.',
     ),
+    'RESTORE_NOT_SWITCHED' when detail == 'VAULT_CHANGED' && importing => _t(
+      'The records were not brought in: a record was saved while they were being prepared, and Human OS never replaces it. Nothing was changed on disk. Saving stays paused until Human OS restarts.',
+      'Kayıtlar getirilmedi: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kayıt durduruldu.',
+    ),
     'RESTORE_NOT_SWITCHED' when detail == 'VAULT_CHANGED' => _t(
-      'The restore was not finished: a record was saved while it was being prepared, and Human OS never replaces it. Nothing was changed on disk. Saving stays paused until Human OS restarts; try again then.',
-      'Geri yükleme tamamlanmadı: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kayıt durduruldu; sonra yeniden dene.',
+      'The restore was not finished: a record was saved while it was being prepared, and Human OS never replaces it. Nothing was changed on disk. Saving stays paused until Human OS restarts. A backup can be restored only into a vault that holds no records, and this vault now holds one.',
+      'Geri yükleme tamamlanmadı: hazırlanırken bir kayıt kaydedildi ve Human OS onun üzerine asla yazmaz. Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kayıt durduruldu. Bir yedek yalnız kayıt olmayan bir kasaya geri yüklenebilir; bu kasada artık bir kayıt var.',
     ),
     'RESTORE_NOT_SWITCHED' => _t(
-      'The restore could not be finished: the data files could not be moved (another program may be using them). Nothing was changed on disk. Saving stays paused until Human OS restarts.',
-      'Geri yükleme tamamlanamadı: veri dosyaları taşınamadı (başka bir program kullanıyor olabilir). Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kayıt durduruldu.',
+      '${importing ? 'The records could not be brought in' : 'The restore could not be finished'}: the data files could not be moved (another program may be using them). Nothing was changed on disk. Saving stays paused until Human OS restarts.',
+      '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: veri dosyaları taşınamadı (başka bir program kullanıyor olabilir). Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kayıt durduruldu.',
     ),
     'RESTORE_SWITCH_FAILED' when detail == null || detail.isEmpty => _t(
       'The restore could not be finished: the restored copy could not be moved into place. The previous data file is back where it was. Restart Human OS before saving anything.',

@@ -461,6 +461,13 @@ Future<ImportPlan> planImport(StagedImport imp, EncryptedLogSink sink) async {
       (correctedHere[target] ??= <String>{}).add(e.key);
     }
   }
+  // Every record id the file holds: a stored correction the file also
+  // holds is shared, never a competitor.
+  final fileIds = <String>{
+    for (final l in imp.lines)
+      if (l.startsWith('{"op":"record.append"'))
+        ((jsonDecode(l) as Map)['data']! as Map)['id']! as String,
+  };
   final newLines = <String>[];
   final conflicts = <String>[];
   final competing = <String>[];
@@ -476,9 +483,11 @@ Future<ImportPlan> planImport(StagedImport imp, EncryptedLogSink sink) async {
       // A new correction of a record this vault already corrected (or,
       // seen from the vault, a stored correction of a record the file also
       // corrects): two corrections would compete. Neither wins by import.
+      // A stored correction the file holds too is shared, not competing.
       final target = data['supersedes_id'];
       if (target is String &&
-          (correctedHere[target]?.any((c) => c != id) ?? false)) {
+          (correctedHere[target]?.any((c) => c != id && !fileIds.contains(c)) ??
+              false)) {
         competing.add(id);
       }
     } else if (here == jsonEncode(data)) {

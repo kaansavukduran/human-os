@@ -8,6 +8,7 @@ import '../../navigation/destinations.dart';
 import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/whole_chip.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 
 /// Documents (F010 slice 1): references to the documents the person keeps,
 /// each field as typed: a title, what kind of document it is, its own date,
@@ -130,22 +131,27 @@ class _DocumentSheetState extends State<_DocumentSheet> {
     }
   }
 
+  // The name is drawn above the field when it does not fit inside it
+  // (Q007: "Title, in your wo…" at 2× text, Turkish names at 1×).
   Widget _field(String key, String label, TextEditingController c, String f) =>
       Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: TextField(
-          key: ValueKey(key),
-          controller: c,
-          focusNode: _focus[f],
-          textCapitalization: TextCapitalization.sentences,
-          onChanged: (_) {
-            if (_error != null) setState(() => _error = _errorField = null);
-          },
-          decoration: InputDecoration(
-            labelText: label,
-            errorText: _errorField == f ? _error : null,
-            errorMaxLines: 4,
-            border: const OutlineInputBorder(),
+        child: WholeLabelField(
+          label: label,
+          field: (labelText) => TextField(
+            key: ValueKey(key),
+            controller: c,
+            focusNode: _focus[f],
+            textCapitalization: TextCapitalization.sentences,
+            onChanged: (_) {
+              if (_error != null) setState(() => _error = _errorField = null);
+            },
+            decoration: InputDecoration(
+              labelText: labelText,
+              errorText: _errorField == f ? _error : null,
+              errorMaxLines: 4,
+              border: const OutlineInputBorder(),
+            ),
           ),
         ),
       );

@@ -8,6 +8,7 @@ import '../../navigation/destinations.dart';
 import '../../presentation/widgets/record_area_screen.dart';
 import '../../presentation/widgets/sheet_parts.dart';
 import '../../presentation/widgets/whole_chip.dart';
+import '../../presentation/widgets/whole_label_field.dart';
 
 /// Preventive items (F009 slice 2): vaccinations, screenings and check-ups
 /// as the person names them, done, planned or unsure, with who they come
@@ -132,22 +133,27 @@ class _PreventiveSheetState extends State<_PreventiveSheet> {
     }
   }
 
+  // The name is drawn above the field when it does not fit inside it
+  // (Q007: "Title, in your wo…" at 2× text, Turkish names at 1×).
   Widget _field(String key, String label, TextEditingController c, String f) =>
       Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: TextField(
-          key: ValueKey(key),
-          controller: c,
-          focusNode: _focus[f],
-          textCapitalization: TextCapitalization.sentences,
-          onChanged: (_) {
-            if (_error != null) setState(() => _error = _errorField = null);
-          },
-          decoration: InputDecoration(
-            labelText: label,
-            errorText: _errorField == f ? _error : null,
-            errorMaxLines: 4,
-            border: const OutlineInputBorder(),
+        child: WholeLabelField(
+          label: label,
+          field: (labelText) => TextField(
+            key: ValueKey(key),
+            controller: c,
+            focusNode: _focus[f],
+            textCapitalization: TextCapitalization.sentences,
+            onChanged: (_) {
+              if (_error != null) setState(() => _error = _errorField = null);
+            },
+            decoration: InputDecoration(
+              labelText: labelText,
+              errorText: _errorField == f ? _error : null,
+              errorMaxLines: 4,
+              border: const OutlineInputBorder(),
+            ),
           ),
         ),
       );

@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · U040@v0.32 closed (import messages after the F005-S4 reviews); 14 gates PASS at f3afac6 (EV-*-F007-1538…1551). F005-S4 closed before it at beccb79.
+- CONFIRMED · 2026-11-25 · R027@v0.32 closed (import review polish); 14 gates PASS at cbad01f (EV-*-F007-1552…1565). F005-S4 and U040 closed before it.
 
 ## Next step
-- PLANNED · R027@v0.32: import review polish (a file's own live fork blocks; wording; running).
+- PLANNED · U041@v0.32: first-time user audit (empty states, verbs, TR, wrapping titles; running).
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

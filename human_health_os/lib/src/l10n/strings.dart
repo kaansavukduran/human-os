@@ -2922,12 +2922,12 @@ class S {
       '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: bu tarayıcının deposu yazmayı reddetti (dolu olabilir). Depoda hiçbir şey değişmedi. Devam etmek için sayfayı yenile; o zamana kadar kayıt durduruldu.',
     ),
     'RESTORE_SWITCH_FAILED' when detail == null || detail.isEmpty => _t(
-      'The restore could not be finished: this browser\'s storage refused the restored copy (it may be full). The data that was here before is back in place. Reload the page before saving anything.',
-      'Geri yükleme tamamlanamadı: bu tarayıcının deposu geri yüklenen kopyayı kabul etmedi (dolu olabilir). Daha önce burada olan veriler yerinde. Bir şey kaydetmeden önce sayfayı yenile.',
+      '${importing ? 'The records could not be brought in: this browser\'s storage refused the updated copy' : 'The restore could not be finished: this browser\'s storage refused the restored copy'} (it may be full). The data that was here before is back in place. Reload the page before saving anything.',
+      '${importing ? 'Kayıtlar getirilemedi: bu tarayıcının deposu güncellenen kopyayı' : 'Geri yükleme tamamlanamadı: bu tarayıcının deposu geri yüklenen kopyayı'} kabul etmedi (dolu olabilir). Daha önce burada olan veriler yerinde. Bir şey kaydetmeden önce sayfayı yenile.',
     ),
     'RESTORE_SWITCH_FAILED' => _t(
-      'The restore could not be finished: this browser\'s storage refused the restored copy (it may be full). The data that was here before is kept in this browser\'s storage as "$detail". Nothing was deleted. Reload the page before saving anything.',
-      'Geri yükleme tamamlanamadı: bu tarayıcının deposu geri yüklenen kopyayı kabul etmedi (dolu olabilir). Daha önce burada olan veriler bu tarayıcının deposunda "$detail" olarak saklanıyor. Hiçbir şey silinmedi. Bir şey kaydetmeden önce sayfayı yenile.',
+      '${importing ? 'The records could not be brought in: this browser\'s storage refused the updated copy' : 'The restore could not be finished: this browser\'s storage refused the restored copy'} (it may be full). The data that was here before is kept in this browser\'s storage as "$detail". Nothing was deleted. Reload the page before saving anything.',
+      '${importing ? 'Kayıtlar getirilemedi: bu tarayıcının deposu güncellenen kopyayı' : 'Geri yükleme tamamlanamadı: bu tarayıcının deposu geri yüklenen kopyayı'} kabul etmedi (dolu olabilir). Daha önce burada olan veriler bu tarayıcının deposunda "$detail" olarak saklanıyor. Hiçbir şey silinmedi. Bir şey kaydetmeden önce sayfayı yenile.',
     ),
     _ => null,
   };
@@ -3075,12 +3075,12 @@ class S {
       '${importing ? 'Kayıtlar getirilemedi' : 'Geri yükleme tamamlanamadı'}: veri dosyaları taşınamadı (başka bir program kullanıyor olabilir). Diskte hiçbir şey değişmedi. Human OS yeniden başlayana kadar kayıt durduruldu.',
     ),
     'RESTORE_SWITCH_FAILED' when detail == null || detail.isEmpty => _t(
-      'The restore could not be finished: the restored copy could not be moved into place. The previous data file is back where it was. Restart Human OS before saving anything.',
-      'Geri yükleme tamamlanamadı: geri yüklenen kopya yerine taşınamadı. Önceki veri dosyası eski yerinde. Bir şey kaydetmeden önce uygulamayı yeniden başlat.',
+      '${importing ? 'The records could not be brought in: the updated data file' : 'The restore could not be finished: the restored copy'} could not be moved into place. The previous data file is back where it was. Restart Human OS before saving anything.',
+      '${importing ? 'Kayıtlar getirilemedi: güncellenen veri dosyası' : 'Geri yükleme tamamlanamadı: geri yüklenen kopya'} yerine taşınamadı. Önceki veri dosyası eski yerinde. Bir şey kaydetmeden önce uygulamayı yeniden başlat.',
     ),
     'RESTORE_SWITCH_FAILED' => _t(
-      'The restore could not be finished: the restored copy could not be moved into place, and the previous data file is now at $detail. Nothing was deleted. Restart Human OS before saving anything.',
-      'Geri yükleme tamamlanamadı: geri yüklenen kopya yerine taşınamadı; önceki veri dosyası şimdi şurada: $detail. Hiçbir şey silinmedi. Bir şey kaydetmeden önce uygulamayı yeniden başlat.',
+      '${importing ? 'The records could not be brought in: the updated data file' : 'The restore could not be finished: the restored copy'} could not be moved into place, and the previous data file is now at $detail. Nothing was deleted. Restart Human OS before saving anything.',
+      '${importing ? 'Kayıtlar getirilemedi: güncellenen veri dosyası' : 'Geri yükleme tamamlanamadı: geri yüklenen kopya'} yerine taşınamadı; önceki veri dosyası şimdi şurada: $detail. Hiçbir şey silinmedi. Bir şey kaydetmeden önce uygulamayı yeniden başlat.',
     ),
     'RESTORE_VERIFY_FAILED' => _t(
       'The restored copy did not read back identically. Nothing was changed.',

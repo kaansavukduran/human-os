@@ -15,6 +15,7 @@ import 'package:human_health_os/src/data/backup/data_files.dart';
 import 'package:human_health_os/src/data/local/log_repository.dart';
 import 'package:human_health_os/src/data/local/vault_log.dart';
 import 'package:human_health_os/src/domain/ports/health_repository.dart';
+import 'package:human_health_os/src/l10n/strings.dart';
 
 import 'f005s2_web_restore_test.dart' show FakePicker;
 import 'f005s3_dev_import_test.dart' show FilesOn, enabled, launch, reveal;
@@ -91,12 +92,13 @@ String competing(String log) {
   return lines.join('\n');
 }
 
-/// U040: data files whose switch is refused once [refuse] is on, as when
-/// a record was saved while the import was being prepared.
+/// U040: data files whose switch fails with [refusal] once it is set: a
+/// record saved while the import was being prepared, or a copy that could
+/// not be moved into place.
 class SwitchRefused extends LinkedFiles {
   SwitchRefused(super.raw, super.sink);
 
-  static bool refuse = false;
+  static BackupError? refusal;
 
   @override
   Future<RestoreOutcome> restore(
@@ -104,11 +106,12 @@ class SwitchRefused extends LinkedFiles {
     required DateTime now,
     FutureOr<void> Function()? beforeSwitch,
   }) async {
-    if (!refuse) {
+    final refused = refusal;
+    if (refused == null) {
       return super.restore(staged, now: now, beforeSwitch: beforeSwitch);
     }
     await beforeSwitch?.call();
-    throw const BackupError('RESTORE_NOT_SWITCHED', vaultChangedBeforeSwitch);
+    throw refused;
   }
 }
 
@@ -459,8 +462,8 @@ void main() {
       final dev = (await tester.runAsync(DevBuild.start))!;
       final picker = FakePicker((await tester.runAsync(dev.backup))!);
       final disk = Disk();
-      SwitchRefused.refuse = false;
-      addTearDown(() => SwitchRefused.refuse = false);
+      SwitchRefused.refusal = null;
+      addTearDown(() => SwitchRefused.refusal = null);
       await vaultWithDevRecords(
         tester,
         disk,
@@ -476,7 +479,10 @@ void main() {
       );
       picker.text = (await tester.runAsync(dev.backup))!;
       final before = disk.raw.text;
-      SwitchRefused.refuse = true;
+      SwitchRefused.refusal = const BackupError(
+        'RESTORE_NOT_SWITCHED',
+        vaultChangedBeforeSwitch,
+      );
       await reveal(tester, 'import-development');
       await tapKey(tester, 'import-development');
       await tapKey(tester, 'import-understand');
@@ -498,6 +504,76 @@ void main() {
       expect(message, isNot(contains(tr ? 'Geri yükleme' : 'restore')));
       expect(message, isNot(contains(tr ? 'yeniden dene' : 'try again')));
       expect(disk.raw.text, before);
+    });
+  }
+  for (final tr in [false, true]) {
+    testWidgets('U040 (${tr ? 'TR' : 'EN'}, 320 dp at 2x text): an import '
+        'whose updated copy could not be moved into place says the records '
+        'could not be brought in, never "restored copy"', (tester) async {
+      final dev = (await tester.runAsync(DevBuild.start))!;
+      final picker = FakePicker((await tester.runAsync(dev.backup))!);
+      final disk = Disk();
+      SwitchRefused.refusal = null;
+      addTearDown(() => SwitchRefused.refusal = null);
+      await vaultWithDevRecords(
+        tester,
+        disk,
+        picker,
+        locale: tr ? const Locale('tr') : const Locale('en'),
+        size: const Size(320, 4000),
+        textScale: 2,
+        files: SwitchRefused.new,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.runAsync(
+        () => dev.svc.recordWeightKg(profileId: dev.me, input: '79,9'),
+      );
+      picker.text = (await tester.runAsync(dev.backup))!;
+      SwitchRefused.refusal = const BackupError('RESTORE_SWITCH_FAILED', '');
+      await reveal(tester, 'import-development');
+      await tapKey(tester, 'import-development');
+      await tapKey(tester, 'import-understand');
+      await tapKey(tester, 'confirm-import');
+      expect(tester.takeException(), isNull);
+      final message = textOf(tester, 'data-message');
+      expect(
+        message,
+        tr
+            ? 'Kayıtlar getirilemedi: güncellenen veri dosyası yerine '
+                  'taşınamadı. Önceki veri dosyası eski yerinde. Bir şey '
+                  'kaydetmeden önce uygulamayı yeniden başlat.'
+            : 'The records could not be brought in: the updated data file '
+                  'could not be moved into place. The previous data file is '
+                  'back where it was. Restart Human OS before saving anything.',
+      );
+      // Every variant, on disk and in the browser, names the import.
+      final s = S(tr ? AppLang.tr : AppLang.en);
+      final variants = [
+        message,
+        s.backupError('RESTORE_SWITCH_FAILED', 'kept.copy', true),
+        s.browserRestoreFailed('RESTORE_SWITCH_FAILED', '', importing: true)!,
+        s.browserRestoreFailed(
+          'RESTORE_SWITCH_FAILED',
+          'kept.copy',
+          importing: true,
+        )!,
+      ];
+      for (final v in variants) {
+        expect(
+          v,
+          startsWith(
+            tr
+                ? 'Kayıtlar getirilemedi:'
+                : 'The records could not be brought in:',
+          ),
+        );
+        expect(
+          v,
+          isNot(contains(tr ? 'geri yüklenen kopya' : 'restored copy')),
+        );
+      }
+      expect(variants[1], contains('kept.copy'));
+      expect(variants[3], contains('"kept.copy"'));
     });
   }
 }

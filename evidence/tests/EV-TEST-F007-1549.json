@@ -1,0 +1,55 @@
+{
+  "receipt_schema": 2,
+  "evidence_id": "EV-TEST-F007-1549",
+  "kind": "TEST",
+  "forge_id": "U040@v0.32",
+  "source_revision": "f3afac6afea05bc897ee9c9bce0d9ac7d9ba2a98",
+  "working_tree_dirty": false,
+  "dirty_source_paths": [],
+  "command": "python3 tools/verify_contracts.py",
+  "argv": [
+    "python3",
+    "tools/verify_contracts.py"
+  ],
+  "cwd": ".",
+  "started_at": "2026-11-25T07:20:08.051Z",
+  "finished_at": "2026-11-25T07:20:09.380Z",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "result": "PASS",
+  "tool_versions": {
+    "flutter": "3.47.6",
+    "dart": "3.13.5",
+    "flutter_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+    "node": "v22.23.4",
+    "python": "Python 3.13.18"
+  },
+  "host": "Linux 6.18.44-fc-v880 x86_64",
+  "summary": "PASS     release_outputs_present       6 files",
+  "log_sha256": "681213d5ba7463b28303eabe9d3efdf8cbb2afda531dd696fbce23c60eda01d4",
+  "log_lines": 23,
+  "log_tail": [
+    "PASS     core_derived_vectors          19 vectors",
+    "PASS     lab_interpretation_vectors    19 vectors",
+    "PASS     nutrition_vectors             5 vectors (3 scale, 2 recipe)",
+    "PASS     medication_safety_vectors     10 vectors",
+    "PASS     preventive_vectors            20 vectors",
+    "PASS     golden_vectors(total)         73/73 vectors ran",
+    "PASS     three_language_parity         TS 73/73, Python 73/73, Dart receipt EV-TEST-F007-1548",
+    "PASS     sqlite_kernel_migrations      1 migration(s), FK on",
+    "NOT_RUN  postgres_runtime              PostgreSQL DDL/RLS not executed in this repository yet (AT-821)",
+    "PASS     golden_vector_id_uniqueness   73 unique IDs",
+    "PASS     v0.25_canonical_id_integrity  18 new IDs",
+    "PASS     release_outputs_present       6 files"
+  ],
+  "lockfile_sha256": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+  "lockfiles": {
+    "human_health_os/pubspec.lock": "7a2c5fb4d0a3c424b7848231bbf3c62214db8588e452cf5e30ec3210b0c77c69",
+    "pnpm-lock.yaml": "ba397984506f24683f99799a41b2bb013e79b93647676ca0e82de32318734454"
+  },
+  "covers": [
+    "tools/verify_contracts.py",
+    "contracts",
+    "packages/domain"
+  ]
+}

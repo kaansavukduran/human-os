@@ -25,7 +25,7 @@
       "AC-2 full suites, web smoke, Linux build and runtime pass"
     ],
     "completed_steps": [
-      "implementation 0c1b272"
+      "implementation 0c1b272 + review fixes 11c2e61 (R026)"
     ],
     "last_verified_gate": null,
     "next_action": "gates",

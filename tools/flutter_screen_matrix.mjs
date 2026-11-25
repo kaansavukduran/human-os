@@ -161,6 +161,63 @@ for (const locale of LOCALES) {
   GROUPS.push({ variant: 'u041', vp: 'desktop', locale, screens: U041_IDS, firstRun: true });
   GROUPS.push({ variant: 'u041-text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: U041_IDS, firstRun: true });
 }
+// Q007 (after U043): the sheets and pages with a WholeChip that the cells
+// above do not open (Settings, first run and the Labs add sheet already
+// have cells). Each cell opens its sheet or page, selects one chip and
+// checks that it is exposed as checked. Genetics (needs a DNA file) and
+// the Timeline correction sheet (needs a saved glucose record) are not
+// reached. At 320x640 (1× and 2× text, and 2× text in the light theme)
+// and on the desktop, in both languages; dark is the default theme.
+const U043_IDS = [
+  'Today: sleep sheet',
+  'Today: feeling sheet',
+  'Nutrition: add sheet',
+  'Conditions: add sheet',
+  'Preventive: add sheet',
+  'Documents: add sheet',
+  'Medications: add sheet',
+  'Trend: weight',
+  'Learn: body guide',
+  // Last: the measurement sheet is closed with its Cancel, not Escape.
+  'Today: glucose sheet',
+];
+for (const locale of LOCALES) {
+  GROUPS.push({ variant: 'u043', vp: 'small-phone', locale, screens: U043_IDS });
+  GROUPS.push({ variant: 'u043', vp: 'desktop', locale, screens: U043_IDS });
+  GROUPS.push({ variant: 'u043-text-2x', fontSize: '32px', vp: 'small-phone', locale, screens: U043_IDS });
+  GROUPS.push({ variant: 'u043-light-2x', theme: 'light', fontSize: '32px', vp: 'small-phone', locale, screens: U043_IDS });
+}
+// The words the U043 cells look for (lib/src/l10n/strings.dart).
+const U_TEXT = {
+  'en-US': {
+    light: 'Light',
+    sleepAdd: 'Add a night', sleepChip: 'Rested',
+    feelOpen: 'Record how you feel', feelChip: 'Stress: overwhelmed',
+    foodAdd: 'Add food or drink', foodChip: 'not stated on the label',
+    condAdd: 'Add a condition or symptom', condChip: 'what a clinician told me',
+    prevAdd: 'Add an item', prevChip: 'planned',
+    docAdd: 'Add a document', docChip: 'letter from a doctor',
+    medsChip: 'Medicine',
+    seeOverTime: 'See over time', trendChip: '1 year',
+    guide: 'Body and specialties', guideSystem: 'Heart and blood vessels', guideParts: 'Main parts',
+    moreMeasures: /^More measurements/, glucoseTile: /^Blood glucose \(finger-prick meter\)/,
+    glucoseUnit: 'millimoles per litre', glucoseTiming: 'After a meal',
+  },
+  'tr-TR': {
+    light: 'Açık',
+    sleepAdd: 'Gece ekle', sleepChip: 'Dinlenmiş',
+    feelOpen: 'Nasıl hissettiğini kaydet', feelChip: 'Stres: çok gergin',
+    foodAdd: 'Yiyecek ya da içecek ekle', foodChip: 'etikette belirtilmemiş',
+    condAdd: 'Durum ya da belirti ekle', condChip: 'bir hekimin bana söylediği',
+    prevAdd: 'Kayıt ekle', prevChip: 'planlandı',
+    docAdd: 'Belge ekle', docChip: 'doktor yazısı',
+    medsChip: 'İlaç',
+    seeOverTime: 'Zaman içinde gör', trendChip: '1 yıl',
+    guide: 'Vücut ve uzmanlık alanları', guideSystem: 'Kalp ve damarlar', guideParts: 'Ana parçalar',
+    moreMeasures: /^Diğer ölçümler/, glucoseTile: /^Kan şekeri \(parmaktan ölçüm\)/,
+    glucoseUnit: 'litrede milimol', glucoseTiming: 'Yemekten sonra',
+  },
+};
 // The words the extra cells look for (lib/src/l10n/strings.dart).
 const X_TEXT = {
   'en-US': {
@@ -876,6 +933,138 @@ async function runPass(root, mode) {
       },
     });
 
+    // Q007 (U043) cells: a sheet or page with chips; one chip is selected.
+    const U = U_TEXT[g.locale];
+    const chipLoc = (name) => page.getByRole('checkbox', { name, exact: true }).first();
+    // 2× text is judged on the area's heading, measured at the top before
+    // the sheet opens (a chip's height includes its fixed 8 dp margins).
+    let areaHeadingHeight = null;
+    const atArea = async (area) => {
+      await open(area);
+      await toTop(bodyLeft() + 6);
+      await H(names[area].heading).waitFor({ timeout: 15_000 });
+      areaHeadingHeight = (await H(names[area].heading).boundingBox().catch(() => null))?.height ?? null;
+    };
+    // Wheel in the sheet left of its chips (inside the sheet on the desktop).
+    const leftOfChips = async () => {
+      const xs = await page.evaluate(() => [...document.querySelectorAll('flt-semantics-host [role="checkbox"]')]
+        .map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0).map((r) => r.left)).catch(() => []);
+      return xs.length ? Math.max(2, Math.min(...xs) - 8) : 6;
+    };
+    const pickChip = async (name, x) => {
+      const chip = chipLoc(name);
+      await chip.waitFor({ state: 'attached', timeout: 15_000 });
+      await reveal(chip, x, true);
+      if ((await chip.getAttribute('aria-checked').catch(() => null)) !== 'true') await tap(chip);
+      await page.waitForTimeout(500);
+    };
+    const chipSheet = (area, addName, chipName) => ({
+      label: chipName,
+      target: () => chipLoc(chipName),
+      sheet: true,
+      chip: true,
+      x: () => sheetX,
+      probeHeight: () => areaHeadingHeight,
+      go: async () => {
+        await atArea(area);
+        const add = page.getByRole('button', { name: addName, exact: true }).first();
+        await reveal(add, await wheelX(area));
+        await tap(add);
+        sheetOpen = true;
+        await chipLoc(chipName).waitFor({ state: 'attached', timeout: 15_000 });
+        await page.waitForTimeout(600);
+        sheetX = await leftOfChips();
+        await pickChip(chipName, sheetX);
+      },
+    });
+    Object.assign(EXTRA, {
+      'Today: sleep sheet': chipSheet('Today', U.sleepAdd, U.sleepChip),
+      'Today: feeling sheet': chipSheet('Today', U.feelOpen, U.feelChip),
+      'Nutrition: add sheet': chipSheet('Nutrition', U.foodAdd, U.foodChip),
+      'Conditions: add sheet': chipSheet('Conditions', U.condAdd, U.condChip),
+      'Preventive: add sheet': chipSheet('Preventive', U.prevAdd, U.prevChip),
+      'Documents: add sheet': chipSheet('Documents', U.docAdd, U.docChip),
+      'Medications: add sheet': chipSheet('Medications', T.medsAdd, U.medsChip),
+      'Trend: weight': {
+        label: U.trendChip,
+        target: () => chipLoc(U.trendChip),
+        chip: true,
+        x: () => null,
+        col: true,
+        probeHeight: () => areaHeadingHeight,
+        go: async () => {
+          await atArea('Today');
+          const b = page.getByRole('button', { name: U.seeOverTime, exact: true }).first();
+          await reveal(b, await wheelX('Today'));
+          await tap(b);
+          pushed = 1;
+          await pickChip(U.trendChip, 6);
+        },
+      },
+      'Learn: body guide': {
+        label: U.guideParts,
+        target: () => xh(U.guideParts),
+        x: () => null,
+        col: true,
+        probeHeight: () => areaHeadingHeight,
+        go: async () => {
+          await atArea('Learn');
+          await pushTool('Learn', U.guide, U.guide);
+          const row = page.getByRole('button', { name: new RegExp(`^${esc(U.guideSystem)}`) }).first();
+          await reveal(row, await pageX());
+          await tap(row);
+          pushed = 2;
+          await xh(U.guideParts).waitFor({ state: 'attached', timeout: 15_000 });
+          await page.waitForTimeout(600);
+        },
+      },
+      'Today: glucose sheet': {
+        label: U.glucoseTiming,
+        target: () => chipLoc(U.glucoseTiming),
+        sheet: true,
+        chip: true,
+        x: () => sheetX,
+        probeHeight: () => areaHeadingHeight,
+        go: async () => {
+          await atArea('Today');
+          const tx = await wheelX('Today');
+          // The card shows four measurements until "More measurements".
+          const more = page.getByRole('button', { name: U.moreMeasures }).first();
+          if (await reveal(more, tx)) {
+            await tap(more);
+            await page.waitForTimeout(600);
+          }
+          const tile = page.getByRole('button', { name: U.glucoseTile }).first();
+          await reveal(tile, tx);
+          await tap(tile);
+          sheetOpen = true;
+          await chipLoc(U.glucoseTiming).waitFor({ state: 'attached', timeout: 15_000 });
+          await page.waitForTimeout(600);
+          sheetX = await leftOfChips();
+          await pickChip(U.glucoseUnit, sheetX);
+          await pickChip(U.glucoseTiming, sheetX);
+        },
+      },
+    });
+
+    // The light-theme group chooses Light in Settings first (dark is the
+    // default).
+    let themeApplied = null;
+    if (g.theme === 'light') {
+      try {
+        await open('Settings');
+        const light = chipLoc(U.light);
+        await reveal(light, await pageX());
+        await tap(light);
+        await page.waitForTimeout(600);
+        themeApplied = (await light.getAttribute('aria-checked').catch(() => null)) === 'true';
+        await toTop(await pageX());
+      } catch (e) {
+        log('theme', e.message.split('\n')[0]);
+        themeApplied = false;
+      }
+    }
+
     // Palette groups set the palette through Settings first.
     let paletteApplied = null;
     if (g.palette) {
@@ -925,6 +1114,7 @@ async function runPass(root, mode) {
           await ex.go();
           x = ex.x() ?? (ex.firstRun ? await headX(ex.label) : ex.area ? await wheelX(ex.area) : ex.col ? await pageX() : await wheelX('Today'));
           if (ex.probe) { await toTop(x); probeHeight = (await ex.probe().boundingBox({ timeout: 2_000 }).catch(() => null))?.height ?? null; }
+          else if (ex.probeHeight) probeHeight = ex.probeHeight();
           // A title sits in the top bar (from y 0), like a sheet's content.
           reached = await reveal(ex.target(), x, !!ex.sheet || !!ex.title);
           if (!reached) cell.navError = 'target not brought into view';
@@ -951,11 +1141,18 @@ async function runPass(root, mode) {
         const what = `"${ex ? ex.label : names[id].heading}"`;
         set('heading_visible', reached && hb && hb.y >= 0 && hb.y + hb.height <= vp.height ? 'PASS' : 'FAIL', reached ? what : `${what} not shown${cell.navError ? `: ${cell.navError}` : ''}`);
         if (g.palette) set('palette_applied', paletteApplied ? 'PASS' : 'FAIL', `${g.palette} chosen in Settings`);
+        if (g.theme) set('theme_applied', themeApplied ? 'PASS' : 'FAIL', `${U.light} chosen in Settings`);
+        // U043: the chip the cell selected is exposed as checked (a selected
+        // WholeChip is a checkbox with aria-checked on the web).
+        if (ex?.chip) {
+          const ac = reached ? await ex.target().getAttribute('aria-checked', { timeout: 2_000 }).catch(() => null) : null;
+          set('chip_checked', ac === 'true' ? 'PASS' : 'FAIL', `checkbox "${ex.label}" aria-checked=${ac}`);
+        }
         // Compared later: 2× text must really reach the app. Settings' title
         // is in the top bar, whose text Flutter caps at about 1.34×, so the
         // first heading of its content is measured there.
         const probe = id === 'Settings' ? H(SETTINGS_FIRST_HEADING[g.locale]) : null;
-        cell.headingHeight = ex?.probe ? probeHeight : probe ? (await probe.boundingBox().catch(() => null))?.height ?? null : hb?.height ?? null;
+        cell.headingHeight = ex?.probe || ex?.probeHeight ? probeHeight : probe ? (await probe.boundingBox().catch(() => null))?.height ?? null : hb?.height ?? null;
         const shot = `${g.variant}_${g.vp}_${g.locale}_${id.replace(/[^A-Za-z]+/g, '-')}.png`;
         await page.screenshot({ path: join(out, shot) }).catch(() => {});
         cell.screenshot = shot;
@@ -1270,6 +1467,8 @@ const meta = {
     not_cut_at_list_end: 'U042: every target the script scrolled to ended at least 2 px above the bottom navigation bar (or the window bottom); one that stops moving at the end of its list with its bottom still under the bar is a finding (cut at list end), not in view',
     no_stacked_headings: 'Q005: no heading has another heading as the next visible text directly below it in the same column (less than 32 px between them, nothing in between)',
     no_english_on_tr: 'Q005, tr-TR cells: no accessible label or heading seen while sweeping the screen contains an English word from a fixed list (names shared by both languages allowed)',
+    theme_applied: 'U043 light groups only: Light was chosen in Settings and its chip reads as checked',
+    chip_checked: 'Q007 (U043) chip cells: the chip the cell selected is a semantics checkbox with aria-checked=true',
     title_whole: 'Q005: first run, Summary, Derived and how-to titles: the title box lies wholly inside the window at the top of the page',
     howto_no_numbers: 'Q005 (U041): the how-to has at least six task headings and no heading or label starts with a number',
     switch_help_read_with_switch: 'Q005 (U041): the Timeline "show deleted and withdrawn" switch is one control whose accessible name includes its help line',

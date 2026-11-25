@@ -75,6 +75,19 @@ String conflicting(String log) {
   return lines.join('\n');
 }
 
+/// R026: [log] with its last record (a correction) given another id, so
+/// the file corrects the same entry as the vault but with another record.
+String competing(String log) {
+  final lines = log.split('\n');
+  final i = lines.lastIndexWhere((l) => l.contains('"op":"record.append"'));
+  final data = ((jsonDecode(lines[i]) as Map)['data']! as Map)
+      .cast<String, Object?>();
+  expect(data['supersedes_id'], isNotNull);
+  data['id'] = 'b2f7c1c4-0000-4000-8000-00000000c0de';
+  lines[i] = encodeOp('record.append', data);
+  return lines.join('\n');
+}
+
 /// An encrypted vault holding the development records (brought in while
 /// empty), reopened and unlocked.
 Future<void> vaultWithDevRecords(
@@ -334,6 +347,80 @@ void main() {
               : 'New records added, encrypted in this vault: 1.',
         ),
       );
+    });
+  }
+
+  for (final tr in [false, true]) {
+    testWidgets('R026 (${tr ? 'TR' : 'EN'}, 320 dp at 2x text): a correction '
+        'that competes with one this vault already holds is counted and '
+        'blocks the import in words; one button; nothing written', (
+      tester,
+    ) async {
+      final dev = (await tester.runAsync(DevBuild.start))!;
+      // The development build corrects its correction once more; the vault
+      // receives that correction (brought in while empty).
+      await tester.runAsync(() async {
+        final head = (await dev.svc.currentWeights(dev.me)).single;
+        await dev.svc.correctWeightKg(
+          profileId: dev.me,
+          targetId: head.id,
+          input: '81,0',
+        );
+      });
+      final picker = FakePicker((await tester.runAsync(dev.backup))!);
+      final disk = Disk();
+      await vaultWithDevRecords(
+        tester,
+        disk,
+        picker,
+        locale: tr ? const Locale('tr') : const Locale('en'),
+        size: const Size(320, 4000),
+        textScale: 2,
+      );
+      expect(tester.takeException(), isNull);
+      // A file whose last correction is another record of the same entry.
+      picker.text = (await tester.runAsync(() => dev.backup(competing)))!;
+      final before = disk.raw.text;
+      await reveal(tester, 'import-development');
+      await tapKey(tester, 'import-development');
+      expect(tester.takeException(), isNull);
+      expect(
+        textOf(tester, 'import-preview-title'),
+        tr ? 'Bu kayıtlar getirilemez' : 'These records cannot be brought in',
+      );
+      expect(
+        textOf(tester, 'import-counts'),
+        tr
+            ? 'Yeni, eklenecek: 1\n'
+                  'Bu kasada zaten var, atlanacak: 2\n'
+                  'Bu kasadakinden farklı, engelliyor: 0\n'
+                  'Bu kasada başka türlü düzeltilmiş bir kaydı düzeltiyor, '
+                  'engelliyor: 1'
+            : 'New, to be added: 1\n'
+                  'Already in this vault, skipped: 2\n'
+                  'Different from the record in this vault, blocking: 0\n'
+                  'Correcting a record this vault corrected another way, '
+                  'blocking: 1',
+      );
+      final reason = tr
+          ? 'Bu kasada başka türlü düzeltilmiş bir kaydı dosyada da düzelten '
+                'kayıt sayısı: 1. Human OS bir kaydın iki düzeltmesi arasında '
+                'asla seçim yapmaz; bu yüzden hiçbir şey getirilmez. Tek bir '
+                'düzeltmeyi tek yerde tut, yeni bir yedek ya da dışa aktarım '
+                'al ve yeniden dene. Hiçbir şey değişmedi.'
+          : 'Records in the file that correct a record this vault already '
+                'corrected another way: 1. Human OS never chooses between two '
+                'corrections of one record, so nothing is brought in. Keep '
+                'one correction, in one place, make a new backup or export, '
+                'and try again. Nothing was changed.';
+      expect(textOf(tester, 'import-stop-text'), reason);
+      expect(find.byKey(const ValueKey('confirm-import')), findsNothing);
+      expect(find.byKey(const ValueKey('import-understand')), findsNothing);
+      expect(find.text(tr ? 'Kapat' : 'Close'), findsOneWidget);
+      await tapKey(tester, 'close-import');
+      expect(tester.takeException(), isNull);
+      expect(textOf(tester, 'data-message'), reason);
+      expect(disk.raw.text, before);
     });
   }
 }

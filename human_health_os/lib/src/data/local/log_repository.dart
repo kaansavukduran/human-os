@@ -113,6 +113,16 @@ class LogRepository implements HealthRepository {
   /// replaced by a restore: this session's memory no longer matches it).
   void lock(String code) => _lockedCode = code;
 
+  /// [lock], then waits for the writes already in flight (a save that
+  /// passed its writable check before the lock) to finish: once this
+  /// returns, nothing of this session writes to the store any more. Unlike
+  /// [close], what is in memory stays readable (R026: the restore and
+  /// import switch waits on this before the vault file is moved).
+  Future<void> lockAndDrain(String code) async {
+    _lockedCode ??= code;
+    await _recordWrites;
+  }
+
   /// True once [close] ran.
   bool get isClosed => _closed;
   bool _closed = false;

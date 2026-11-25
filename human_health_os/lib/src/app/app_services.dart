@@ -79,8 +79,10 @@ class AppServices {
   /// Opens encrypted backups (Argon2id; an isolate on native).
   final KeyDeriver deriveKey;
 
-  /// Stops all writes in this session with a code (after a restore).
-  final void Function(String code)? lockStorage;
+  /// Stops all writes in this session with a code (before a restore or an
+  /// import switches the vault file) and completes once the writes already
+  /// in flight have landed (R026).
+  final Future<void> Function(String code)? lockStorage;
 
   /// True once the vault file was replaced in this session: every screen
   /// must stop offering writes, backups and exports until a restart.

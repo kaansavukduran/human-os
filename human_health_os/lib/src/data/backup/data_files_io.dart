@@ -2,6 +2,7 @@
 /// vault (`backups/`, `exports/`), and the file steps of the restore gate.
 library;
 
+import 'dart:async' show FutureOr;
 import 'dart:io';
 
 import '../local/vault_log.dart' show decodeLogBytes;
@@ -101,7 +102,7 @@ class FileDataFiles implements DataFiles {
   Future<RestoreOutcome> restore(
     StagedRestore staged, {
     required DateTime now,
-    void Function()? beforeSwitch,
+    FutureOr<void> Function()? beforeSwitch,
   }) async {
     target.checkKind(staged);
     final liveBytes = await vault.exists() ? await vault.readAsBytes() : null;
@@ -118,8 +119,20 @@ class FileDataFiles implements DataFiles {
       rethrow;
     }
     // From here the file at the vault path changes: this session's memory
-    // no longer matches it, so it stops writing first (review finding).
-    beforeSwitch?.call();
+    // no longer matches it, so it stops writing first (review finding), and
+    // a save already past its writable check lands before anything else
+    // happens (R026).
+    try {
+      await beforeSwitch?.call();
+    } catch (_) {
+      await _deleteQuietly(restoring);
+      rethrow;
+    }
+    // A save that landed while the session stopped: nothing is switched.
+    if (!await _stillLive(liveBytes)) {
+      await _deleteQuietly(restoring);
+      throw const BackupError('RESTORE_NOT_SWITCHED', vaultChangedBeforeSwitch);
+    }
     // The vault's path is never empty (D-050): the previous vault is kept
     // by a copy (it stays where it is), then the restored copy replaces it
     // in one rename. A crash at any point leaves either the previous or the
@@ -128,12 +141,23 @@ class FileDataFiles implements DataFiles {
     if (liveBytes != null) {
       // An earlier kept copy is never overwritten: a name already taken
       // steps forward a second (two imports within one second, F005-S4).
+      // The name is claimed by an exclusive create, so a copy made at the
+      // same moment elsewhere is never overwritten either.
       var at = now;
-      while (await File('${vault.path}.before-restore-${fileStamp(at)}')
-          .exists()) {
-        at = at.add(const Duration(seconds: 1));
+      String aside;
+      while (true) {
+        aside = '${vault.path}.before-restore-${fileStamp(at)}';
+        try {
+          await File(aside).create(exclusive: true);
+          break;
+        } on FileSystemException {
+          if (!await File(aside).exists()) {
+            await _deleteQuietly(restoring);
+            throw const BackupError('RESTORE_NOT_SWITCHED', '');
+          }
+          at = at.add(const Duration(seconds: 1));
+        }
       }
-      final aside = '${vault.path}.before-restore-${fileStamp(at)}';
       try {
         await _copy(vault, aside);
         if (!_same(await File(aside).readAsBytes(), liveBytes)) {
@@ -146,6 +170,14 @@ class FileDataFiles implements DataFiles {
         // The previous vault never left its place.
         throw const BackupError('RESTORE_NOT_SWITCHED', '');
       }
+    }
+    // Read again right before the rename: a vault that is no longer what
+    // was checked (a record saved after the check) is never replaced. The
+    // staged copy and the kept copy are dropped; nothing was written.
+    if (!await _stillLive(liveBytes)) {
+      if (kept != null) await _deleteQuietly(File(kept));
+      await _deleteQuietly(restoring);
+      throw const BackupError('RESTORE_NOT_SWITCHED', vaultChangedBeforeSwitch);
     }
     try {
       await _rename(restoring, vault.path);
@@ -182,6 +214,15 @@ class FileDataFiles implements DataFiles {
       location: vault.path,
       keptPrevious: kept,
     );
+  }
+
+  /// True while the vault file is exactly [liveBytes] (absent when null).
+  Future<bool> _stillLive(List<int>? liveBytes) async {
+    final nowBytes = await vault.exists() ? await vault.readAsBytes() : null;
+    if (liveBytes == null || nowBytes == null) {
+      return liveBytes == null && nowBytes == null;
+    }
+    return _same(nowBytes, liveBytes);
   }
 
   static bool _same(List<int> a, List<int> b) {

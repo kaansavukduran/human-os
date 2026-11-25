@@ -4,12 +4,19 @@
 /// builds that save nothing, G-32), and memory (tests). Pure Dart.
 library;
 
+import 'dart:async' show FutureOr;
+
 import '../local/log_repository.dart' show MemoryLogSink;
 import '../local/vault_envelope.dart' show OpenedEnvelope;
 import '../local/vault_log.dart' show VaultFormatError;
 import 'backup_bundle.dart';
 
 enum DataFileKind { backup, export }
+
+/// The detail of `RESTORE_NOT_SWITCHED` when the live vault changed after
+/// it was checked (a write that landed while the session stopped, R026):
+/// nothing was switched, the record saved meanwhile stays.
+const vaultChangedBeforeSwitch = 'VAULT_CHANGED';
 
 class SavedFile {
   const SavedFile({
@@ -165,7 +172,11 @@ abstract interface class DataFiles {
   /// Refuses (`RESTORE_TARGET_HAS_RECORDS`) when the live vault holds
   /// records: a restore never replaces real history. [beforeSwitch] runs
   /// right before the live vault is moved: the session must stop writing
-  /// from then on, whatever happens next. Throws `RESTORE_NOT_SWITCHED`
+  /// from then on, whatever happens next, and the adapter waits for it
+  /// (the writes already in flight land first). The live vault is then
+  /// read again right before the switch: if it is no longer what was
+  /// checked (a record saved meanwhile), nothing is switched and the
+  /// staged copy is dropped (`RESTORE_NOT_SWITCHED`, R026). Throws `RESTORE_NOT_SWITCHED`
   /// when no file could be moved (nothing changed), and
   /// `RESTORE_SWITCH_FAILED` when the restored copy cannot be moved into
   /// place after the previous vault was moved aside; that vault is then put
@@ -173,7 +184,7 @@ abstract interface class DataFiles {
   Future<RestoreOutcome> restore(
     StagedRestore staged, {
     required DateTime now,
-    void Function()? beforeSwitch,
+    FutureOr<void> Function()? beforeSwitch,
   });
 }
 
@@ -275,12 +286,17 @@ class MemoryDataFiles implements DataFiles {
   Future<RestoreOutcome> restore(
     StagedRestore staged, {
     required DateTime now,
-    void Function()? beforeSwitch,
+    FutureOr<void> Function()? beforeSwitch,
   }) async {
     target.checkKind(staged);
     target.checkLive(staged, vaultText);
     staged.verifyWritten(staged.payload);
-    beforeSwitch?.call();
+    final checked = vaultText;
+    await beforeSwitch?.call();
+    // A write that landed while this session stopped: nothing is switched.
+    if (vaultText != checked) {
+      throw const BackupError('RESTORE_NOT_SWITCHED', vaultChangedBeforeSwitch);
+    }
     kept = vaultText;
     vaultText = staged.payload;
     return RestoreOutcome(
@@ -338,12 +354,16 @@ class SessionDataFiles implements DataFiles {
   Future<RestoreOutcome> restore(
     StagedRestore staged, {
     required DateTime now,
-    void Function()? beforeSwitch,
+    FutureOr<void> Function()? beforeSwitch,
   }) async {
     const RestoreTarget.plaintext().checkKind(staged);
-    refuseIfHasRecords(sink.text);
+    final checked = sink.text;
+    refuseIfHasRecords(checked);
     staged.verifyWritten(staged.payload);
-    beforeSwitch?.call();
+    await beforeSwitch?.call();
+    if (sink.text != checked) {
+      throw const BackupError('RESTORE_NOT_SWITCHED', vaultChangedBeforeSwitch);
+    }
     previous = sink.text;
     sink.text = staged.payload;
     return RestoreOutcome(
@@ -369,13 +389,13 @@ abstract interface class TextSlots {
 /// `<vaultKey>.before-restore-<time>` (never deleted, never over an earlier
 /// kept copy), then the vault slot
 /// is replaced and read back. Same refusals as the desktop adapter.
-RestoreOutcome restoreIntoSlots(
+Future<RestoreOutcome> restoreIntoSlots(
   TextSlots slots,
   String vaultKey,
   StagedRestore staged, {
   required DateTime now,
-  void Function()? beforeSwitch,
-}) {
+  FutureOr<void> Function()? beforeSwitch,
+}) async {
   const RestoreTarget.plaintext().checkKind(staged);
   final live = slots.get(vaultKey);
   refuseIfHasRecords(live);
@@ -387,8 +407,20 @@ RestoreOutcome restoreIntoSlots(
     _quietRemove(slots, restoring);
     rethrow;
   }
-  // From here the vault slot changes: this session stops writing first.
-  beforeSwitch?.call();
+  // From here the vault slot changes: this session stops writing first,
+  // and the writes already in flight land (R026).
+  try {
+    await beforeSwitch?.call();
+  } catch (_) {
+    _quietRemove(slots, restoring);
+    rethrow;
+  }
+  // Read again right before the switch: a record saved meanwhile is never
+  // replaced; nothing is switched.
+  if (slots.get(vaultKey) != live) {
+    _quietRemove(slots, restoring);
+    throw const BackupError('RESTORE_NOT_SWITCHED', vaultChangedBeforeSwitch);
+  }
   String? kept;
   if (live != null) {
     // Never over an earlier kept copy: a second restore in the same second

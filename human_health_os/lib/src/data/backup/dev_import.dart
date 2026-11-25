@@ -357,6 +357,7 @@ class ImportPlan {
     required this.alreadyPresent,
     required this.conflictIds,
     required this.recordsAfter,
+    this.competingIds = const [],
   });
 
   final StagedImport source;
@@ -378,11 +379,16 @@ class ImportPlan {
   /// Ids stored here with other bytes: they block the whole import.
   final List<String> conflictIds;
 
+  /// New corrections of a record this vault already corrected with another
+  /// record (R026): two corrections would compete, and an import never
+  /// chooses between them, so they block the whole import too.
+  final List<String> competingIds;
+
   /// Records in the vault once the plan is written.
   final int recordsAfter;
 
   int get newCount => newLines.length;
-  bool get blocked => conflictIds.isNotEmpty;
+  bool get blocked => conflictIds.isNotEmpty || competingIds.isNotEmpty;
   bool get nothingNew => newLines.isEmpty;
 }
 
@@ -447,8 +453,17 @@ Future<ImportPlan> planImport(StagedImport imp, EncryptedLogSink sink) async {
     final data = (m['data']! as Map).cast<String, Object?>();
     stored.putIfAbsent(data['id']! as String, () => jsonEncode(data));
   }
+  // What each stored correction corrects: target id -> correction ids.
+  final correctedHere = <String, Set<String>>{};
+  for (final e in stored.entries) {
+    final target = (jsonDecode(e.value) as Map)['supersedes_id'];
+    if (target is String) {
+      (correctedHere[target] ??= <String>{}).add(e.key);
+    }
+  }
   final newLines = <String>[];
   final conflicts = <String>[];
+  final competing = <String>[];
   var present = 0;
   for (final l in imp.lines) {
     final m = (jsonDecode(l) as Map).cast<String, Object?>();
@@ -458,6 +473,14 @@ Future<ImportPlan> planImport(StagedImport imp, EncryptedLogSink sink) async {
     final here = stored[id];
     if (here == null) {
       newLines.add(l);
+      // A new correction of a record this vault already corrected (or,
+      // seen from the vault, a stored correction of a record the file also
+      // corrects): two corrections would compete. Neither wins by import.
+      final target = data['supersedes_id'];
+      if (target is String &&
+          (correctedHere[target]?.any((c) => c != id) ?? false)) {
+        competing.add(id);
+      }
     } else if (here == jsonEncode(data)) {
       present++;
     } else {
@@ -488,12 +511,14 @@ Future<ImportPlan> planImport(StagedImport imp, EncryptedLogSink sink) async {
     newLines: List.unmodifiable(newLines),
     alreadyPresent: present,
     conflictIds: List.unmodifiable(conflicts),
+    competingIds: List.unmodifiable(competing),
     recordsAfter: union.records.length,
   );
 }
 
 /// [planImport] then [stagePlannedImport]: refuses a conflict
-/// (`IMPORT_CONFLICT`) or a file with nothing new (`IMPORT_NOTHING_NEW`).
+/// (`IMPORT_CONFLICT`), competing corrections (`IMPORT_CORRECTIONS_COMPETE`)
+/// or a file with nothing new (`IMPORT_NOTHING_NEW`).
 Future<StagedRestore> stageImportIntoVault(
   StagedImport imp,
   EncryptedLogSink sink, {
@@ -516,7 +541,8 @@ Future<StagedRestore> stageImportIntoVault(
 /// vault with records: the stored file exactly as it is, then the new
 /// records sealed with the next sequence numbers; the adapter writes it
 /// only while the vault file is unchanged ([StagedRestore.extendsLive]).
-/// Refuses a plan with conflicts (`IMPORT_CONFLICT`), with nothing new
+/// Refuses a plan with conflicts (`IMPORT_CONFLICT`), with competing
+/// corrections (`IMPORT_CORRECTIONS_COMPETE`, R026), with nothing new
 /// (`IMPORT_NOTHING_NEW`), or made against a vault that changed since
 /// (`IMPORT_VAULT_CHANGED`). Writes nothing.
 Future<StagedRestore> stagePlannedImport(
@@ -526,8 +552,14 @@ Future<StagedRestore> stagePlannedImport(
   required String appVersion,
   required String sourceRevision,
 }) async {
-  if (plan.blocked) {
+  if (plan.conflictIds.isNotEmpty) {
     throw ImportError('IMPORT_CONFLICT', '${plan.conflictIds.length}');
+  }
+  if (plan.competingIds.isNotEmpty) {
+    throw ImportError(
+      'IMPORT_CORRECTIONS_COMPETE',
+      '${plan.competingIds.length}',
+    );
   }
   if (plan.nothingNew) throw const ImportError('IMPORT_NOTHING_NEW');
   final both = await sink.readBoth();

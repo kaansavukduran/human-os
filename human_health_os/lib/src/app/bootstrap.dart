@@ -293,7 +293,7 @@ Future<AppServices> servicesFor(
     // memory store offers none.
     dataFiles: files,
     makeBackup: makeBackup,
-    lockStorage: repo is LogRepository ? repo.lock : null,
+    lockStorage: repo is LogRepository ? repo.lockAndDrain : null,
     restartRequired: ValueNotifier<bool>(false),
     checkpointSaved: checkpointSaved,
     recordsAppended: recordsAppended,

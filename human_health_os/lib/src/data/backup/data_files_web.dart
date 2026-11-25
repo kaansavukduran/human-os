@@ -4,6 +4,7 @@
 /// the same gate as on desktop (G-29).
 library;
 
+import 'dart:async' show FutureOr;
 import 'dart:js_interop';
 
 import 'backup_bundle.dart';
@@ -109,8 +110,8 @@ class BrowserDataFiles implements DataFiles {
   Future<RestoreOutcome> restore(
     StagedRestore staged, {
     required DateTime now,
-    void Function()? beforeSwitch,
-  }) async => restoreIntoSlots(
+    FutureOr<void> Function()? beforeSwitch,
+  }) => restoreIntoSlots(
     _slots,
     vaultKey,
     staged,

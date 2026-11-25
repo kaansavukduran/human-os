@@ -80,11 +80,13 @@ void main() {
   FileDataFiles filesFor(
     EncryptedLogSink sink, {
     Future<void> Function(File file, String to)? rename,
+    Future<void> Function(File file, String to)? copy,
   }) => FileDataFiles(
     dataDir: vaultFile.parent,
     vault: vaultFile,
     target: RestoreTarget.encrypted(sink.open),
     rename: rename,
+    copy: copy,
   );
 
   EncryptedVault vault() => EncryptedVault(
@@ -443,5 +445,222 @@ void main() {
       importError('IMPORT_TARGET_UNREADABLE'),
     );
     unchanged(before);
+  });
+
+  group('R026: a save in flight during the switch', () {
+    Future<StagedRestore> stagedFor(OpenedVault o) async {
+      await dev.recordWeightKg(profileId: me, input: '79,9');
+      final imp = stageImport(bundleOf(devFile.readAsStringSync()), now: t0);
+      return stagePlannedImport(
+        await planImport(imp, o.sink),
+        o.sink,
+        now: t0,
+        appVersion: 't',
+        sourceRevision: 't',
+      );
+    }
+
+    test(
+      'a save that passed its writable check lands before the switch '
+      '(drained), then the re-read vault refuses the switch: the record '
+      'stays, nothing staged or kept is left, later saves are refused',
+      () async {
+        final (o, _) = await vaultWithRecords();
+        final staged = await stagedFor(o);
+        final keptBefore = keptCopies();
+        final svc = HeartbeatService(o.repository);
+        Future<HealthRecord>? inFlight;
+        await expectLater(
+          o.files!.restore(
+            staged,
+            now: t0,
+            beforeSwitch: () async {
+              // The save starts (and passes its writable check) just as the
+              // session stops writing: the drain waits for it to land.
+              inFlight = svc.recordWeightKg(profileId: me, input: '77,7');
+              await o.repository.lockAndDrain('RESTART_REQUIRED');
+            },
+          ),
+          throwsA(
+            isA<BackupError>()
+                .having((e) => e.code, 'code', 'RESTORE_NOT_SWITCHED')
+                .having((e) => e.message, 'detail', vaultChangedBeforeSwitch),
+          ),
+        );
+        final saved = await inFlight!;
+        unchanged(vaultFile.readAsStringSync());
+        expect(keptCopies(), keptBefore, reason: 'no stray kept copy');
+        await expectLater(
+          svc.recordWeightKg(profileId: me, input: '76,0'),
+          throwsA(
+            isA<StorageWriteRefused>().having(
+              (e) => e.code,
+              'code',
+              'RESTART_REQUIRED',
+            ),
+          ),
+        );
+        final again = await vault().unlock(pass);
+        expect(again.report.warnings, isEmpty);
+        final ids = (await again.repository.records(me)).map((r) => r.id);
+        expect(ids, contains(saved.id), reason: 'what the UI called saved');
+        expect(ids, hasLength(5), reason: 'nothing of the import was written');
+      },
+    );
+
+    test('a write that lands after the drain, between the kept copy and the '
+        'rename, is caught by the re-read: nothing switched', () async {
+      final (o, _) = await vaultWithRecords();
+      final staged = await stagedFor(o);
+      final keptBefore = keptCopies();
+      final extra = HeartbeatService(o.repository);
+      late String landed;
+      final files = filesFor(
+        o.sink,
+        copy: (f, to) async {
+          await f.copy(to);
+          // The kept copy matches what was checked; then the vault moves on.
+          landed = (await extra.recordWeightKg(
+            profileId: me,
+            input: '77,1',
+          )).id;
+        },
+      );
+      await expectLater(
+        files.restore(staged, now: t0),
+        backupError('RESTORE_NOT_SWITCHED'),
+      );
+      unchanged(vaultFile.readAsStringSync());
+      expect(keptCopies(), keptBefore);
+      final again = await vault().unlock(pass);
+      expect(
+        (await again.repository.records(me)).map((r) => r.id),
+        contains(landed),
+      );
+    });
+
+    test(
+      'the memory adapter (tests, restore flow) refuses the same way',
+      () async {
+        final files = MemoryDataFiles(vaultText: '');
+        final staged = stageRestore(bundleOf(devFile.readAsStringSync()));
+        await expectLater(
+          files.restore(
+            staged,
+            now: t0,
+            beforeSwitch: () async => files.vaultText = 'a record landed',
+          ),
+          backupError('RESTORE_NOT_SWITCHED'),
+        );
+        expect(files.vaultText, 'a record landed');
+        expect(files.kept, isNull);
+      },
+    );
+  });
+
+  group('R026: two corrections of one record never compete silently', () {
+    Future<HealthRecord> devCorrection() async =>
+        (await devRepo.records(me)).firstWhere((r) => r.supersedesId != null);
+
+    test(
+      'a new correction of a record this vault already corrected another '
+      'way blocks the whole import, new records included; nothing written',
+      () async {
+        final (o, _) = await vaultWithRecords();
+        final head = await devCorrection();
+        // Each build corrects the same (shared) entry its own way.
+        final inVault = await HeartbeatService(o.repository)
+            .correctWeightKg(profileId: me, targetId: head.id, input: '81,0');
+        final inFile = await dev.correctWeightKg(
+          profileId: me,
+          targetId: head.id,
+          input: '80,8',
+        );
+        await dev.recordWeightKg(profileId: me, input: '79,9');
+        final before = vaultFile.readAsStringSync();
+        final imp = stageImport(bundleOf(devFile.readAsStringSync()), now: t0);
+        final plan = await planImport(imp, o.sink);
+        expect(plan.conflictIds, isEmpty);
+        expect(plan.competingIds, [inFile.id]);
+        expect(plan.competingIds, isNot(contains(inVault.id)));
+        expect(plan.blocked, isTrue);
+        expect(plan.newCount, 2);
+        await expectLater(
+          stagePlannedImport(
+            plan,
+            o.sink,
+            now: t0,
+            appVersion: 't',
+            sourceRevision: 't',
+          ),
+          importError('IMPORT_CORRECTIONS_COMPETE'),
+        );
+        await expectLater(
+          bringIn(o, imp),
+          importError('IMPORT_CORRECTIONS_COMPETE'),
+        );
+        unchanged(before);
+        expect(o.repository.writable, isTrue);
+      },
+    );
+
+    test('seen from the vault: a stored correction of a record the file also '
+        'corrects (the file corrected first) blocks too; the same correction '
+        'in both is no conflict', () async {
+      final (o, _) = await vaultWithRecords();
+      final head = await devCorrection();
+      final inFile = await dev.correctWeightKg(
+        profileId: me,
+        targetId: head.id,
+        input: '80,8',
+      );
+      // The shared correction is in both, byte for byte: never a conflict.
+      var plan = await planImport(
+        stageImport(bundleOf(devFile.readAsStringSync()), now: t0),
+        o.sink,
+      );
+      expect(plan.blocked, isFalse);
+      expect(plan.newLines, hasLength(1));
+      final inVault = await HeartbeatService(o.repository)
+          .correctWeightKg(profileId: me, targetId: head.id, input: '81,0');
+      plan = await planImport(
+        stageImport(bundleOf(devFile.readAsStringSync()), now: t0),
+        o.sink,
+      );
+      expect(plan.competingIds, [inFile.id]);
+      expect(plan.blocked, isTrue);
+      expect(plan.competingIds, isNot(contains(inVault.id)));
+    });
+
+    test('D-053: a correction whose target is only in this vault is refused '
+        '(a development file is a whole log); nothing written', () async {
+      final (o, own) = await vaultWithRecords();
+      final before = vaultFile.readAsStringSync();
+      final w = await dev.recordWeightKg(profileId: me, input: '79,0');
+      final corr = await dev.correctWeightKg(
+        profileId: me,
+        targetId: w.id,
+        input: '81,0',
+      );
+      // The same profile and kind as the vault's own weight.
+      final m = corr.toJson()..['supersedes_id'] = own.id;
+      final export = {
+        'format': 'hhos-export',
+        'format_version': 1,
+        'exported_at': t0.toIso8601String(),
+        'app_version': 't',
+        'encryption': 'none',
+        'profile': {'id': me, 'type': 'self'},
+        'record_count': 1,
+        'records': [m],
+        'timeline': <Object?>[],
+      };
+      expect(
+        () => stageImport(jsonEncode(export), now: t0),
+        importError('IMPORT_CHAIN_BROKEN'),
+      );
+      unchanged(before);
+      expect(o.repository.writable, isTrue);
+    });
   });
 }

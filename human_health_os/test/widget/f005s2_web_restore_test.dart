@@ -749,7 +749,7 @@ void main() {
       final st = await staged(tester);
       final slots = MapSlots()..map['v'] = 'previous';
       var locked = false;
-      final out = restoreIntoSlots(
+      final out = await restoreIntoSlots(
         slots,
         'v',
         st,
@@ -769,8 +769,8 @@ void main() {
     ) async {
       final st = await staged(tester);
       final slots = MapSlots()..map['v'] = st.payload;
-      expect(
-        () => restoreIntoSlots(slots, 'v', st, now: DateTime.utc(2026)),
+      await expectLater(
+        restoreIntoSlots(slots, 'v', st, now: DateTime.utc(2026)),
         throwsA(
           isA<BackupError>().having(
             (e) => e.code,
@@ -790,8 +790,8 @@ void main() {
         ..map['v'] = 'previous'
         ..failOn = 'v.restoring';
       var locked = false;
-      expect(
-        () => restoreIntoSlots(
+      await expectLater(
+        restoreIntoSlots(
           slots,
           'v',
           st,
@@ -810,8 +810,8 @@ void main() {
       final slots = MapSlots()
         ..map['v'] = 'previous'
         ..failOn = 'v';
-      expect(
-        () => restoreIntoSlots(slots, 'v', st, now: DateTime.utc(2026)),
+      await expectLater(
+        restoreIntoSlots(slots, 'v', st, now: DateTime.utc(2026)),
         throwsA(
           isA<BackupError>()
               .having((e) => e.code, 'code', 'RESTORE_SWITCH_FAILED')
@@ -822,6 +822,29 @@ void main() {
       expect(slots.map['v.before-restore-20260101T000000Z'], 'previous');
     });
 
+    testWidgets('R026: a write that lands while the session stops is never '
+        'replaced: nothing is switched, nothing staged is left', (
+      tester,
+    ) async {
+      final st = await staged(tester);
+      final slots = MapSlots()..map['v'] = 'previous';
+      await expectLater(
+        restoreIntoSlots(
+          slots,
+          'v',
+          st,
+          now: DateTime.utc(2026),
+          beforeSwitch: () async => slots.map['v'] = 'previous+saved',
+        ),
+        throwsA(
+          isA<BackupError>()
+              .having((e) => e.code, 'code', 'RESTORE_NOT_SWITCHED')
+              .having((e) => e.message, 'message', vaultChangedBeforeSwitch),
+        ),
+      );
+      expect(slots.map, {'v': 'previous+saved'});
+    });
+
     testWidgets('R018: a second restore in the same second never overwrites '
         'the copy kept by the first; its name steps forward', (tester) async {
       final st = await staged(tester);
@@ -829,7 +852,7 @@ void main() {
         ..map['v'] = 'second'
         ..map['v.before-restore-20261119T100000Z'] = 'first'
         ..map['v.before-restore-20261119T100001Z'] = 'also earlier';
-      final out = restoreIntoSlots(
+      final out = await restoreIntoSlots(
         slots,
         'v',
         st,

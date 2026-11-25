@@ -174,9 +174,12 @@ class _YourDataCardState extends State<YourDataCard> {
     });
   }
 
-  void _lockAfterRestore() {
-    _s.lockStorage?.call('RESTART_REQUIRED');
+  /// No more writes from this session, and the ones already in flight
+  /// landed (R026): the adapter re-reads the vault after this, so a record
+  /// saved meanwhile refuses the switch instead of being lost.
+  Future<void> _lockAfterRestore() async {
     _s.restartRequired?.value = true;
+    await _s.lockStorage?.call('RESTART_REQUIRED');
   }
 
   Future<String> _backup(S s) async {
@@ -376,7 +379,7 @@ class _YourDataCardState extends State<YourDataCard> {
         // fails half-way (review finding).
         beforeSwitch: _lockAfterRestore,
       );
-      _lockAfterRestore();
+      await _lockAfterRestore();
       return st.encrypted
           ? s.restoredEncrypted(out.records, out.keptPrevious)
           : s.restored(out.records, out.keptPrevious);
@@ -584,7 +587,7 @@ class _YourDataCardState extends State<YourDataCard> {
           now: DateTime.now().toUtc(),
           beforeSwitch: _lockAfterRestore,
         );
-        _lockAfterRestore();
+        await _lockAfterRestore();
         if (files.sessionOnly) {
           // This tab's memory now holds the backup: the session reopens on
           // it at once (a reload would lose it).
@@ -647,7 +650,10 @@ class _YourDataCardState extends State<YourDataCard> {
     _say(null);
     // Nothing to write: the preview says why, with one way out.
     final stop = p.blocked
-        ? s.importConflict(p.conflictIds.length)
+        ? s.importBlocked(
+            conflicts: p.conflictIds.length,
+            competing: p.competingIds.length,
+          )
         : p.nothingNew
         ? s.importNothingNew
         : null;
@@ -684,6 +690,7 @@ class _YourDataCardState extends State<YourDataCard> {
                     fresh: p.newCount,
                     present: p.alreadyPresent,
                     conflicts: p.conflictIds.length,
+                    competing: p.competingIds.length,
                   ),
                   key: const ValueKey('import-counts'),
                   style: Theme.of(c).textTheme.bodyLarge,
@@ -782,7 +789,7 @@ class _YourDataCardState extends State<YourDataCard> {
           }
           rethrow;
         }
-        _lockAfterRestore();
+        await _lockAfterRestore();
         return p.intoEmptyVault
             ? s.imported(imp.recordCount, imp.profileCount, out.keptPrevious)
             : s.importedMerged(p.newCount, p.alreadyPresent, out.keptPrevious);

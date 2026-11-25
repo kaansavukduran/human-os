@@ -449,6 +449,11 @@ async function runPass(root, mode) {
       await page.waitForTimeout(400);
     };
 
+    // Targets reveal found at the end of their list with their bottom
+    // still under the bottom bar (U042): a reader cannot scroll them clear
+    // of the bar, so the cell fails on `not_cut_at_list_end`. Reset for
+    // each cell.
+    let cutAtListEnd = [];
     // Wheel at x until [locator] sits inside the viewport (below a top bar,
     // above a bottom bar on touch layouts).
     const reveal = async (locator, x, inSheet = false) => {
@@ -471,13 +476,19 @@ async function runPass(root, mode) {
         // Flutter clips a semantics box at the list's edge, so a box that
         // ends exactly at the bar may be cut: it must end 2 px above it.
         if (b && b.y >= top && b.y + b.height <= bottom - 2) return true;
-        // The list cannot move further (its end): what is in view is all
-        // there is.
-        if (b && prev && b.y >= top && Math.abs(b.y - prev.y) < 1 && Math.abs(b.height - prev.height) < 1) return true;
-        prev = b;
         // Taller than the space between the bars (Q005: the Timeline switch
         // with its help line at 2× text): its top is in the upper third.
         if (b && b.height > bottom - top && b.y >= top && b.y <= top + (bottom - top) / 3) return true;
+        // The list cannot move further (its end). Its bottom is not clear
+        // of the bar (that returned above), so part of it stays hidden
+        // under the bar: recorded as its own finding, which fails the cell
+        // (U042; before, this counted as in view).
+        if (b && prev && b.y >= top && Math.abs(b.y - prev.y) < 1 && Math.abs(b.height - prev.height) < 1) {
+          cutAtListEnd.push(`box ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)} ends at ${Math.round(b.y + b.height)}, bar top ${Math.round(bottom)}`);
+          log('reveal', 'cut at list end', cutAtListEnd[cutAtListEnd.length - 1]);
+          return false;
+        }
+        prev = b;
         log('reveal', i, b ? `${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}` : 'no box');
         await page.mouse.move(x, vp.height / 2);
         // Bring the target to a third of the window (clear of a sheet's own
@@ -872,6 +883,7 @@ async function runPass(root, mode) {
       cells[key] = cell;
       groupKeys.push(key);
       const set = (name, status, detail = '') => { cell.checks[name] = { status, detail }; };
+      cutAtListEnd = [];
       let reached = false;
       log('cell', key);
       const ex = EXTRA[id];
@@ -1114,6 +1126,9 @@ async function runPass(root, mode) {
       }
       await page.waitForTimeout(200);
       if (mode === 'release') {
+        // After every reveal of the cell (the restore check above reveals
+        // its entry again).
+        set('not_cut_at_list_end', cutAtListEnd.length === 0 ? 'PASS' : 'FAIL', cutAtListEnd.length ? `cut at list end: ${cutAtListEnd.slice(0, 4).join('; ')}` : 'every revealed target ended at least 2 px above the bottom bar');
         set('no_page_errors', sink.pageErrors.length === 0 ? 'PASS' : 'FAIL', sink.pageErrors.slice(0, 3).join(' | '));
         set('no_console_errors', sink.consoleErrors.length === 0 ? 'PASS' : 'FAIL', sink.consoleErrors.slice(0, 3).join(' | '));
         set('no_failed_requests', sink.failedRequests.length === 0 ? 'PASS' : 'FAIL', sink.failedRequests.slice(0, 3).join(' | '));
@@ -1223,6 +1238,7 @@ const meta = {
     lab_group_chart_spoken: 'Labs: same test over time: "Same test over time" is exposed as its own heading on Labs and the group chart carries its spoken dated-values summary',
     restore_chooser_opens: 'Today: restore from file: tapping the entry opens the browser file chooser',
     restore_cancel_reported: 'Today: restore from file: closing the chooser without a file shows "No file chosen. Nothing was changed." on screen within 1 s',
+    not_cut_at_list_end: 'U042: every target the script scrolled to ended at least 2 px above the bottom navigation bar (or the window bottom); one that stops moving at the end of its list with its bottom still under the bar is a finding (cut at list end), not in view',
     no_stacked_headings: 'Q005: no heading has another heading as the next visible text directly below it in the same column (less than 32 px between them, nothing in between)',
     no_english_on_tr: 'Q005, tr-TR cells: no accessible label or heading seen while sweeping the screen contains an English word from a fixed list (names shared by both languages allowed)',
     title_whole: 'Q005: first run, Summary, Derived and how-to titles: the title box lies wholly inside the window at the top of the page',

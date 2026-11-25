@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · R024@v0.32 closed (U037 review fixes) at source 5abe8c8; 14 receipt-backed gates PASS (EV-*-F007-1468…1481); `development_state: READY`.
+- CONFIRMED · 2026-11-25 · U038@v0.32 (airy reading) with R025 closed at source fe68ac5; 14 receipt-backed gates PASS (EV-*-F007-1482…1495).
 
 ## Next step
-- PLANNED · U038@v0.32: airy, understandable reading (Timeline, Labs list and group view, Learn, Settings) with the U036 scale.
+- PLANNED · Q004@v0.32: screen matrix after U036–U038; fix each FAIL with a regression test.
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

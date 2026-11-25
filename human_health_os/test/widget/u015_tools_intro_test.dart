@@ -87,7 +87,7 @@ void main() {
     await tapKey(tester, 'first-next');
     expect(disk.raw.text, isNull, reason: 'nothing written before the vault');
     expect(find.byKey(const ValueKey('vault-gate-create')), findsOneWidget);
-    expect(find.text('Araçlar'), findsNothing);
+    expect(find.text('Muayene ve sayıların için'), findsNothing);
     expect(store.saved?.language, LanguageChoice.tr);
     await createThroughGate(tester);
     expect(find.byKey(const ValueKey('screen-today')), findsOneWidget);

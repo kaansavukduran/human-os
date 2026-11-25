@@ -33,6 +33,8 @@ import 'u014_first_run_test.dart' show launchReal;
 import 'u030_read_failed_test.dart' show boot;
 import 'u033_record_area_test.dart' show areas, host, reveal;
 import 'u035_text_fit_test.dart' show cutTexts, mainScroll, small, sweep;
+import 'u042_headings_titles_test.dart'
+    show expectFittingScale, expectWholeWords;
 
 const _en = Locale('en', 'US');
 const _tr = Locale('tr', 'TR');
@@ -62,8 +64,9 @@ Future<void> _scrollTo(WidgetTester tester, String screen, String key) async {
   await tester.pumpAndSettle();
 }
 
-/// [title] in the app bar: not cut, not drawn smaller than the person's
-/// text size, and inside the bar.
+/// [title] in the app bar: not cut, at the person's text size unless one
+/// word alone is wider than the bar (then just small enough for it, U042),
+/// wrapped only between words, and inside the bar.
 void _expectWholeTitle(WidgetTester tester, String title) {
   final text = find.descendant(
     of: find.byType(AppBar),
@@ -74,18 +77,18 @@ void _expectWholeTitle(WidgetTester tester, String title) {
     find.descendant(of: text, matching: find.byType(RichText)),
   );
   expect(paragraph.didExceedMaxLines, isFalse);
-  expect(paragraph.textScaler.scale(10), closeTo(20, 0.01));
+  expectFittingScale(tester, paragraph, 2.0);
+  expectWholeWords(paragraph);
   final bar = tester.getRect(find.byType(AppBar));
   final r = tester.getRect(text);
   expect(r.top, greaterThanOrEqualTo(bar.top - 0.5));
   expect(r.bottom, lessThanOrEqualTo(bar.bottom + 0.5));
-  // Drawn at its laid-out size (nothing shrinks it on screen), so every
-  // line is shown at the person's text size.
+  // Drawn at its laid-out size: nothing shrinks it again on screen.
   expect(r.height, closeTo(paragraph.size.height, 0.5));
   expect(r.width, closeTo(paragraph.size.width, 0.5));
 }
 
-/// Opens a tool listed under Today's "Tools".
+/// Opens a tool listed on Today.
 Future<void> _openTool(WidgetTester tester, String key) async {
   await _scrollTo(tester, 'screen-today', key);
   await tapKey(tester, key);

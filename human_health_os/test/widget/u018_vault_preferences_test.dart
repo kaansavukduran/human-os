@@ -103,7 +103,7 @@ void main() {
     expect(again.value.language, LanguageChoice.system);
     await unlock(tester);
     expect(again.value.language, LanguageChoice.tr);
-    expect(find.text('Araçlar'), findsOneWidget);
+    expect(find.text('Muayene ve sayıların için'), findsOneWidget);
   });
 
   testWidgets('a change in Settings after unlock is sealed too', (

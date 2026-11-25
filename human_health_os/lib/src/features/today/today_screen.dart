@@ -121,12 +121,9 @@ class _TodayScreenState extends State<TodayScreen> {
         const SizedBox(height: Space.section),
         if (!look.checkInsFirst) ...checkIns,
         if (show(TodaySection.tools)) ...[
-          Semantics(
-            container: true,
-            header: true,
-            child: Text(s.geneticsToolsTitle, style: text.titleMedium),
-          ),
-          const SizedBox(height: Space.m),
+          // Two headings that say what the tools are for, and no "Tools"
+          // heading above them (U042: a heading directly on a heading told
+          // a first-time reader nothing the group heading did not).
           _ToolGroup(s.toolsGroupApp),
           // Settings is not repeated here: the app bar and the rail or More
           // sheet already open it (U030, one entry less). The glossary, the
@@ -151,7 +148,7 @@ class _TodayScreenState extends State<TodayScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: Space.section),
           _ToolGroup(s.toolsGroupFiles),
           ToolRow(
             key: const ValueKey('tool-phyto'),
@@ -225,7 +222,9 @@ class _DateLineState extends State<_DateLine>
   }
 }
 
-/// A small heading over a group of tools (G-65), announced as a heading.
+/// The heading of one group of tools (G-65), announced as a heading. Each
+/// group is its own section of Today (U042), with the same heading style as
+/// the cards above it.
 class _ToolGroup extends StatelessWidget {
   const _ToolGroup(this.label);
 
@@ -233,16 +232,11 @@ class _ToolGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
+    padding: const EdgeInsets.only(bottom: Space.s),
     child: Semantics(
+      container: true,
       header: true,
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+      child: Text(label, style: Theme.of(context).textTheme.titleMedium),
     ),
   );
 }

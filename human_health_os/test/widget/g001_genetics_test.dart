@@ -404,7 +404,6 @@ void main() {
       final s = S(lang);
       final texts = [
         s.geneticsTitle,
-        s.geneticsToolsTitle,
         s.geneticsTileHint,
         s.geneticsIntro,
         s.geneticsNoticeTitle,

@@ -2,9 +2,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'whole_words.dart';
+
 /// An app bar whose title keeps the person's text size (U041): a long
 /// title wraps onto more lines and the bar grows to hold them, instead of
-/// being drawn smaller or cut.
+/// being drawn smaller or cut. It wraps only between words (U042): when one
+/// word alone is wider than the bar, the title is drawn just small enough
+/// for that word to fit ([WholeWordText]), never broken inside it.
 class WrappingTitleBar extends StatelessWidget implements PreferredSizeWidget {
   const WrappingTitleBar({super.key, required this.title, this.height});
 
@@ -26,10 +30,20 @@ class WrappingTitleBar extends StatelessWidget implements PreferredSizeWidget {
           kToolbarHeight -
           2 * NavigationToolbar.kMiddleSpacing,
     );
+    final direction = Directionality.of(context);
+    final locale = Localizations.maybeLocaleOf(context);
     final painter = TextPainter(
       text: TextSpan(text: title, style: style),
-      textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
+      textDirection: direction,
+      locale: locale,
+      textScaler: wholeWordScaler(
+        text: title,
+        style: style,
+        base: MediaQuery.textScalerOf(context),
+        maxWidth: width,
+        textDirection: direction,
+        locale: locale,
+      ),
     )..layout(maxWidth: width);
     final height = math.max(kToolbarHeight, painter.height + 16);
     painter.dispose();
@@ -42,15 +56,15 @@ class WrappingTitleBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     // AppBar caps its title's text size at 1.34×; this title keeps the
-    // person's own size, and wraps instead of AppBar's one line with an
-    // ellipsis.
+    // person's own size, and wraps between words instead of AppBar's one
+    // line with an ellipsis.
     final scaler = MediaQuery.textScalerOf(context);
     return AppBar(
       toolbarHeight: preferredSize.height,
       title: Builder(
         builder: (context) => MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaler: scaler),
-          child: Text(title, softWrap: true, overflow: TextOverflow.visible),
+          child: WholeWordText(title),
         ),
       ),
     );

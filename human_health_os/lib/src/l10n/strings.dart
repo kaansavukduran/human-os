@@ -1759,7 +1759,10 @@ class S {
   String todaySectionName(TodaySection x) => switch (x) {
     TodaySection.sleep => _t('Sleep', 'Uyku'),
     TodaySection.feeling => _t('How you feel', 'Nasıl hissediyorsun'),
-    TodaySection.tools => _t('Tools', 'Araçlar'),
+    TodaySection.tools => _t(
+      'Tools: for a visit, read a file',
+      'Araçlar: muayene için, dosya okuma',
+    ),
     TodaySection.yourData => _t('Your data (backups)', 'Verilerin (yedekler)'),
   };
   String get settingsCheckInsFirst => _t(
@@ -1869,7 +1872,6 @@ class S {
     'Human OS girdiğini kaydeder ve sana geri gösterir. Değerleri yargılamaz, tıbbi tavsiye vermez.',
   );
   String get geneticsTitle => _t('Genetics', 'Genetik');
-  String get geneticsToolsTitle => _t('Tools', 'Araçlar');
   String get toolsGroupApp =>
       _t('For a visit and your numbers', 'Muayene ve sayıların için');
   String get toolsGroupFiles => _t('Read a file', 'Dosya oku');

@@ -5,6 +5,7 @@ import '../../app/appearance_scope.dart';
 import '../../domain/settings/appearance.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/theme/spacing.dart';
+import '../../presentation/widgets/whole_words.dart';
 
 /// A calm first run (U014, shortened by U037): two short steps, each
 /// skippable, then Today, where the first value is typed. Step 1 says what
@@ -91,7 +92,7 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
                     const SizedBox(height: 12),
                     Semantics(
                       header: true,
-                      child: Text(title, style: text.headlineSmall),
+                      child: WholeWordText(title, style: text.headlineSmall),
                     ),
                   ],
                 ),

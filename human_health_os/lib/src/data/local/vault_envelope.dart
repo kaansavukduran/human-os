@@ -555,6 +555,19 @@ class EncryptedLogSink implements LogSink {
     return out.toString();
   }
 
+  /// [innerLines] sealed with this vault's key, numbered from [fromSeq],
+  /// one stored line each with its newline, to follow the envelope's
+  /// existing lines unchanged. Writes nothing (F005-S4, D-053: bringing
+  /// development records into a vault that holds records).
+  String sealContinuation(int fromSeq, List<String> innerLines) {
+    final out = StringBuffer();
+    for (var i = 0; i < innerLines.length; i++) {
+      if (innerLines[i].contains('\n')) throw ArgumentError('one line each');
+      out.writeln(_sealLine(vaultId, fromSeq + i, innerLines[i]));
+    }
+    return out.toString();
+  }
+
   String _sealLine(String id, int seq, String line) {
     final s = seal(_key, _utf8(line), _entryAad(id, seq));
     return jsonEncode({

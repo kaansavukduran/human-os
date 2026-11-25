@@ -12,9 +12,19 @@
 /// again, the previous envelope kept (never deleted), then switched.
 ///
 /// Rules:
-/// - only into a vault that holds no records (the adapter refuses
-///   otherwise, as for a restore): nothing is merged, so no record of the
-///   vault can be hidden, duplicated or reordered by an import;
+/// - into a vault that holds no records (F005-S3, D-050): the envelope is
+///   rebuilt with the file's profile and records after the log header;
+/// - into a vault that holds records (F005-S4, D-053): records are matched
+///   by id; one stored byte for byte already → skipped; the same id with
+///   other bytes → the whole import is refused (a conflict the person
+///   resolves; neither is ever overwritten); new ids → appended as new
+///   sealed lines after the vault's existing lines, which stay exactly as
+///   stored. The file's SELF profile must be the vault's SELF profile (same
+///   id): a record's profile id is part of its bytes, so records of another
+///   profile are refused, never re-attached. A correction whose target is
+///   not in the file is refused (broken chain; a development file is a
+///   whole log). Order on screen follows the timeline rules, never the
+///   import order;
 /// - record payloads are byte-identical to the source (same ids, same
 ///   lineage): a record whose stored text is not exactly what this app
 ///   writes for it is refused, never rewritten;
@@ -51,7 +61,15 @@ class ImportError implements Exception, CodedError {
   /// exactly one SELF profile) · `IMPORT_RECORD_INVALID` ([detail] the
   /// rule) · `IMPORT_RECORD_NOT_EXACT` (stored text differs from what this
   /// app writes for it) · `IMPORT_EXPORT_DAMAGED` (an export that does not
-  /// match its own counts or timeline) · `IMPORT_TARGET_HAS_RECORDS`
+  /// match its own counts or timeline) · `IMPORT_TARGET_HAS_RECORDS` ·
+  /// F005-S4 (D-053): `IMPORT_CHAIN_BROKEN` (a correction whose target is
+  /// missing; [detail] its id) · `IMPORT_PROFILE_DIFFERENT` (the file's
+  /// SELF profile is not this vault's) · `IMPORT_CONFLICT` (an id stored
+  /// here with other bytes; [detail] how many) · `IMPORT_NOTHING_NEW`
+  /// (every record is already here) · `IMPORT_TARGET_UNREADABLE` (the
+  /// vault holds entries that cannot be read, so duplicates cannot be
+  /// ruled out) · `IMPORT_TARGET_READ_ONLY` (the vault needs an upgrade
+  /// first) · `IMPORT_VAULT_CHANGED` (the vault changed after the preview)
   @override
   final String code;
   final String detail;
@@ -65,6 +83,7 @@ class ImportError implements Exception, CodedError {
 class StagedImport {
   const StagedImport({
     required this.source,
+    required this.profile,
     required this.lines,
     required this.recordCount,
     required this.profileCount,
@@ -75,6 +94,9 @@ class StagedImport {
   });
 
   final ImportSource source;
+
+  /// The file's one SELF profile.
+  final Profile profile;
 
   /// `profile.put` lines first, then `record.append` lines in an order in
   /// which every correction follows what it corrects.
@@ -293,6 +315,14 @@ StagedImport _staged(
         (m['data']! as Map).cast<String, Object?>(),
       );
     } on RecordValidationError catch (e) {
+      // A development file is a whole log: a correction whose target it
+      // does not hold is a broken chain, whatever the vault holds (D-053).
+      if (e.code == 'AMEND_TARGET_MISSING') {
+        throw ImportError(
+          'IMPORT_CHAIN_BROKEN',
+          '${(m['data']! as Map)['id']}',
+        );
+      }
       throw ImportError('IMPORT_RECORD_INVALID', e.code);
     } on VaultFormatError catch (e) {
       throw ImportError('IMPORT_RECORD_INVALID', e.code);
@@ -303,6 +333,7 @@ StagedImport _staged(
   }
   return StagedImport(
     source: source,
+    profile: self,
     lines: List.unmodifiable(lines),
     recordCount: recordLines.length,
     profileCount: 1,
@@ -313,20 +344,252 @@ StagedImport _staged(
   );
 }
 
-/// Builds, in memory, the new envelope of the unlocked vault behind [sink]
-/// holding [imp] after the vault's own log header, and hands it back as a
-/// staged restore for the adapter's staged write (written, read back,
-/// opened again, the previous envelope kept, then switched). Refuses a
-/// vault that holds any record, or entries that cannot be read
-/// (`IMPORT_TARGET_HAS_RECORDS`). Writes nothing.
+/// What bringing a checked file into the unlocked vault would do, worked
+/// out against the vault as it is now (F005-S4, D-053). Nothing has been
+/// written; [stagePlannedImport] writes only this plan, and only while the
+/// vault file is still exactly [liveRaw].
+class ImportPlan {
+  const ImportPlan({
+    required this.source,
+    required this.liveRaw,
+    required this.intoEmptyVault,
+    required this.newLines,
+    required this.alreadyPresent,
+    required this.conflictIds,
+    required this.recordsAfter,
+  });
+
+  final StagedImport source;
+
+  /// The stored vault file the plan was made against.
+  final String liveRaw;
+
+  /// True when the vault holds no records: the F005-S3 path (D-050), the
+  /// file's profile and records after the vault's log header.
+  final bool intoEmptyVault;
+
+  /// The `record.append` lines to add (ids not stored here), with every
+  /// correction after what it corrects.
+  final List<String> newLines;
+
+  /// Records stored here already, byte for byte: skipped.
+  final int alreadyPresent;
+
+  /// Ids stored here with other bytes: they block the whole import.
+  final List<String> conflictIds;
+
+  /// Records in the vault once the plan is written.
+  final int recordsAfter;
+
+  int get newCount => newLines.length;
+  bool get blocked => conflictIds.isNotEmpty;
+  bool get nothingNew => newLines.isEmpty;
+}
+
+/// Reads the vault behind [sink] once and compares it with [imp]. Throws
+/// [ImportError] when the file cannot be merged at all (another profile, a
+/// broken chain, an unreadable or read-only vault); conflicts are returned
+/// in the plan, for the preview to show. Writes nothing.
+Future<ImportPlan> planImport(StagedImport imp, EncryptedLogSink sink) async {
+  final both = await sink.readBoth();
+  final opened = both.opened;
+  if (opened.unknown > 0) {
+    throw ImportError('IMPORT_TARGET_UNREADABLE', '${opened.unknown}');
+  }
+  var empty = true;
+  try {
+    refuseIfHasRecords(opened.inner);
+  } on BackupError catch (e) {
+    if (e.code != 'RESTORE_TARGET_HAS_RECORDS') {
+      throw ImportError('IMPORT_TARGET_UNREADABLE', e.code);
+    }
+    empty = false;
+  }
+  if (empty) {
+    return ImportPlan(
+      source: imp,
+      liveRaw: both.raw,
+      intoEmptyVault: true,
+      newLines: [
+        for (final l in imp.lines)
+          if (l.startsWith('{"op":"record.append"')) l,
+      ],
+      alreadyPresent: 0,
+      conflictIds: const [],
+      recordsAfter: imp.recordCount,
+    );
+  }
+  final VaultState live;
+  try {
+    live = parseVaultLog(opened.inner);
+  } on VaultFormatError catch (e) {
+    throw ImportError('IMPORT_TARGET_UNREADABLE', e.code);
+  }
+  // An entry the vault skipped may be a record: a duplicate could not be
+  // ruled out, so nothing is merged.
+  if (live.warnings.isNotEmpty) {
+    throw ImportError('IMPORT_TARGET_UNREADABLE', '${live.warnings.length}');
+  }
+  if (live.migrations.isNotEmpty) {
+    throw const ImportError('IMPORT_TARGET_READ_ONLY');
+  }
+  // Records keep the profile they were saved under (its id is part of
+  // their bytes): only the vault's own SELF profile can receive them.
+  final vaultSelf = live.profiles[imp.profile.id];
+  if (vaultSelf == null || vaultSelf.type != ProfileType.self) {
+    throw const ImportError('IMPORT_PROFILE_DIFFERENT');
+  }
+  // The stored text of each record of the vault.
+  final stored = <String, String>{};
+  for (final line in const LineSplitter().convert(opened.inner).skip(1)) {
+    final m = (jsonDecode(line) as Map).cast<String, Object?>();
+    if (m['op'] != 'record.append') continue;
+    final data = (m['data']! as Map).cast<String, Object?>();
+    stored.putIfAbsent(data['id']! as String, () => jsonEncode(data));
+  }
+  final newLines = <String>[];
+  final conflicts = <String>[];
+  var present = 0;
+  for (final l in imp.lines) {
+    final m = (jsonDecode(l) as Map).cast<String, Object?>();
+    if (m['op'] != 'record.append') continue;
+    final data = (m['data']! as Map).cast<String, Object?>();
+    final id = data['id']! as String;
+    final here = stored[id];
+    if (here == null) {
+      newLines.add(l);
+    } else if (here == jsonEncode(data)) {
+      present++;
+    } else {
+      conflicts.add(id);
+    }
+  }
+  // Every rule replayed on the union, in memory: a correction must find
+  // its target in the file or in the vault.
+  final union = parseVaultLog(opened.inner);
+  for (final l in newLines) {
+    final m = (jsonDecode(l) as Map).cast<String, Object?>();
+    final data = (m['data']! as Map).cast<String, Object?>();
+    try {
+      union.apply('record.append', data);
+    } on RecordValidationError catch (e) {
+      if (e.code == 'AMEND_TARGET_MISSING') {
+        throw ImportError('IMPORT_CHAIN_BROKEN', '${data['id']}');
+      }
+      throw ImportError('IMPORT_RECORD_INVALID', e.code);
+    } on VaultFormatError catch (e) {
+      throw ImportError('IMPORT_RECORD_INVALID', e.code);
+    }
+  }
+  return ImportPlan(
+    source: imp,
+    liveRaw: both.raw,
+    intoEmptyVault: false,
+    newLines: List.unmodifiable(newLines),
+    alreadyPresent: present,
+    conflictIds: List.unmodifiable(conflicts),
+    recordsAfter: union.records.length,
+  );
+}
+
+/// [planImport] then [stagePlannedImport]: refuses a conflict
+/// (`IMPORT_CONFLICT`) or a file with nothing new (`IMPORT_NOTHING_NEW`).
 Future<StagedRestore> stageImportIntoVault(
   StagedImport imp,
   EncryptedLogSink sink, {
   required DateTime now,
   required String appVersion,
   required String sourceRevision,
+}) async => stagePlannedImport(
+  await planImport(imp, sink),
+  sink,
+  now: now,
+  appVersion: appVersion,
+  sourceRevision: sourceRevision,
+);
+
+/// Builds, in memory, the new envelope of the unlocked vault behind [sink]
+/// for [plan] and hands it back as a staged restore for the adapter's
+/// staged write (written, read back, opened again, the previous envelope
+/// kept, then switched). Into an empty vault: the vault's own log header,
+/// then the file's profile and records, all sealed again (F005-S3). Into a
+/// vault with records: the stored file exactly as it is, then the new
+/// records sealed with the next sequence numbers; the adapter writes it
+/// only while the vault file is unchanged ([StagedRestore.extendsLive]).
+/// Refuses a plan with conflicts (`IMPORT_CONFLICT`), with nothing new
+/// (`IMPORT_NOTHING_NEW`), or made against a vault that changed since
+/// (`IMPORT_VAULT_CHANGED`). Writes nothing.
+Future<StagedRestore> stagePlannedImport(
+  ImportPlan plan,
+  EncryptedLogSink sink, {
+  required DateTime now,
+  required String appVersion,
+  required String sourceRevision,
 }) async {
+  if (plan.blocked) {
+    throw ImportError('IMPORT_CONFLICT', '${plan.conflictIds.length}');
+  }
+  if (plan.nothingNew) throw const ImportError('IMPORT_NOTHING_NEW');
   final both = await sink.readBoth();
+  if (both.raw != plan.liveRaw) {
+    throw const ImportError('IMPORT_VAULT_CHANGED');
+  }
+  if (plan.intoEmptyVault) {
+    return _stageIntoEmpty(
+      plan.source,
+      sink,
+      both,
+      now: now,
+      appVersion: appVersion,
+      sourceRevision: sourceRevision,
+    );
+  }
+  final opened = both.opened;
+  if (opened.unknown > 0) {
+    throw ImportError('IMPORT_TARGET_UNREADABLE', '${opened.unknown}');
+  }
+  // The stored file stays byte for byte; the new records follow it.
+  final base = both.raw.endsWith('\n') ? both.raw : '${both.raw}\n';
+  final envelope = base + sink.sealContinuation(opened.nextSeq, plan.newLines);
+  final liveInner = opened.inner.endsWith('\n')
+      ? opened.inner
+      : '${opened.inner}\n';
+  final innerText = '$liveInner${plan.newLines.map((l) => '$l\n').join()}';
+  final state = parseVaultLog(innerText);
+  if (state.header.vaultId != sink.vaultId ||
+      state.warnings.isNotEmpty ||
+      state.records.length != plan.recordsAfter ||
+      !envelope.startsWith(both.raw) ||
+      sink.open(envelope).inner != innerText) {
+    throw const BackupError('RESTORE_VERIFY_FAILED', 'import');
+  }
+  final staged = stageRestore(
+    createEncryptedBackupBundle(
+      envelopeText: envelope,
+      innerLogText: innerText,
+      appVersion: appVersion,
+      sourceRevision: sourceRevision,
+      createdAt: now,
+    ),
+  );
+  return StagedRestore(
+    staged.manifest,
+    staged.payload,
+    state,
+    envelope: staged.envelope,
+    opener: sink.open,
+    extendsLive: both.raw,
+  );
+}
+
+Future<StagedRestore> _stageIntoEmpty(
+  StagedImport imp,
+  EncryptedLogSink sink,
+  ({String raw, OpenedEnvelope opened}) both, {
+  required DateTime now,
+  required String appVersion,
+  required String sourceRevision,
+}) async {
   final opened = both.opened;
   if (opened.unknown > 0) {
     throw ImportError('IMPORT_TARGET_HAS_RECORDS', '${opened.unknown}');

@@ -1226,7 +1226,121 @@ void main() {
       {for (final r in got) r.id: jsonEncode(r.toJson())},
       {for (final r in devRecords) r.id: jsonEncode(r.toJson())},
     );
-    expect(find.byKey(const ValueKey('import-development')), findsNothing);
+    // F005-S4 (G-76, D-053): the vault now holds records; it still offers
+    // the import (scrolled to below), now as a merge.
+    // 5. One more record in the encrypted vault, one more in the
+    // development build, and a new development backup that overlaps.
+    final own = await s.heartbeat.recordWeightKg(
+      profileId: s.self.id,
+      input: '80,4',
+    );
+    final devNew = await d.heartbeat.recordWeightKg(
+      profileId: d.self.id,
+      input: '79,9',
+    );
+    final backup2 = await d.dataFiles!.save(
+      DataFileKind.backup,
+      'dev2.hhosbackup.json',
+      await d.makeBackup!(DateTime.utc(2026, 11, 21, 8)),
+    );
+    final backup2Bytes = File(backup2).readAsStringSync();
+
+    // 6. Unlock through a gate whose chooser hands over the second file,
+    // bring it in through the screens.
+    await tester.pumpWidget(const SizedBox());
+    final picker2 = SystemBackupFilePicker(
+      choose: (_) async => _RealFile(File(backup2)),
+    );
+    final choice2 = await createPlatformRepository(prod, env: encEnv);
+    final vault2 = choice2.vault!;
+    final gate2 = VaultGate(
+      vault: vault2,
+      inspection: await vault2.inspect(),
+      open: (o) => servicesFor(
+        prod,
+        HostPlatform.linux,
+        o.repository,
+        reason: StorageReason.saving,
+        report: o.report,
+        files: o.files,
+        derive: choice2.derive,
+        preferences: o.preferences,
+        backupPicker: picker2,
+      ),
+      memoryOnly: (reason, {detail}) => throw StateError('not used'),
+    );
+    await tester.pumpWidget(
+      HumanOsApp.start(AppStartup.gate(gate2), appearance: english()),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('gate-passphrase')), pass);
+    await tapKey(tester, 'gate-unlock');
+    await waitFor(tester, find.byKey(const ValueKey('screen-today')));
+    final beforeMerge = file.readAsStringSync();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('import-development')),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('screen-today')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    await tapKey(tester, 'import-development');
+    await waitFor(tester, find.byKey(const ValueKey('import-preview')));
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('import-counts'))).data,
+      'New, to be added: 1\n'
+      'Already in this vault, skipped: 3\n'
+      'Different from the record in this vault, blocking: 0',
+    );
+    expect(file.readAsStringSync(), beforeMerge, reason: 'nothing yet');
+    await tapKey(tester, 'import-understand');
+    await tester.pumpAndSettle();
+    await tapKey(tester, 'confirm-import');
+    await waitFor(
+      tester,
+      find.textContaining('New records added, encrypted in this vault: 1.'),
+    );
+
+    // 7. Nothing stored was rewritten: the vault file begins with every
+    // byte it had; no plaintext; the file as it was is kept; the chosen
+    // file unchanged.
+    final merged = file.readAsStringSync();
+    expect(merged.startsWith(beforeMerge), isTrue);
+    expect(merged.length, greaterThan(beforeMerge.length));
+    for (final x in [marker, 'kan tahlili', '79,9', '80,4', pass, key]) {
+      expect(merged, isNot(contains(x)), reason: x);
+    }
+    final keptAll = encData
+        .listSync()
+        .map((e) => e.path.split('/').last)
+        .where((n) => n.startsWith('vault.hhosvault.before-restore-'))
+        .map((n) => File('${encData.path}/$n').readAsStringSync())
+        .toList();
+    expect(keptAll, contains(beforeMerge));
+    expect(File(backup2).readAsStringSync(), backup2Bytes);
+
+    // 8. Relaunch, unlock: the union, each record byte for byte.
+    await tester.pumpWidget(const SizedBox());
+    final startup2 = await startApp(prod, HostPlatform.linux, env: encEnv);
+    await tester.pumpWidget(HumanOsApp.start(startup2, appearance: english()));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('gate-passphrase')), pass);
+    await tapKey(tester, 'gate-unlock');
+    await waitFor(tester, find.byKey(const ValueKey('screen-today')));
+    final s2 = tester.widget<AppShell>(find.byType(AppShell)).services;
+    expect(s2.self.id, d.self.id);
+    expect(s2.loadWarnings, isEmpty);
+    final union = await s2.heartbeat.repository.records(s2.self.id);
+    final expected = [...devRecords, own, devNew];
+    expect(
+      {for (final r in union) r.id: jsonEncode(r.toJson())},
+      {for (final r in expected) r.id: jsonEncode(r.toJson())},
+    );
+    expect(union, hasLength(5));
     devData.deleteSync(recursive: true);
     encData.deleteSync(recursive: true);
   });

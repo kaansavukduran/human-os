@@ -8,7 +8,7 @@ import '../application/heartbeat_service.dart';
 import '../config/app_config.dart';
 import '../data/backup/backup_bundle.dart' show StagedRestore;
 import '../data/backup/data_files.dart';
-import '../data/backup/dev_import.dart' show StagedImport;
+import '../data/backup/dev_import.dart' show ImportPlan, StagedImport;
 import '../data/local/vault_envelope.dart' show KeyDeriver, deriveInline;
 import '../core/capabilities.dart';
 import '../domain/ports/health_repository.dart';
@@ -45,6 +45,7 @@ class AppServices {
     this.replacedBy,
     this.reloadPage,
     this.closeVault,
+    this.planDevelopmentImport,
     this.stageDevelopmentImport,
   });
 
@@ -130,12 +131,18 @@ class AppServices {
   /// (development builds, memory-only sessions).
   final Future<void> Function()? closeVault;
 
-  /// Builds, in memory, the unlocked encrypted vault with the records of a
-  /// development build added after its log header, ready for the restore
-  /// adapter's staged write (F005-S3, G-76, D-050). Refuses a vault that
-  /// holds records. Writes nothing. Null where there is no encrypted vault
-  /// whose file a restore can replace (development builds, memory-only
-  /// sessions, the browser).
-  final Future<StagedRestore> Function(StagedImport source, DateTime now)?
+  /// Compares a checked development file with the unlocked encrypted vault
+  /// (F005-S4, G-76, D-053): new records, records already here (skipped),
+  /// conflicting ones (blocking). Writes nothing. Null exactly where
+  /// [stageDevelopmentImport] is.
+  final Future<ImportPlan> Function(StagedImport source)? planDevelopmentImport;
+
+  /// Builds, in memory, the unlocked encrypted vault with the plan's
+  /// records added (after its log header when it holds none, F005-S3,
+  /// D-050; after its stored lines, unchanged, when it holds records,
+  /// F005-S4, D-053), ready for the restore adapter's staged write. Writes
+  /// nothing. Null where there is no encrypted vault whose file a restore
+  /// can replace (development builds, memory-only sessions, the browser).
+  final Future<StagedRestore> Function(ImportPlan plan, DateTime now)?
   stageDevelopmentImport;
 }

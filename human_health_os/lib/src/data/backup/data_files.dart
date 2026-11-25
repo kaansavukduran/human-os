@@ -73,6 +73,29 @@ class RestoreTarget {
     }
   }
 
+  /// The check of the live vault before a staged write: a restore (or an
+  /// import into an empty vault) is refused while [liveRaw] holds records
+  /// ([refuseIfHolds]); an import that only appends to the vault
+  /// ([StagedRestore.extendsLive], F005-S4, D-053) is refused unless the
+  /// vault file is still exactly what it extends (`IMPORT_VAULT_CHANGED`):
+  /// a record saved in between is never lost or overwritten.
+  void checkLive(StagedRestore staged, String? liveRaw) {
+    final base = staged.extendsLive;
+    if (base == null) {
+      refuseIfHolds(liveRaw);
+      return;
+    }
+    if (!encrypted ||
+        liveRaw == null ||
+        liveRaw != base ||
+        !staged.payload.startsWith(base)) {
+      throw const BackupError(
+        'IMPORT_VAULT_CHANGED',
+        'The vault changed after the file was checked; nothing was changed',
+      );
+    }
+  }
+
   /// Throws when restoring would replace records in [liveRaw] (see
   /// [refuseIfHasRecords]). For an encrypted vault, entries that cannot be
   /// read or are missing may be records: the restore is refused then too.
@@ -255,7 +278,7 @@ class MemoryDataFiles implements DataFiles {
     void Function()? beforeSwitch,
   }) async {
     target.checkKind(staged);
-    target.refuseIfHolds(vaultText);
+    target.checkLive(staged, vaultText);
     staged.verifyWritten(staged.payload);
     beforeSwitch?.call();
     kept = vaultText;

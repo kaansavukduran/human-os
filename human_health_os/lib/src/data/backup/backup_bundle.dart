@@ -216,6 +216,7 @@ class StagedRestore {
     this.envelope,
     this.dataKey,
     this.opener,
+    this.extendsLive,
   });
 
   final BackupManifest manifest;
@@ -235,6 +236,14 @@ class StagedRestore {
   /// without handing the key out (an import into the unlocked vault,
   /// F005-S3); used instead of [dataKey] when set.
   final OpenedEnvelope Function(String text)? opener;
+
+  /// Set when [payload] is the live vault file exactly as it was read
+  /// ([extendsLive], byte for byte) followed by new sealed lines: records
+  /// of a development build added to a vault that already holds records
+  /// (F005-S4, D-053). The adapter then writes it only while the vault file
+  /// is still exactly [extendsLive], instead of refusing a vault with
+  /// records; nothing already stored is replaced or rewritten.
+  final String? extendsLive;
 
   bool get encrypted => envelope != null;
 

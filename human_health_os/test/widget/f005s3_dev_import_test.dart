@@ -43,6 +43,12 @@ const trWarning =
     'okuyabilir. Human OS onu senin yerine silmez: kayıtlar buraya gelince '
     'dosyayı ve kopyalarını kendin sil.';
 
+const enMergeExplain =
+    'If you also kept records in the development build, choose a backup or '
+    'an export you made there. Records already in this vault are skipped, '
+    'new ones are added, and nothing here is changed or replaced. You see '
+    'the counts before anything changes.';
+
 /// A development backup with a weight and its correction.
 Future<String> devBackup() async {
   final repo = LogRepository(
@@ -176,11 +182,9 @@ void main() {
     await type(tester, 'gate-passphrase', pass);
     await tapKey(tester, 'gate-unlock');
     expect(latest(tester), '81.2 kg');
-    expect(
-      find.byKey(const ValueKey('import-development')),
-      findsNothing,
-      reason: 'a vault with records is never offered an import',
-    );
+    // F005-S4 (D-053): a vault with records is offered a merge.
+    expect(find.byKey(const ValueKey('import-development')), findsOneWidget);
+    expect(textOf(tester, 'import-explain'), enMergeExplain);
   });
 
   testWidgets('cancel and no file change nothing; a refused file says why '
@@ -218,8 +222,8 @@ void main() {
     expect(disk.raw.text, before);
   });
 
-  testWidgets('the entry leaves as soon as a record is saved, without '
-      'leaving Today (review finding)', (tester) async {
+  testWidgets('the entry says at once that records are merged once a '
+      'record is saved, without leaving Today (F005-S4)', (tester) async {
     final bundle = (await tester.runAsync(devBackup))!;
     final disk = Disk();
     await launch(tester, disk, FakePicker(bundle));
@@ -227,8 +231,8 @@ void main() {
     expect(find.byKey(const ValueKey('import-development')), findsOneWidget);
     await saveWeight(tester, '80');
     expect(latest(tester), '80 kg');
-    expect(find.byKey(const ValueKey('import-development')), findsNothing);
-    expect(find.byKey(const ValueKey('import-explain')), findsNothing);
+    expect(find.byKey(const ValueKey('import-development')), findsOneWidget);
+    expect(textOf(tester, 'import-explain'), enMergeExplain);
   });
 
   testWidgets('Turkish: the entry, the warning and the confirmation', (

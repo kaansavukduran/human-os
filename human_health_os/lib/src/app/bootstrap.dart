@@ -306,18 +306,15 @@ Future<AppServices> servicesFor(
     replacedBy: replacedBy,
     reloadPage: reloadPage,
     closeVault: closeVaultOf(repo),
+    planDevelopmentImport: _importPlanner(repo, files),
     stageDevelopmentImport: _importStager(repo, files, config),
   );
 }
 
-/// How records of a development build enter [repo] (F005-S3, D-050): only
-/// an encrypted vault whose file the adapter can replace through the
-/// staged restore steps (desktop and phones). Null elsewhere.
-Future<StagedRestore> Function(StagedImport, DateTime)? _importStager(
-  HealthRepository repo,
-  DataFiles? files,
-  AppConfig config,
-) {
+/// The encrypted vault a development file can be brought into, or null
+/// (F005-S3, D-050): only one whose file the adapter can replace through
+/// the staged restore steps (desktop and phones).
+EncryptedLogSink? _importSink(HealthRepository repo, DataFiles? files) {
   if (repo is! LogRepository || files == null) return null;
   final sink = repo.sink;
   if (sink is! EncryptedLogSink ||
@@ -326,8 +323,31 @@ Future<StagedRestore> Function(StagedImport, DateTime)? _importStager(
       !files.holdsEncryptedVault) {
     return null;
   }
-  return (source, now) => stageImportIntoVault(
-    source,
+  return sink;
+}
+
+/// How a checked development file is compared with [repo] (F005-S4,
+/// D-053); null where [_importStager] is.
+Future<ImportPlan> Function(StagedImport)? _importPlanner(
+  HealthRepository repo,
+  DataFiles? files,
+) {
+  final sink = _importSink(repo, files);
+  if (sink == null) return null;
+  return (source) => planImport(source, sink);
+}
+
+/// How records of a development build enter [repo] (F005-S3, D-050;
+/// F005-S4, D-053). Null where [_importSink] is.
+Future<StagedRestore> Function(ImportPlan, DateTime)? _importStager(
+  HealthRepository repo,
+  DataFiles? files,
+  AppConfig config,
+) {
+  final sink = _importSink(repo, files);
+  if (sink == null) return null;
+  return (plan, now) => stagePlannedImport(
+    plan,
     sink,
     now: now,
     appVersion: config.version,

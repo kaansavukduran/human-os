@@ -78,3 +78,9 @@ Karar: Proje hafızası `LORE/`; CLAUDE.md ve AGENTS.md ≤25 satırlık yönlen
 Neden: Yeni oturum projeyi baştan taramadan devam etsin; her turda yüklenen metin kısa kalsın.
 Reddedilen: Uzun CLAUDE.md'yi korumak (her turda tekrar okunur); project_state/'i silmek (doğrulayıcılar ona bağlı).
 Kısıt/Etki: Özel Drive yedek klasörü kimliği repoda tutulmaz. Sahip: Kaan
+
+## D-053 · 2026-11-25 · KABUL
+Karar: Development kayıtları dolu şifreli kasaya kimlikle birleşir: aynı kimlik + aynı bayt atlanır, aynı kimlik + farklı bayt bütün aktarımı durdurur, yeni kimlikler kasanın değişmeyen satırlarının arkasına eklenir (F005-S4).
+Neden: G-76; hiçbir kayıt yeniden yazılmaz, sıra zaman çizelgesi kurallarından gelir, önizleme yeni/atlanan/engelleyen sayar.
+Reddedilen: Kayıtları kasanın SELF profiline yeniden bağlamak (profile_id kaydın baytıdır); profil eşlemesi (her ekran, düzeltme kuralı ve dışa aktarım profile göre); dosyada hedefi olmayan düzeltme.
+Kısıt/Etki: Yalnız aynı SELF profili; okunamayan girdili veya salt okunur kasa reddedilir; önizlemeden sonra değişen kasa yazılmaz (`IMPORT_VAULT_CHANGED`); önceki zarf saklanır, adı alınmışsa bir saniye ileri.

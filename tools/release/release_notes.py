@@ -158,10 +158,11 @@ CHOOSE_EN = [
     "the recovery key, nobody can recover your data.**",
     "- The encrypted build does not open what you entered in the development "
     "build by itself. To move your records: make a backup or an export in "
-    "the development build (\"Your data\" on Today), then, in a new encrypted "
-    "vault that holds no records yet, choose \"Bring in records from the "
-    "development build\". That file is not encrypted: delete it yourself "
-    "once your records are in the vault.",
+    "the development build (\"Your data\" on Today), then, in the encrypted "
+    "vault, choose \"Bring in records from the development build\". Records "
+    "already in the vault are skipped; a record that differs from the one in "
+    "the vault stops the whole import, and nothing is changed. That file is "
+    "not encrypted: delete it yourself once your records are in the vault.",
     "- In the browser (web .zip) there is only the development build: a "
     "browser build that is not a development build keeps nothing after the "
     "tab closes, so it could not keep your records.",
@@ -186,9 +187,11 @@ CHOOSE_TR = [
     "kaybedersen verilerini kimse geri getiremez.**",
     "- Şifreli sürüm, geliştirme sürümünde girdiklerini kendiliğinden açmaz. "
     "Kayıtlarını taşımak için geliştirme sürümünde yedek al ya da dışa aktar "
-    "(Bugün'deki \"Verilerin\"); sonra henüz kayıt olmayan yeni bir şifreli "
-    "kasada \"Geliştirme sürümündeki kayıtları buraya getir\"i seç. O dosya "
-    "şifreli değildir: kayıtların kasaya geçince onu kendin sil.",
+    "(Bugün'deki \"Verilerin\"); sonra şifreli kasada \"Geliştirme "
+    "sürümündeki kayıtları buraya getir\"i seç. Kasada zaten olan kayıtlar "
+    "atlanır; kasadakinden farklı bir kayıt bütün aktarımı durdurur ve hiçbir "
+    "şey değişmez. O dosya şifreli değildir: kayıtların kasaya geçince onu "
+    "kendin sil.",
     "- Tarayıcıda (web .zip) yalnızca geliştirme sürümü var: geliştirme "
     "sürümü olmayan bir tarayıcı sürümü sekme kapanınca hiçbir şey tutmaz, "
     "yani kayıtlarını saklayamaz.",

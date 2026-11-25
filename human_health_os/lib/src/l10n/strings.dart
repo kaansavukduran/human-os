@@ -2612,6 +2612,46 @@ class S {
     'This vault holds no records yet. If you kept records in the development build, choose a backup or an export you made there. It is checked first, and you see what it holds before anything changes.',
     'Bu kasada henüz kayıt yok. Geliştirme sürümünde kayıt tuttuysan, orada aldığın bir yedeği ya da dışa aktarımı seç. Önce kontrol edilir ve bir şey değişmeden önce içinde ne olduğunu görürsün.',
   );
+  String get importExplainMerge => _t(
+    'If you also kept records in the development build, choose a backup or an export you made there. Records already in this vault are skipped, new ones are added, and nothing here is changed or replaced. You see the counts before anything changes.',
+    'Geliştirme sürümünde de kayıt tuttuysan, orada aldığın bir yedeği ya da dışa aktarımı seç. Bu kasada zaten olan kayıtlar atlanır, yeniler eklenir; buradaki hiçbir şey değiştirilmez ya da silinmez. Bir şey değişmeden önce sayıları görürsün.',
+  );
+
+  /// The counts of the preview (F005-S4, D-053).
+  String importCounts({
+    required int fresh,
+    required int present,
+    required int conflicts,
+  }) => _t(
+    'New, to be added: $fresh\nAlready in this vault, skipped: $present\nDifferent from the record in this vault, blocking: $conflicts',
+    'Yeni, eklenecek: $fresh\nBu kasada zaten var, atlanacak: $present\nBu kasadakinden farklı, engelliyor: $conflicts',
+  );
+  String get importBlockedTitle =>
+      _t('These records cannot be brought in', 'Bu kayıtlar getirilemez');
+  String importConflict(int n) => _t(
+    'Records in the file with the same identity as a record in this vault but different content: $n. Human OS never overwrites either one, so nothing is brought in. Keep the version you want in one place (correct it there), make a new backup or export, and try again. Nothing was changed.',
+    'Dosyada bu kasadaki bir kayıtla aynı kimliğe ama farklı içeriğe sahip kayıt sayısı: $n. Human OS ikisinden birinin üzerine asla yazmaz; bu yüzden hiçbir şey getirilmez. İstediğin hâli tek yerde tut (orada düzelt), yeni bir yedek ya da dışa aktarım al ve yeniden dene. Hiçbir şey değişmedi.',
+  );
+  String get importNothingNew => _t(
+    'Every record in this file is already in this vault, exactly as saved. There is nothing to bring in. Nothing was changed.',
+    'Bu dosyadaki her kayıt bu kasada zaten, kaydedildiği gibi var. Getirilecek bir şey yok. Hiçbir şey değişmedi.',
+  );
+  String get importHowMerge => _t(
+    'The new records are added to this vault encrypted, exactly as they were saved (same entries, same corrections); the records already here stay as they are. The vault file as it is now is kept beside it, not deleted. Nothing changes until you choose Bring in.',
+    'Yeni kayıtlar bu kasaya şifreli olarak, kaydedildikleri gibi eklenir (aynı girdiler, aynı düzeltmeler); buradaki kayıtlar olduğu gibi kalır. Kasa dosyasının şimdiki hâli yanında saklanır, silinmez. Getir\'i seçene kadar hiçbir şey değişmez.',
+  );
+  String get importClose => _t('Close', 'Kapat');
+  String importedMerged(int fresh, int present, String? keptAt) =>
+      _t(
+        'New records added, encrypted in this vault: $fresh. Already here, skipped: $present. Close and reopen Human OS, then unlock it with your passphrase as before. The file you chose is not encrypted and was not changed: delete it yourself when you no longer need it.',
+        'Bu kasaya şifreli olarak eklenen yeni kayıt: $fresh. Burada zaten olduğu için atlanan: $present. Uygulamayı kapatıp yeniden aç, sonra her zamanki parolanla kilidini aç. Seçtiğin dosya şifreli değil ve değiştirilmedi: artık gerekmediğinde onu kendin sil.',
+      ) +
+      (keptAt == null
+          ? ''
+          : _t(
+              ' The vault file as it was before was kept at $keptAt.',
+              ' Kasa dosyasının önceki hâli şurada saklandı: $keptAt.',
+            ));
   String get chooseImportTitle => _t(
     'Choose a development backup or export',
     'Bir geliştirme sürümü yedeği ya da dışa aktarımı seç',
@@ -2664,8 +2704,8 @@ class S {
     'Seçtiğin dosya şifreli değil. Onu açan herkes sağlık kayıtlarını okuyabilir. Human OS onu senin yerine silmez: kayıtlar buraya gelince dosyayı ve kopyalarını kendin sil.',
   );
   String get importHow => _t(
-    'The records are written into this vault encrypted, exactly as they were saved (same entries, same corrections). The vault file as it is now is kept beside it, not deleted. Nothing changes until you choose Bring in; this works only while the vault holds no records.',
-    'Kayıtlar bu kasaya şifreli olarak, kaydedildikleri gibi yazılır (aynı girdiler, aynı düzeltmeler). Kasa dosyasının şimdiki hâli yanında saklanır, silinmez. Getir\'i seçene kadar hiçbir şey değişmez; bu yalnız kasada kayıt yokken çalışır.',
+    'The records are written into this vault encrypted, exactly as they were saved (same entries, same corrections). The vault file as it is now is kept beside it, not deleted. Nothing changes until you choose Bring in.',
+    'Kayıtlar bu kasaya şifreli olarak, kaydedildikleri gibi yazılır (aynı girdiler, aynı düzeltmeler). Kasa dosyasının şimdiki hâli yanında saklanır, silinmez. Getir\'i seçene kadar hiçbir şey değişmez.',
   );
   String get importUnderstand => _t(
     'I understand that the file stays unencrypted until I delete it',
@@ -2707,6 +2747,28 @@ class S {
     'IMPORT_EXPORT_DAMAGED' => _t(
       'This export does not match its own counts or timeline; it may be damaged or edited. Nothing was changed.',
       'Bu dışa aktarım kendi sayıları ya da zaman çizelgesiyle uyuşmuyor; bozulmuş ya da düzenlenmiş olabilir. Hiçbir şey değişmedi.',
+    ),
+    'IMPORT_PROFILE_DIFFERENT' => _t(
+      'The records in this file belong to a different profile than the one in this vault. A record keeps the profile it was saved under, and moving it would rewrite it, which Human OS never does. So nothing is brought in. Records come in only from the development build whose records this vault already holds, or into a vault that holds no records yet. Nothing was changed.',
+      'Bu dosyadaki kayıtlar bu kasadakinden farklı bir profile ait. Bir kayıt kaydedildiği profilde kalır; onu taşımak kaydı yeniden yazmak olur ve Human OS bunu asla yapmaz. Bu yüzden hiçbir şey getirilmedi. Kayıtlar yalnız kayıtları bu kasada zaten olan geliştirme sürümünden ya da henüz kayıt olmayan bir kasaya getirilir. Hiçbir şey değişmedi.',
+    ),
+    'IMPORT_CHAIN_BROKEN' => _t(
+      'A correction in this file points to a record that is neither in the file nor in this vault, so its history would be broken. Nothing is brought in. Nothing was changed.\n${technicalDetail('$code $detail')}',
+      'Bu dosyadaki bir düzeltme ne dosyada ne bu kasada olan bir kaydı gösteriyor; geçmişi kopuk kalırdı. Hiçbir şey getirilmedi. Hiçbir şey değişmedi.\n${technicalDetail('$code $detail')}',
+    ),
+    'IMPORT_CONFLICT' => importConflict(int.tryParse(detail) ?? 1),
+    'IMPORT_NOTHING_NEW' => importNothingNew,
+    'IMPORT_TARGET_UNREADABLE' => _t(
+      'This vault holds entries that cannot be read, so Human OS cannot tell whether a record would be added twice. Nothing is brought in; restore a backup of this vault first. Nothing was changed.',
+      'Bu kasada okunamayan girdiler var; Human OS bir kaydın iki kez eklenip eklenmeyeceğini anlayamaz. Hiçbir şey getirilmedi; önce bu kasanın bir yedeğini geri yükle. Hiçbir şey değişmedi.',
+    ),
+    'IMPORT_TARGET_READ_ONLY' => _t(
+      'This vault is open read-only (it holds data of an older version that has not been upgraded yet), so nothing can be added to it. Nothing was changed.',
+      'Bu kasa yalnız okunur açık (henüz yükseltilmemiş eski bir sürümün verisini içeriyor); bu yüzden ona bir şey eklenemez. Hiçbir şey değişmedi.',
+    ),
+    'IMPORT_VAULT_CHANGED' => _t(
+      'This vault changed after the file was checked (a record was saved meanwhile). Nothing was brought in, so nothing saved is lost. Try again.',
+      'Dosya kontrol edildikten sonra bu kasa değişti (bu arada bir kayıt kaydedildi). Hiçbir şey getirilmedi; kaydedilen hiçbir şey kaybolmadı. Yeniden dene.',
     ),
     'IMPORT_TARGET_HAS_RECORDS' => _t(
       'This vault already holds records. Records are brought in only into a vault that holds none, so nothing is mixed or hidden. Nothing was changed.',

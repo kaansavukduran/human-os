@@ -106,7 +106,7 @@ class FileDataFiles implements DataFiles {
     target.checkKind(staged);
     final liveBytes = await vault.exists() ? await vault.readAsBytes() : null;
     final live = liveBytes == null ? null : decodeLogBytes(liveBytes);
-    target.refuseIfHolds(live);
+    target.checkLive(staged, live);
     await vault.parent.create(recursive: true);
     // Staged destination: written and verified before anything is switched.
     final restoring = File('${vault.path}.restoring');
@@ -126,7 +126,14 @@ class FileDataFiles implements DataFiles {
     // restored vault at the path, never neither.
     String? kept;
     if (liveBytes != null) {
-      final aside = '${vault.path}.before-restore-${fileStamp(now)}';
+      // An earlier kept copy is never overwritten: a name already taken
+      // steps forward a second (two imports within one second, F005-S4).
+      var at = now;
+      while (await File('${vault.path}.before-restore-${fileStamp(at)}')
+          .exists()) {
+        at = at.add(const Duration(seconds: 1));
+      }
+      final aside = '${vault.path}.before-restore-${fileStamp(at)}';
       try {
         await _copy(vault, aside);
         if (!_same(await File(aside).readAsBytes(), liveBytes)) {

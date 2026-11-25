@@ -34,8 +34,9 @@ class YourDataCard extends StatefulWidget {
 class _YourDataCardState extends State<YourDataCard> {
   List<SavedFile> _backups = const [];
 
-  /// True while the encrypted vault holds no records: only then are the
-  /// records of a development build offered (F005-S3, D-050).
+  /// True while the encrypted vault holds no records: the import entry
+  /// then explains a first import (F005-S3, D-050); otherwise a merge
+  /// (F005-S4, D-053).
   bool _vaultEmpty = false;
   String? _message;
   bool _messageIsError = false;
@@ -61,7 +62,7 @@ class _YourDataCardState extends State<YourDataCard> {
     // A checkpoint made by a save elsewhere on Today shows up in the list.
     widget.services.checkpointSaved?.addListener(_reload);
     // A record saved anywhere ends "the vault is empty": the import entry
-    // leaves at once, not on the next visit (review finding).
+    // says at once that records are merged, not on the next visit.
     widget.services.recordsAppended?.addListener(_recheckEmpty);
   }
 
@@ -610,22 +611,25 @@ class _YourDataCardState extends State<YourDataCard> {
     );
   }
 
-  /// Records of a development build into this empty encrypted vault
-  /// (F005-S3, G-76, D-050): a backup or an export the person chooses goes
+  /// Records of a development build into this encrypted vault (F005-S3,
+  /// D-050; F005-S4, D-053): a backup or an export the person chooses goes
   /// through the same gate as a restore (manifest and checksum where
   /// present, format and record-schema compatibility, counts, every record
-  /// rule), then a preview with the counts and the warning that the chosen
-  /// file is not encrypted and is never deleted by the app, a required
-  /// confirmation, then the adapter's staged write of the vault re-sealed
-  /// with its own key. Nothing is written before the confirmation; a
-  /// failure changes nothing.
+  /// rule), is compared with the vault (new, already here, conflicting),
+  /// then a preview with the counts and the warning that the chosen file is
+  /// not encrypted and is never deleted by the app, a required
+  /// confirmation, then the adapter's staged write. A conflict blocks the
+  /// whole import; nothing is written before the confirmation; a failure
+  /// changes nothing.
   Future<void> _importDevelopment(S s) async {
+    final plan = _s.planDevelopmentImport!;
     final prepare = _s.stageDevelopmentImport!;
     final files = _files!;
     final picker = _s.backupPicker ?? const SystemBackupFilePicker();
     _working(s.busyReading);
     final PickedBackup? picked;
     final StagedImport imp;
+    final ImportPlan p;
     try {
       picked = await picker.pick(title: s.chooseImportTitle);
       if (picked == null) {
@@ -634,12 +638,19 @@ class _YourDataCardState extends State<YourDataCard> {
       }
       _working(s.busyCheckingFile);
       imp = stageImport(picked.text, now: DateTime.now().toUtc());
+      p = await plan(imp);
     } catch (e) {
       _say(_describe(e, s, chosenFile: true), error: true);
       return;
     }
     if (!mounted) return;
     _say(null);
+    // Nothing to write: the preview says why, with one way out.
+    final stop = p.blocked
+        ? s.importConflict(p.conflictIds.length)
+        : p.nothingNew
+        ? s.importNothingNew
+        : null;
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) {
@@ -648,7 +659,10 @@ class _YourDataCardState extends State<YourDataCard> {
           builder: (c, setDialog) => AlertDialog(
             key: const ValueKey('import-preview'),
             scrollable: true,
-            title: Text(s.importTitle),
+            title: Text(
+              p.blocked ? s.importBlockedTitle : s.importTitle,
+              key: const ValueKey('import-preview-title'),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -664,6 +678,16 @@ class _YourDataCardState extends State<YourDataCard> {
                   ),
                   key: const ValueKey('import-preview-text'),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  s.importCounts(
+                    fresh: p.newCount,
+                    present: p.alreadyPresent,
+                    conflicts: p.conflictIds.length,
+                  ),
+                  key: const ValueKey('import-counts'),
+                  style: Theme.of(c).textTheme.bodyLarge,
+                ),
                 if (imp.skippedEntries > 0) ...[
                   const SizedBox(height: 8),
                   Text(
@@ -672,41 +696,66 @@ class _YourDataCardState extends State<YourDataCard> {
                   ),
                 ],
                 const SizedBox(height: 8),
-                Text(
-                  s.importWarning,
-                  key: const ValueKey('import-warning-text'),
-                  style: Theme.of(c).textTheme.bodyLarge
-                      ?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 8),
-                Text(s.importHow),
-                CheckboxListTile(
-                  key: const ValueKey('import-understand'),
-                  contentPadding: EdgeInsets.zero,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  value: understood,
-                  onChanged: (v) => setDialog(() => understood = v ?? false),
-                  title: Text(s.importUnderstand),
-                ),
+                if (stop != null)
+                  Text(
+                    stop,
+                    key: const ValueKey('import-stop-text'),
+                    style: Theme.of(c).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: p.blocked ? Theme.of(c).colorScheme.error : null,
+                    ),
+                  )
+                else ...[
+                  Text(
+                    s.importWarning,
+                    key: const ValueKey('import-warning-text'),
+                    style: Theme.of(c).textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(p.intoEmptyVault ? s.importHow : s.importHowMerge),
+                  CheckboxListTile(
+                    key: const ValueKey('import-understand'),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: understood,
+                    onChanged: (v) => setDialog(() => understood = v ?? false),
+                    title: Text(s.importUnderstand),
+                  ),
+                ],
               ],
             ),
             actions: [
-              TextButton(
-                key: const ValueKey('cancel-import'),
-                onPressed: () => Navigator.of(c).pop(false),
-                child: Text(s.cancel),
-              ),
-              FilledButton(
-                key: const ValueKey('confirm-import'),
-                onPressed: understood ? () => Navigator.of(c).pop(true) : null,
-                child: Text(s.importConfirm),
-              ),
+              if (stop != null)
+                FilledButton(
+                  key: const ValueKey('close-import'),
+                  onPressed: () => Navigator.of(c).pop(false),
+                  child: Text(s.importClose),
+                )
+              else ...[
+                TextButton(
+                  key: const ValueKey('cancel-import'),
+                  onPressed: () => Navigator.of(c).pop(false),
+                  child: Text(s.cancel),
+                ),
+                FilledButton(
+                  key: const ValueKey('confirm-import'),
+                  onPressed: understood
+                      ? () => Navigator.of(c).pop(true)
+                      : null,
+                  child: Text(s.importConfirm),
+                ),
+              ],
             ],
           ),
         );
       },
     );
     if (!mounted) return;
+    if (stop != null) {
+      _say(stop, error: p.blocked);
+      return;
+    }
     if (ok != true) {
       _say(s.importCancelled);
       return;
@@ -716,7 +765,7 @@ class _YourDataCardState extends State<YourDataCard> {
         final now = DateTime.now().toUtc();
         final RestoreOutcome out;
         try {
-          final staged = await prepare(imp, now);
+          final staged = await prepare(p, now);
           out = await files.restore(
             staged,
             now: now,
@@ -726,12 +775,17 @@ class _YourDataCardState extends State<YourDataCard> {
           );
         } on BackupError catch (e) {
           if (e.code == 'RESTORE_TARGET_HAS_RECORDS') {
-            throw const ImportError('IMPORT_TARGET_HAS_RECORDS');
+            throw const ImportError('IMPORT_VAULT_CHANGED');
+          }
+          if (e.code == 'IMPORT_VAULT_CHANGED') {
+            throw const ImportError('IMPORT_VAULT_CHANGED');
           }
           rethrow;
         }
         _lockAfterRestore();
-        return s.imported(imp.recordCount, imp.profileCount, out.keptPrevious);
+        return p.intoEmptyVault
+            ? s.imported(imp.recordCount, imp.profileCount, out.keptPrevious)
+            : s.importedMerged(p.newCount, p.alreadyPresent, out.keptPrevious);
       },
       s,
       busy: s.busyImporting,
@@ -905,10 +959,10 @@ class _YourDataCardState extends State<YourDataCard> {
               ] else if (files.canRestore) ...[
                 if (encrypted &&
                     _s.stageDevelopmentImport != null &&
-                    _vaultEmpty &&
+                    _s.planDevelopmentImport != null &&
                     !_restored) ...[
                   Text(
-                    s.importExplain,
+                    _vaultEmpty ? s.importExplain : s.importExplainMerge,
                     key: const ValueKey('import-explain'),
                     style: text.bodyMedium,
                   ),

@@ -210,7 +210,8 @@ void main() {
       );
     }
 
-    test('a vault that holds a record', () async {
+    test('a vault that holds a record of another profile (F005-S4: '
+        'records are never re-attached, D-053)', () async {
       final svc = HeartbeatService(o.repository);
       await svc.recordWeightKg(
         profileId: (await svc.ensureSelfProfile()).id,
@@ -219,7 +220,7 @@ void main() {
       before = vaultFile.readAsStringSync();
       await expectLater(
         bringIn(o, stageImport(bundle, now: t0)),
-        importError('IMPORT_TARGET_HAS_RECORDS'),
+        importError('IMPORT_PROFILE_DIFFERENT'),
       );
       unchanged();
     });

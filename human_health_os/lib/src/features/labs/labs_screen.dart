@@ -326,6 +326,12 @@ class _LabsScreenState extends State<LabsScreen> {
         record: rows[i].record,
         conflict: rows[i].conflict,
         onCorrect: () => _open(rows[i].record),
+        // Its test and sample date, and what else tells it apart from a
+        // result of the same test that day (R025).
+        about:
+            '${rows[i].record.lab!.analyteLabel}, '
+            '${labRowAbout(s, rows[i].record, [for (final o in rows)
+              if (o.record.lab!.analyteLabel == rows[i].record.lab!.analyteLabel) o.record])}',
       ),
       header: [
         const AreaIntro(
@@ -877,11 +883,13 @@ class _LabTile extends StatelessWidget {
     required this.record,
     required this.conflict,
     required this.onCorrect,
+    required this.about,
   });
 
   final HealthRecord record;
   final bool conflict;
   final VoidCallback onCorrect;
+  final String about;
 
   @override
   Widget build(BuildContext context) {
@@ -927,7 +935,7 @@ class _LabTile extends StatelessWidget {
       ],
       footer: DetailsDisclosure(
         id: 'lab-${record.id}',
-        about: lab.analyteLabel,
+        about: about,
         trailing: TextButton.icon(
           key: ValueKey('lab-correct-${record.id}'),
           onPressed: onCorrect,

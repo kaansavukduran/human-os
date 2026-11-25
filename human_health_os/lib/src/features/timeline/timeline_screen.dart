@@ -3,6 +3,7 @@ import '../../domain/settings/date_style.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/app_services.dart';
+import '../../core/ids.dart' show Clock;
 import '../../application/heartbeat_service.dart';
 import '../../domain/ports/health_repository.dart';
 import '../../domain/records/health_record.dart';
@@ -15,6 +16,7 @@ import '../../presentation/widgets/area_intro.dart';
 import '../../presentation/widgets/entry_list.dart';
 import '../../presentation/widgets/first_step.dart';
 import '../../presentation/widgets/loading_line.dart';
+import '../../presentation/widgets/midnight_refresh.dart';
 import '../../presentation/widgets/read_failed_note.dart';
 import '../../presentation/widgets/record_row.dart';
 import '../../presentation/widgets/sheet_parts.dart';
@@ -33,7 +35,8 @@ class TimelineScreen extends StatefulWidget {
   State<TimelineScreen> createState() => _TimelineScreenState();
 }
 
-class _TimelineScreenState extends State<TimelineScreen> {
+class _TimelineScreenState extends State<TimelineScreen>
+    with WidgetsBindingObserver, MidnightRefresh {
   List<TimelineEntry> _entries = const [];
   bool _showHidden = false;
   bool _loaded = false;
@@ -41,6 +44,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   HeartbeatService get _svc => widget.services.heartbeat;
   String get _me => widget.services.self.id;
+
+  /// The app's clock (R025): "Today" and "Yesterday" follow it, and the
+  /// headers are written again just after local midnight and on resume.
+  @override
+  Clock get midnightClock => _svc.clock;
+
+  @override
+  void didUpdateWidget(TimelineScreen old) {
+    super.didUpdateWidget(old);
+    if (old.services.heartbeat.clock != _svc.clock) scheduleMidnight();
+  }
 
   @override
   void initState() {
@@ -76,7 +90,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final entries = _readFailed ? const <TimelineEntry>[] : _entries;
     // Day headers (U038): the entries are newest first, so a header goes
     // before the first entry of each day.
-    final items = timelineItems(s, entries, DateTime.now());
+    final items = timelineItems(s, entries, midnightClock.nowUtc().toLocal());
     return EntryList(
       key: const ValueKey('screen-timeline'),
       itemCount: items.length,
@@ -289,6 +303,14 @@ class _EntryTile extends StatelessWidget {
       when: fmtTimeOfDay(s, r),
       onTap: onTap,
       chips: [
+        // Worked out, modelled, planned …: said on the row, so it never
+        // looks like a measurement (model output ≠ observed fact, R025).
+        if (s.recordStateOnRow(r.state) case final state?)
+          StatusChip(
+            key: ValueKey('timeline-state-${r.id}'),
+            label: state,
+            tone: StatusTone.info,
+          ),
         if (entry.corrected)
           StatusChip(
             label: s.versionsCount(entry.versions.length),
@@ -737,6 +759,18 @@ class _EntryDetailState extends State<_EntryDetail> {
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
+                    // The lab's printed range stays in view under the
+                    // value, as on Labs (R025).
+                    if (v.lab case final lab?)
+                      Text(
+                        lab.referenceInterval != null
+                            ? s.labIntervalLine(lab.referenceInterval!)
+                            : lab.referenceText != null
+                            ? s.labPrintedRange(lab.referenceText!)
+                            : s.labNoRangePrinted,
+                        key: ValueKey('timeline-lab-range-${v.id}'),
+                        style: text.bodyMedium?.copyWith(color: quiet),
+                      ),
                     Text(
                       [
                         s.versionRole(
@@ -783,7 +817,13 @@ class _EntryDetailState extends State<_EntryDetail> {
                                 lab,
                                 fmtWhen,
                               ))
-                                DetailLine(line),
+                                // The interval is already in view above.
+                                if (lab.referenceInterval == null ||
+                                    line !=
+                                        s.labIntervalLine(
+                                          lab.referenceInterval!,
+                                        ))
+                                  DetailLine(line),
                           ],
                         ),
                       ),

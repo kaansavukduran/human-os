@@ -504,6 +504,15 @@ class S {
     RecordState.unknown => _t('State unknown', 'Durum bilinmiyor'),
   };
 
+  /// A record's state said on its row (R025, model output ≠ observed
+  /// fact): null for what was observed or reported (a device's own
+  /// estimate keeps its own wording in its name), else a short chip.
+  String? recordStateOnRow(RecordState v) => switch (v) {
+    RecordState.observed || RecordState.reported => null,
+    RecordState.derived => _t('Worked out', 'Hesaplandı'),
+    _ => recordState(v),
+  };
+
   String provenanceKind(ProvenanceKind v) => switch (v) {
     ProvenanceKind.manual => _t('Manual entry', 'Elle giriş'),
     ProvenanceKind.device => _t('Device', 'Cihaz'),
@@ -1589,6 +1598,8 @@ class S {
   String get dayToday => _t('Today', 'Bugün');
   String get dayYesterday => _t('Yesterday', 'Dün');
   String get fontPreviewShow => _t('See each font', 'Her yazı tipini gör');
+  String get fontPreviewHide =>
+      _t('Hide the font samples', 'Yazı tipi örneklerini gizle');
   String get firstBack => _t('Back', 'Geri');
   String get firstSkip => _t('Skip', 'Atla');
   String get firstStart => _t('Start', 'Başla');

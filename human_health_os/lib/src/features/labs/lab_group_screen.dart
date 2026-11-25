@@ -158,6 +158,9 @@ class LabGroupScreen extends StatelessWidget {
                 record: row.record,
                 conflict: row.conflict,
                 groupLabel: group.label,
+                about: labRowAbout(s, row.record, [
+                  for (final r in group.rows) r.record,
+                ]),
               ),
           ],
         ),
@@ -173,17 +176,38 @@ class LabGroupScreen extends StatelessWidget {
   }
 }
 
+/// What a lab row's Details toggle is named with (R025): the sample date,
+/// and, when another of [rows] (results of the same test) shares that day,
+/// the laboratory (when every such result names a different one) or else
+/// its value and when it was entered, so no two toggles sound the same.
+String labRowAbout(S s, HealthRecord r, List<HealthRecord> rows) {
+  final day = labDay(r.observedAt);
+  final sameDay = [
+    for (final o in rows)
+      if (labDay(o.observedAt) == day) o,
+  ];
+  if (sameDay.length < 2) return day;
+  final labs = [for (final o in sameDay) o.lab?.laboratory];
+  final distinct = !labs.contains(null) && labs.toSet().length == labs.length;
+  final extra = distinct
+      ? r.lab!.laboratory!
+      : '${fmtValue(s, r)}, ${s.enteredOn} ${fmtWhen(r.recordedAt)}';
+  return '$day, $extra';
+}
+
 class _GroupResult extends StatelessWidget {
   const _GroupResult({
     super.key,
     required this.record,
     required this.conflict,
     required this.groupLabel,
+    required this.about,
   });
 
   final HealthRecord record;
   final bool conflict;
   final String groupLabel;
+  final String about;
 
   @override
   Widget build(BuildContext context) {
@@ -222,7 +246,7 @@ class _GroupResult extends StatelessWidget {
       ],
       footer: DetailsDisclosure(
         id: 'lab-group-${record.id}',
-        about: labDay(record.observedAt),
+        about: about,
         children: [
           if (lab.laboratory case final l?) DetailLine(s.labGroupLaboratory(l)),
           DetailLine(s.provenanceKind(record.provenance.kind)),

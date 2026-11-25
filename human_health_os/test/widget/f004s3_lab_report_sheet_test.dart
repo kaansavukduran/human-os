@@ -54,9 +54,17 @@ Future<List<String>> timelineDetails(WidgetTester tester, String rootId) async {
         of: find.byWidgetPredicate(
           (w) =>
               w.key is ValueKey<String> &&
-              (w.key! as ValueKey<String>).value.startsWith('version-details-'),
+              ((w.key! as ValueKey<String>).value.startsWith(
+                    'version-details-',
+                  ) ||
+                  // The printed range stays in view under the value
+                  // (R025), not behind Details.
+                  (w.key! as ValueKey<String>).value.startsWith(
+                    'timeline-lab-range-',
+                  )),
         ),
         matching: find.byType(Text),
+        matchRoot: true,
       ),
     ))
       ?t.data,

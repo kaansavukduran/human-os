@@ -241,6 +241,7 @@ class SettingsScreen extends StatelessWidget {
                       id: 'font-previews',
                       about: s.settingsFont,
                       showText: s.fontPreviewShow,
+                      hideText: s.fontPreviewHide,
                       children: [
                         Text(s.fontPreviewNote, style: text.bodySmall),
                         const SizedBox(height: Space.xs),

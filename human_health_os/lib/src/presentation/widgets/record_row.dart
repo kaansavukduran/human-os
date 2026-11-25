@@ -16,6 +16,7 @@ class DetailsToggle extends StatelessWidget {
     required this.onToggle,
     required this.about,
     this.showText,
+    this.hideText,
   });
 
   final String id;
@@ -28,12 +29,16 @@ class DetailsToggle extends StatelessWidget {
   /// The closed toggle's words; "Details" by default.
   final String? showText;
 
+  /// The open toggle's words; "Hide details" by default. Give one with
+  /// [showText], so the toggle closes in the words it opened with (R025).
+  final String? hideText;
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final words = open ? s.detailsHide : showText ?? s.detailsShow;
+    final words = open ? hideText ?? s.detailsHide : showText ?? s.detailsShow;
     return Semantics(
       container: true,
       button: true,
@@ -87,6 +92,7 @@ class DetailsDisclosure extends StatefulWidget {
     required this.about,
     required this.children,
     this.showText,
+    this.hideText,
     this.trailing,
   });
 
@@ -94,6 +100,7 @@ class DetailsDisclosure extends StatefulWidget {
   final String about;
   final List<Widget> children;
   final String? showText;
+  final String? hideText;
 
   /// An action on the toggle's line, at its end (e.g. "Correct").
   final Widget? trailing;
@@ -112,6 +119,7 @@ class _DetailsDisclosureState extends State<DetailsDisclosure> {
       open: _open,
       about: widget.about,
       showText: widget.showText,
+      hideText: widget.hideText,
       onToggle: () => setState(() => _open = !_open),
     );
     return Column(

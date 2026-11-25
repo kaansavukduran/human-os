@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../../app/app_services.dart';
@@ -9,6 +7,7 @@ import '../../core/ids.dart' show Clock;
 import '../../l10n/strings.dart';
 import '../../navigation/destinations.dart';
 import '../../presentation/theme/spacing.dart';
+import '../../presentation/widgets/midnight_refresh.dart';
 import '../../presentation/widgets/tool_row.dart';
 import '../derived/derived_screen.dart';
 import '../genetics/genetics_screen.dart';
@@ -202,47 +201,15 @@ class _DateLine extends StatefulWidget {
   State<_DateLine> createState() => _DateLineState();
 }
 
-class _DateLineState extends State<_DateLine> with WidgetsBindingObserver {
-  Timer? _midnight;
-
+class _DateLineState extends State<_DateLine>
+    with WidgetsBindingObserver, MidnightRefresh {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _schedule();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state != AppLifecycleState.resumed || !mounted) return;
-    setState(() {});
-    _schedule();
-  }
+  Clock get midnightClock => widget.clock;
 
   @override
   void didUpdateWidget(_DateLine old) {
     super.didUpdateWidget(old);
-    if (old.clock != widget.clock) _schedule();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _midnight?.cancel();
-    super.dispose();
-  }
-
-  /// Fires a second after the next local midnight (DateTime works out a
-  /// daylight-saving day of 23 or 25 hours).
-  void _schedule() {
-    _midnight?.cancel();
-    final now = widget.clock.nowUtc().toLocal();
-    final next = DateTime(now.year, now.month, now.day + 1);
-    _midnight = Timer(next.difference(now) + const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() {});
-      _schedule();
-    });
+    if (old.clock != widget.clock) scheduleMidnight();
   }
 
   @override

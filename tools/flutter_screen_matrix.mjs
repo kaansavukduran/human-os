@@ -65,6 +65,9 @@ const VIEWPORTS = {
   'tablet-portrait': { width: 820, height: 1180, touch: true, ua: ANDROID_TABLET_UA },
   'tablet-landscape': { width: 1180, height: 820, touch: true, ua: ANDROID_TABLET_UA },
   desktop: { width: 1440, height: 900, touch: false, ua: null },
+  // Q008: desktop windows narrow enough for the compact (80 dp) rail.
+  'compact-840': { width: 840, height: 900, touch: false, ua: null },
+  'compact-1000': { width: 1000, height: 900, touch: false, ua: null },
 };
 const LOCALES = ['en-US', 'tr-TR'];
 // [id, navigation item, heading, kind]; kind: tab (primary), area (More), settings.
@@ -105,10 +108,11 @@ const MORE = { 'en-US': 'More', 'tr-TR': 'Diğer' };
 const BACK = { 'en-US': /^Back$/, 'tr-TR': /^Geri$/ };
 // The buttons of a sheet's pinned bar (SheetFrame: Save and Cancel; U044).
 const SHEET_BAR = { 'en-US': '^(Save|Cancel)$', 'tr-TR': '^(Kaydet|Vazgeç)$' };
+const SHEET_SAVE = { 'en-US': '^Save$', 'tr-TR': '^Kaydet$' };
 const ALL = SCREENS['en-US'].map(([id]) => id);
 // One group = one page load; its cells are visited in order.
 const GROUPS = [];
-for (const vp of Object.keys(VIEWPORTS)) for (const locale of LOCALES) GROUPS.push({ variant: 'base', vp, locale, screens: ALL });
+for (const vp of Object.keys(VIEWPORTS).filter((v) => !v.startsWith('compact-'))) for (const locale of LOCALES) GROUPS.push({ variant: 'base', vp, locale, screens: ALL });
 for (const palette of ['Matrix', 'Axolotl', 'Trans']) for (const vp of ['phone', 'desktop']) GROUPS.push({ variant: `palette-${palette.toLowerCase()}`, palette, vp, locale: 'en-US', screens: ['Settings', 'Today'] });
 // 2× text through the browser's font size (the root font size Flutter web
 // reads as its text scale), as a person with a large browser font gets.
@@ -190,6 +194,24 @@ for (const locale of LOCALES) {
   // Compared with the dark 1× group: the theme does not change sizes.
   GROUPS.push({ variant: 'u043-light-2x', theme: 'light', fontSize: '32px', ref: 'u043', vp: 'small-phone', locale, screens: U043_IDS });
 }
+// Q008 (after U044): the two add or edit sheets no cell opened before
+// (Activity's add sheet; the Timeline correction of a saved finger-prick
+// glucose, saved first through the measurement sheet), at 320x640 (1× and
+// 2× text) and on the desktop; and the compact rail (U044: labels at most
+// 1.3× and three lines, the rail 80 dp wide) in 840- and 1000-wide
+// windows at 1× and 2× text. The vault gate is not reached: a web build
+// keeps no vault (storage_web.dart), whatever its environment.
+const Q008_IDS = ['Activity: add sheet', 'Timeline: correction'];
+const RAIL_IDS = ['Today', 'Timeline', 'Labs', 'Nutrition', 'Learn'];
+for (const locale of LOCALES) {
+  GROUPS.push({ variant: 'q008', vp: 'small-phone', locale, screens: Q008_IDS });
+  GROUPS.push({ variant: 'q008', vp: 'desktop', locale, screens: Q008_IDS });
+  GROUPS.push({ variant: 'q008-text-2x', fontSize: '32px', ref: 'q008', vp: 'small-phone', locale, screens: Q008_IDS });
+  for (const vp of ['compact-840', 'compact-1000']) {
+    GROUPS.push({ variant: 'q008-rail', vp, locale, screens: RAIL_IDS, rail: true });
+    GROUPS.push({ variant: 'q008-rail-text-2x', fontSize: '32px', ref: 'q008-rail', vp, locale, screens: RAIL_IDS, rail: true });
+  }
+}
 // U044: every 2× group (one with a browser font size) is checked by
 // `text_scaled_2x` against the 1× group it names in `ref`, whatever its
 // variant is called (Q007: `u043-light-2x` was skipped because only
@@ -214,6 +236,10 @@ const U_TEXT = {
     guide: 'Body and specialties', guideSystem: 'Heart and blood vessels', guideParts: 'Main parts',
     moreMeasures: /^More measurements/, glucoseTile: /^Blood glucose \(finger-prick meter\)/,
     glucoseUnit: 'millimoles per litre', glucoseTiming: 'After a meal',
+    // Q008.
+    actAdd: 'Add an activity', actWhen: /^When/,
+    glucoseValue: /^Blood glucose, as the meter showed/, saveMeasurement: 'Save measurement', glucoseRow: /^Blood glucose/,
+    correct: 'Correct', correctWhen: /^When it was measured/,
   },
   'tr-TR': {
     light: 'Açık',
@@ -228,6 +254,9 @@ const U_TEXT = {
     guide: 'Vücut ve uzmanlık alanları', guideSystem: 'Kalp ve damarlar', guideParts: 'Ana parçalar',
     moreMeasures: /^Diğer ölçümler/, glucoseTile: /^Kan şekeri \(parmaktan ölçüm\)/,
     glucoseUnit: 'litrede milimol', glucoseTiming: 'Yemekten sonra',
+    actAdd: 'Aktivite ekle', actWhen: /^Ne zaman/,
+    glucoseValue: /^Kan şekeri, cihazın gösterdiği/, saveMeasurement: 'Ölçümü kaydet', glucoseRow: /^Kan şekeri/,
+    correct: 'Düzelt', correctWhen: /^Ölçüm zamanı/,
   },
 };
 // The words the extra cells look for (lib/src/l10n/strings.dart).
@@ -320,6 +349,7 @@ if (process.env.MATRIX_CELLS) {
   const re = new RegExp(process.env.MATRIX_CELLS);
   for (const g of GROUPS) g.screens = g.screens.filter((id) => re.test(id));
 }
+const sweepShots = process.env.MATRIX_SWEEP_SHOTS ? new RegExp(process.env.MATRIX_SWEEP_SHOTS) : null;
 const log = (...a) => { if (process.env.MATRIX_VERBOSE) console.log(new Date().toISOString().slice(11, 19), ...a); };
 
 // 48 dp: Material's minimum touch target (Q005; Q001–Q004 measured 44).
@@ -551,14 +581,19 @@ async function runPass(root, mode) {
       // The bar is the row of Save / Cancel buttons at the window's bottom;
       // its top less the 8 dp above the buttons and the divider is the
       // limit. A sheet whose Save scrolls with its fields has no such bar.
-      const sheetBar = inSheet ? await page.evaluate(([vh, words]) => {
+      // Q008: the band must hold the bar's Save itself; a sheet whose own
+      // Save scrolls with its fields ("Save measurement") and whose Cancel
+      // passes near the window bottom has no bar.
+      const sheetBar = inSheet ? await page.evaluate(([vh, words, saveWord]) => {
         const re = new RegExp(words);
-        const rs = [...document.querySelectorAll('flt-semantics-host [role="button"]')]
-          .filter((e) => re.test((e.getAttribute('aria-label') ?? e.textContent ?? '').trim()))
-          .map((e) => e.getBoundingClientRect())
-          .filter((r) => r.width > 0 && r.top > vh / 2 && r.bottom >= vh - 80);
-        return rs.length ? Math.min(...rs.map((r) => r.top)) - 9 : null;
-      }, [vp.height, SHEET_BAR[g.locale]]).catch(() => null) : null;
+        const nm = (e) => (e.getAttribute('aria-label') ?? e.textContent ?? '').trim();
+        const bs = [...document.querySelectorAll('flt-semantics-host [role="button"]')]
+          .filter((e) => re.test(nm(e)))
+          .map((e) => ({ n: nm(e), r: e.getBoundingClientRect() }))
+          .filter(({ r }) => r.width > 0 && r.top > vh / 2 && r.bottom >= vh - 80);
+        if (!bs.some(({ n }) => new RegExp(saveWord).test(n))) return null;
+        return Math.min(...bs.map(({ r }) => r.top)) - 9;
+      }, [vp.height, SHEET_BAR[g.locale], SHEET_SAVE[g.locale]]).catch(() => null) : null;
       const bottom = sheetBar ?? barTop ?? vp.height - 10;
       // The bar's own Save or Cancel button is always in view; any other
       // target lying inside the bar's band is hidden by it (U044 review).
@@ -1092,6 +1127,92 @@ async function runPass(root, mode) {
       },
     });
 
+    // Q008 cells: the Activity add sheet and the Timeline correction. The
+    // target is the sheet's last field, so the reveal must stop at the
+    // sheet's Save bar (U044) where it has one.
+    const textbox = (name) => page.getByRole('textbox', { name }).first();
+    const openGlucoseSheet = async () => {
+      await atArea('Today');
+      const tx = await wheelX('Today');
+      const more = page.getByRole('button', { name: U.moreMeasures }).first();
+      if (await reveal(more, tx)) {
+        await tap(more);
+        await page.waitForTimeout(600);
+      }
+      const tile = page.getByRole('button', { name: U.glucoseTile }).first();
+      await reveal(tile, tx);
+      await tap(tile);
+      sheetOpen = true;
+      await chipLoc(U.glucoseTiming).waitFor({ state: 'attached', timeout: 15_000 });
+      await page.waitForTimeout(600);
+      sheetX = await leftOfChips();
+    };
+    Object.assign(EXTRA, {
+      'Activity: add sheet': {
+        label: U.actAdd,
+        target: () => textbox(U.actWhen),
+        sheet: true,
+        x: () => sheetX,
+        probeHeight: () => areaHeadingHeight,
+        go: async () => {
+          await atArea('Activity');
+          const add = page.getByRole('button', { name: U.actAdd, exact: true }).first();
+          await reveal(add, await wheelX('Activity'));
+          await tap(add);
+          sheetOpen = true;
+          await xh(U.actAdd).waitFor({ timeout: 15_000 });
+          await page.waitForTimeout(600);
+          const b = await xh(U.actAdd).boundingBox({ timeout: 2_000 }).catch(() => null);
+          sheetX = b ? Math.max(2, b.x - 8) : 6;
+        },
+      },
+      'Timeline: correction': {
+        label: 'correction: when it was measured',
+        target: () => textbox(U.correctWhen),
+        sheet: true,
+        x: () => sheetX,
+        probeHeight: () => areaHeadingHeight,
+        go: async () => {
+          // A finger-prick glucose saved as a person saves it (once a page).
+          await open('Timeline');
+          await H(names.Timeline.heading).waitFor({ timeout: 15_000 });
+          let tx = await wheelX('Timeline');
+          const row = page.getByRole('button', { name: U.glucoseRow }).first();
+          if (!(await reveal(row, tx))) {
+            await openGlucoseSheet();
+            await pickChip(U.glucoseUnit, sheetX);
+            await fillInSheet(U.glucoseValue, '6');
+            // The measurement sheet's Save scrolls with its fields.
+            const save = page.getByRole('button', { name: U.saveMeasurement, exact: true }).first();
+            await reveal(save, sheetX, true);
+            await tap(save);
+            await chipLoc(U.glucoseTiming).waitFor({ state: 'detached', timeout: 15_000 }).catch(() => {});
+            sheetOpen = false;
+            await page.waitForTimeout(600);
+            chipPicks = new Map();
+            await open('Timeline');
+            await H(names.Timeline.heading).waitFor({ timeout: 15_000 });
+            tx = await wheelX('Timeline');
+            await reveal(row, tx);
+          }
+          // 2× text is judged on the Timeline heading.
+          await toTop(tx);
+          areaHeadingHeight = (await H(names.Timeline.heading).boundingBox().catch(() => null))?.height ?? null;
+          await reveal(row, tx);
+          await tap(row);
+          sheetOpen = true;
+          await xh(T.versions).waitFor({ timeout: 15_000 });
+          await page.waitForTimeout(500);
+          const b = await xh(T.versions).boundingBox({ timeout: 2_000 }).catch(() => null);
+          sheetX = b ? Math.max(2, b.x - 8) : 6;
+          const c = page.getByRole('button', { name: U.correct, exact: true }).first();
+          await reveal(c, sheetX, true);
+          await tap(c);
+          await page.waitForTimeout(800);
+        },
+      },
+    });
+
     // The light-theme group chooses Light in Settings first (dark is the
     // default).
     let themeApplied = null;
@@ -1198,6 +1319,19 @@ async function runPass(root, mode) {
           const selected = !!p && p.tapped && p.before !== 'true' && p.after === 'true';
           const how = !p ? 'the cell did not pick it' : p.tapped ? `picked: aria-checked ${p.before} → ${p.after}` : `already checked before the cell (aria-checked ${p.before}): no selection was made`;
           set('chip_checked', selected && ac === 'true' ? 'PASS' : 'FAIL', `checkbox "${ex.label}" aria-checked=${ac}; ${how}`);
+        }
+        // Q008 (U044): the compact rail stays 80 dp wide and every one of
+        // its 11 items (4 primary, 6 areas, Settings) lies whole inside
+        // the rail and the window. Line counts are judged by eye.
+        if (g.rail) {
+          const rail = await page.evaluate(() => [...document.querySelectorAll('flt-semantics-host [role="button"], flt-semantics-host [role="tab"]')]
+            .map((e) => ({ n: (e.getAttribute('aria-label') ?? e.textContent ?? '').trim().split('\n')[0], r: e.getBoundingClientRect() }))
+            .filter(({ r }) => r.width > 0 && r.left < 40 && r.top > 60)
+            .map(({ n, r }) => ({ n, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }))).catch(() => []);
+          const out = rail.filter((b) => b.x < 0 || b.x + b.w > 81 || b.y + b.h > vp.height);
+          cell.rail = rail;
+          set('rail_in_window', rail.length >= 11 && out.length === 0 ? 'PASS' : 'FAIL',
+            `${rail.length} rail items; widest ends at x ${Math.max(0, ...rail.map((b) => b.x + b.w))}, lowest at y ${Math.max(0, ...rail.map((b) => b.y + b.h))} of ${vp.height}${out.length ? `; outside: ${out.map((b) => `"${b.n}" ${b.x},${b.y} ${b.w}x${b.h}`).join('; ')}` : ''}`);
         }
         // Compared later: 2× text must really reach the app. Settings' title
         // is in the top bar, whose text Flutter caps at about 1.34×, so the
@@ -1316,6 +1450,12 @@ async function runPass(root, mode) {
           if (sig === lastSig) { if (++same >= 2) break; } else same = 0;
           lastSig = sig;
           log('sweep', i, snap.nodes.length);
+          // MATRIX_SWEEP_SHOTS=<regex on the cell id>: one screenshot per
+          // sweep step, for a review by eye of everything the sweep passes
+          // (Q008: every field name of a sheet). Not part of the verdict.
+          if (sweepShots && mode === 'release' && sweepShots.test(key)) {
+            await page.screenshot({ path: join(out, `${g.variant}_${g.vp}_${g.locale}_${id.replace(/[^A-Za-z]+/g, '-')}_sweep${String(i).padStart(2, '0')}.png`) }).catch(() => {});
+          }
           await page.mouse.move(x, vp.height / 2);
           await page.mouse.wheel(0, Math.round(vp.height * (mode === 'debug' ? 0.65 : 0.3)));
           await page.waitForTimeout(mode === 'debug' ? 300 : 250);
@@ -1523,6 +1663,7 @@ const meta = {
     title_whole: 'Q005: first run, Summary, Derived and how-to titles: the title box lies wholly inside the window at the top of the page',
     howto_no_numbers: 'Q005 (U041): the how-to has at least six task headings and no heading or label starts with a number',
     switch_help_read_with_switch: 'Q005 (U041): the Timeline "show deleted and withdrawn" switch is one control whose accessible name includes its help line',
+    rail_in_window: 'Q008 compact-rail groups only (840 and 1000 wide): at least 11 rail items (4 primary, 6 areas, Settings), each ending within 81 px from the left and above the window bottom (U044: the rail stays 80 dp wide)',
     text_scaled_2x: '2× text cells only (every group with a browser font size, against the 1× group it names, U044): the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app',
   },
   counts,

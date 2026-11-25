@@ -16,7 +16,10 @@ TextScaler wholeWordScaler({
   required TextDirection textDirection,
   Locale? locale,
 }) {
-  final words = text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
+  final words = text
+      .split(RegExp(r'[ \t\n\r]+'))
+      .where((w) => w.isNotEmpty)
+      .toList(growable: false);
   if (words.isEmpty || !maxWidth.isFinite || maxWidth <= 0) return base;
   double widest(TextScaler scaler) {
     var most = 0.0;

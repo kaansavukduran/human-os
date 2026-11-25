@@ -1761,7 +1761,7 @@ class S {
     TodaySection.feeling => _t('How you feel', 'Nasıl hissediyorsun'),
     TodaySection.tools => _t(
       'Tools: for a visit, read a file',
-      'Araçlar: muayene için, dosya okuma',
+      'Araçlar: muayene için, dosya oku',
     ),
     TodaySection.yourData => _t('Your data (backups)', 'Verilerin (yedekler)'),
   };

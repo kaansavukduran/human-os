@@ -3,9 +3,48 @@
   "project": "Human OS / Human Health OS / Longevity App",
   "product_version": "0.1.0+1 (candidate, not a release)",
   "release_state": "CANDIDATE_UNMERGED (exact v0.26 baseline bytes not present; nothing promoted to CURRENT)",
-  "development_state": "READY",
+  "development_state": "IMPLEMENTING",
   "initialization": "INITIALIZATION_COMPLETE (Phase 0 2026-10-06; reconciled to v0.31 and to v0.32 on the same day)",
-  "active_forge": null,
+  "active_forge": {
+    "forge_id": "U042",
+    "contract": "v0.32",
+    "run_id": "U042@v0.32",
+    "slice": "Q005 findings: one heading for the Today tools (no heading stacked on a heading), long Turkish titles that never break inside a word at 320 dp with 2x text, and the matrix reveal that still requires a target clear of the navigation bar at the end of a list",
+    "goal": "Q005 findings: one heading for the Today tools (no heading stacked on a heading), long Turkish titles that never break inside a word at 320 dp with 2x text, and the matrix reveal that still requires a target clear of the navigation bar at the end of a list",
+    "status": "IMPLEMENTING",
+    "baseline_commit": "7324083",
+    "app_revision": null,
+    "started_at": "2026-11-25T12:11:14Z",
+    "finished_at": null,
+    "scope": [
+      "human_health_os",
+      "tools",
+      "docs"
+    ],
+    "acceptance_criteria": [
+      "AC-1 each fix has a regression test",
+      "AC-2 full suites, web smoke, Linux build and runtime pass"
+    ],
+    "completed_steps": [
+      "implementation 9bfc010 f2ec587 6fe1feb"
+    ],
+    "last_verified_gate": null,
+    "next_action": "gates",
+    "files_touched": [],
+    "migration_ids": [],
+    "evidence_ids": [],
+    "verified_gates": [],
+    "blocker": null,
+    "result": null,
+    "limitations": [
+      "real devices, Firefox, Safari, real screen readers NOT TESTED"
+    ],
+    "depends_on": [
+      "Q005"
+    ],
+    "review": null,
+    "out_of_scope": []
+  },
   "suspended_forges": [
     {
       "forge_id": "F015-L1",

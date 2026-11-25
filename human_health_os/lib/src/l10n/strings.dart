@@ -1583,7 +1583,7 @@ class S {
   String get firstWelcomeTitle => _t('What Human OS does', 'Human OS ne yapar');
   String get firstWelcomeBody => _t(
     'A place for your own health numbers: weight, blood pressure, lab results and more. You type them in, and find them again with their dates. Human OS does not judge values or give medical advice.',
-    'Kendi sağlık sayıların için bir yer: kilo, tansiyon, tahlil sonuçları ve daha fazlası. Onları sen girersin ve tarihleriyle yeniden bulursun. Human OS değerleri yargılamaz ve tıbbi tavsiye vermez.',
+    'Kendi sağlık sayıların için bir yer: ağırlık, tansiyon, tahlil sonuçları ve daha fazlası. Onları sen girersin ve tarihleriyle yeniden bulursun. Human OS değerleri yargılamaz ve tıbbi tavsiye vermez.',
   );
   String get firstPrivateTitle =>
       _t('It stays on this device', 'Bu cihazda kalır');
@@ -1766,8 +1766,10 @@ class S {
     'Sleep and How you feel at the top of Today',
     'Uyku ve Nasıl hissediyorsun Bugün ekranının en üstünde',
   );
-  String get settingsMeasurementsFirst =>
-      _t('Measurements before the weight card', 'Ölçümler kilo kartından önce');
+  String get settingsMeasurementsFirst => _t(
+    'Measurements before the weight card',
+    'Ölçümler ağırlık kartından önce',
+  );
   String get settingsUpdatesTitle =>
       _t('Updates and about', 'Güncellemeler ve hakkında');
   String settingsInstalledVersion(String version, String revision) => _t(

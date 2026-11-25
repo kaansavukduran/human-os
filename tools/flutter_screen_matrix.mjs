@@ -465,9 +465,16 @@ async function runPass(root, mode) {
         return tops.length ? Math.min(...tops) : vh - 85;
       }, vp.height).catch(() => vp.height - 85) : null;
       const bottom = barTop ?? vp.height - 10;
+      let prev = null;
       for (let i = 0; i < 30; i++) {
         const b = await locator.boundingBox({ timeout: 1_000 }).catch(() => null);
-        if (b && b.y >= top && b.y + b.height <= bottom + 1) return true;
+        // Flutter clips a semantics box at the list's edge, so a box that
+        // ends exactly at the bar may be cut: it must end 2 px above it.
+        if (b && b.y >= top && b.y + b.height <= bottom - 2) return true;
+        // The list cannot move further (its end): what is in view is all
+        // there is.
+        if (b && prev && b.y >= top && Math.abs(b.y - prev.y) < 1 && Math.abs(b.height - prev.height) < 1) return true;
+        prev = b;
         // Taller than the space between the bars (Q005: the Timeline switch
         // with its help line at 2× text): its top is in the upper third.
         if (b && b.height > bottom - top && b.y >= top && b.y <= top + (bottom - top) / 3) return true;
@@ -476,8 +483,12 @@ async function runPass(root, mode) {
         // Bring the target to a third of the window (clear of a sheet's own
         // bottom bar); one already there but cut at the bottom moved by 0
         // before, so it moves by what is missing (Q005).
+        // A target cut by the bar (partly in view) only moves up, by what is
+        // missing, until its top reaches the top bar; one still wholly
+        // below or above goes to a third.
         const third = b ? b.y - vp.height / 3 : 300;
-        const d = !b ? 300 : Math.abs(third) >= 20 ? third : b.y < top ? b.y - top - 8 : Math.min(b.y - top, Math.max(40, b.y + b.height - bottom + 8));
+        const cut = b && b.y >= top && b.y < bottom && b.y + b.height >= bottom - 2;
+        const d = !b ? 300 : cut ? Math.min(b.y - top, Math.max(40, b.y + b.height - bottom + 8)) : b.y < top && b.y + b.height > top ? b.y - top - 8 : third;
         await page.mouse.wheel(0, Math.max(-400, Math.min(400, d)));
         await page.waitForTimeout(200);
       }

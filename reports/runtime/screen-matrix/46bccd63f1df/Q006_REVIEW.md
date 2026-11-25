@@ -40,3 +40,11 @@ These were not fixed. U042 limited "draw smaller only as much as the longest wor
 - No overflow, no Flutter exception, no English word on a TR cell, no target under 48 dp, no horizontal scroll in any cell.
 
 Screenshots of other cells were deleted for disk space (their checks remain in `matrix.json`). 50 screenshots are kept.
+
+## After the independent review
+
+No blocking findings. Corrections and notes:
+- FAIL item 2: the kept EN palette screenshot ends at the "Palette" heading and does not show "Stand/ard"; the TR shot shows "Stand / art". The EN case was seen live, not in a kept shot.
+- The reveal's `noBar` relies on the tool's own route bookkeeping (pushed page, first run). It is correct while only the app shell has a bottom bar; if a pushed page ever gets a bottom bar or footer, the tool must check the DOM instead.
+- The tall-target branch does not verify that the box touches both window edges; it relies on the box not moving after a wheel step while the page does.
+- The first-run counts (185 / 13) come from the run log, not from a file kept in the repository.

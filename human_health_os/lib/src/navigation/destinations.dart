@@ -102,7 +102,7 @@ const List<Destination> destinations = [
     principleEn: 'A mission is a plan. Only a logged completion counts.',
     principleTr: 'Görev bir plandır. Yalnız kaydedilen tamamlanma sayılır.',
     canDoEn: 'Save your weight, a measurement, last night\'s sleep or how you feel right now.',
-    canDoTr: 'Kilonu, bir ölçümü, dün geceki uykunu ya da şu an nasıl hissettiğini kaydet.',
+    canDoTr: 'Ağırlığını, bir ölçümü, dün geceki uykunu ya da şu an nasıl hissettiğini kaydet.',
   ),
   Destination(
     id: DestinationId.timeline,

@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:human_health_os/src/domain/settings/appearance.dart'
     show MemoryAppearanceStore;
 import 'package:human_health_os/src/l10n/strings.dart';
+import 'package:human_health_os/src/navigation/destinations.dart';
 
 import 'f007_measurements_test.dart' show tapKey;
 import 'u014_first_run_test.dart' show launchReal;
@@ -30,6 +31,22 @@ void main() {
     }
     // The card the Settings line refers to says the same word.
     expect(s.weightTitle, contains('ağırlığı'));
+  });
+
+  test('tr: no area text names body weight "kilo"', () {
+    for (final d in [...destinations, ...plannedDestinations]) {
+      for (final t in [
+        d.tr,
+        d.purposeTr,
+        d.principleTr,
+        d.canDoTr,
+        d.emptyStateTr ?? '',
+      ]) {
+        expect(_kilo.hasMatch(t), isFalse, reason: t);
+      }
+    }
+    final today = destinations.firstWhere((d) => d.id == DestinationId.today);
+    expect(today.canDoTr, startsWith('Ağırlığını, '));
   });
 
   test('en: the same two texts are unchanged', () {

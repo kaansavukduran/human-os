@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-25 · Q008@v0.32 closed (screen matrix after U044: 330 cells PASS, 3 by-eye failures fixed: Settings switch words, Timeline correction help and errors); 14 gates PASS (EV-*-F007-1664…1677). U044 closed before it.
+- CONFIRMED · 2026-11-26 · U045@v0.32 closed (selected rail label font and size, whole date patterns EN/TR incl. the lab date helper, rail-only rail count, rendered-colour theme check); 14 gates PASS (EV-*-F007-1678…1691). Q008 closed before it.
 
 ## Next step
-- PLANNED · U045@v0.32: open UI points after Q008 (selected rail label font, rail count only rail items, TR date pattern wrap, theme_applied on real colours, matrix re-run on the Q008 fixes).
+- PLANNED · Q009@v0.32: full screen matrix after U045 in Chromium (all groups with the new theme and rail checks; lab date helper and correction errors in a cell).
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

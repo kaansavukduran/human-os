@@ -32,7 +32,7 @@
   {
     "check": "three_language_parity",
     "status": "PASS",
-    "detail": "TS 73/73, Python 73/73, Dart receipt EV-TEST-F007-1674"
+    "detail": "TS 73/73, Python 73/73, Dart receipt EV-TEST-F007-1688"
   },
   {
     "check": "sqlite_kernel_migrations",

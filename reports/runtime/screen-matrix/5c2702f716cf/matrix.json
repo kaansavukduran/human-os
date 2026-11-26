@@ -1,0 +1,736 @@
+{
+  "tool": "tools/flutter_screen_matrix.mjs",
+  "ran_at": "2026-11-26T03:57:31.162Z",
+  "git_head": "5c2702f716cfff239b467e94816887dd1ed548cb",
+  "working_tree_dirty": false,
+  "browser": "chromium 153.0.8010.12",
+  "release_build": "scratch/web-release",
+  "release_main_dart_js_sha256": "fd9bb6438bcdbc5a6c21d5faf1d91803dad98b5c54eacb1d3fdacef81e1cf3f4",
+  "debug_build": "scratch/web-debug",
+  "debug_main_dart_js_sha256": "84289638dd4fd65a8e55ff78e2059edef71a3df6dde252d0ca91e9a0a80098af",
+  "viewports": {
+    "small-phone": {
+      "width": 320,
+      "height": 640,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36"
+    },
+    "phone": {
+      "width": 390,
+      "height": 844,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36"
+    },
+    "tablet-portrait": {
+      "width": 820,
+      "height": 1180,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+    },
+    "tablet-landscape": {
+      "width": 1180,
+      "height": 820,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+    },
+    "desktop": {
+      "width": 1440,
+      "height": 900,
+      "touch": false,
+      "ua": null
+    },
+    "compact-840": {
+      "width": 840,
+      "height": 900,
+      "touch": false,
+      "ua": null
+    },
+    "compact-1000": {
+      "width": 1000,
+      "height": 900,
+      "touch": false,
+      "ua": null
+    }
+  },
+  "min_touch_target_css_px": 48,
+  "checks": {
+    "heading_visible": "the screen heading (semantics role heading) is on screen",
+    "palette_applied": "palette groups only: the palette was chosen through the Settings UI and its note appeared",
+    "no_page_errors": "no uncaught page errors while the cell was open (load errors count to the first cell of a page)",
+    "no_console_errors": "no console messages of type error",
+    "no_failed_requests": "no failed request and no HTTP status >= 400",
+    "no_horizontal_scroll": "document scrollWidth <= viewport width at every scroll position",
+    "controls_named": "every semantics button, link and tab has a non-empty accessible name",
+    "touch_targets": "touch viewports: every enabled semantics button/link/tab/checkbox/switch/radio/slider or tappable node is >= 48x48 CSS px (48 dp since Q005) (largest size seen while scrolling the whole screen); the modal barrier above a sheet (\"Scrim\") is not counted",
+    "no_flutter_overflow": "debug build of the same revision: the console has no \"overflowed by N pixels\" report while the screen is opened and scrolled",
+    "no_flutter_exceptions": "debug build: no other Flutter framework exception report",
+    "lock_state_clear": "Settings: app lock: in a build without an encrypted vault the reason text is shown and every lock control (minute chips, lock-when-hidden switch) is disabled",
+    "about_sections_clear": "Settings: about: both section titles (\"This build\" and \"Capabilities on this device\", EN/TR) are exposed as standalone headings, not merged with their cards",
+    "lab_group_chart_spoken": "Labs: same test over time: \"Same test over time\" is exposed as its own heading on Labs and the group chart carries its spoken dated-values summary",
+    "restore_chooser_opens": "Today: restore from file: tapping the entry opens the browser file chooser",
+    "restore_cancel_reported": "Today: restore from file: closing the chooser without a file shows \"No file chosen. Nothing was changed.\" on screen within 1 s",
+    "not_cut_at_list_end": "U042: every target the script scrolled to ended at least 2 px above the bottom navigation bar (in a sheet, above its pinned Save bar, U044; else the window bottom); one that stops moving at the end of its list with its bottom still under the bar is a finding (cut at list end), not in view",
+    "no_stacked_headings": "Q005: no heading has another heading as the next visible text directly below it in the same column (less than 32 px between them, nothing in between)",
+    "no_english_on_tr": "Q005, tr-TR cells: no accessible label or heading seen while sweeping the screen contains an English word from a fixed list (names shared by both languages allowed)",
+    "theme_applied": "U045: every group without a palette: the cell's screenshot is read back and its most common colour is a surface, card or raised container of the expected theme, or one of them under the black 54 % modal barrier (dark by default; light in the groups that chose Light in Settings, whose chip must also read as checked), those three covering at least 25 % of the window (every 4th pixel, each channel within 3)",
+    "chip_checked": "Q007 (U043) chip cells: the chip the cell selected is a semantics checkbox with aria-checked=true; U044: the cell selected it itself (it was not checked before its tap, and is after); a chip that starts checked fails",
+    "title_whole": "Q005: first run, Summary, Derived and how-to titles: the title box lies wholly inside the window at the top of the page",
+    "howto_no_numbers": "Q005 (U041): the how-to has at least six task headings and no heading or label starts with a number",
+    "switch_help_read_with_switch": "Q005 (U041): the Timeline \"show deleted and withdrawn\" switch is one control whose accessible name includes its help line",
+    "rail_in_window": "Q008 compact-rail groups only (840 and 1000 wide): at least 11 rail items (4 primary, 6 areas, Settings), each ending within 81 px from the left and above the window bottom (U044: the rail stays 80 dp wide); U045: only buttons and tabs inside the rail's own semantics node count (the outermost node within 81 px of the left edge, at least 200 px tall, above a control near the left edge)",
+    "date_helper_one_line": "Q009: Labs add sheet: the sample-date helper is the whole date pattern of the language (EN YYYY-MM-DD, TR YYYY-AA-GG; word joiners ignored) on one line (its box at most 24 px tall per 1× of text) inside the window",
+    "error_shown_whole": "Q009: Timeline correction: after typing an invalid time (25:99) and Save correction, the error under the time field reads the whole TIME_FORMAT message and its box lies inside the window (whether its lines are drawn uncut is judged by eye)",
+    "text_scaled_2x": "2× text cells only (every group with a browser font size, against the 1× group it names, U044): the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app"
+  },
+  "counts": {
+    "cells": 8,
+    "PASS": 8,
+    "FAIL": 0,
+    "PASS_WITH_NOT_TESTED": 0
+  },
+  "not_tested": [
+    {
+      "what": "Real Android phones and tablets",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Real iPhones and iPads (iOS/iPadOS)",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Windows desktop app",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "macOS desktop app",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Firefox",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Safari",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Screen readers: TalkBack",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Screen readers: VoiceOver",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Screen readers: NVDA",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    }
+  ],
+  "cells": [
+    {
+      "id": "base|small-phone|en-US|Medications",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Medicines and supplements\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (74 %, dark.surface); dark surfaces 85 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 64,
+      "screenshot": "base_small-phone_en-US_Medications.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.73669921875,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.84833984375,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|small-phone|tr-TR|Medications",
+      "variant": "base",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"İlaçlar ve takviyeler\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (73 %, dark.surface); dark surfaces 85 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "18 labels read, no English word"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "8 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "8 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_small-phone_tr-TR_Medications.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.73478515625,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.84546875,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|en-US|Medications",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Medicines and supplements\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (93 %, dark.surface); dark surfaces 93 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "14 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_en-US_Medications.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.9315679012345679,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9331728395061728,
+          "light": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "base|desktop|tr-TR|Medications",
+      "variant": "base",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Medications",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"İlaçlar ve takviyeler\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (93 %, dark.surface); dark surfaces 94 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "24 labels read, no English word"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "14 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "base_desktop_tr-TR_Medications.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.9335061728395062,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9350185185185185,
+          "light": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u043|small-phone|en-US|Trend: weight",
+      "variant": "u043",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Trend: weight",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"1 year\""
+        },
+        "chip_checked": {
+          "status": "PASS",
+          "detail": "checkbox \"1 year\" aria-checked=true; picked: aria-checked false → true"
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (97 %, dark.surface); dark surfaces 97 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "5 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "u043_small-phone_en-US_Trend-weight.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.96779296875,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.96896484375,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u043|desktop|en-US|Trend: weight",
+      "variant": "u043",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Trend: weight",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"1 year\""
+        },
+        "chip_checked": {
+          "status": "PASS",
+          "detail": "checkbox \"1 year\" aria-checked=true; picked: aria-checked false → true"
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (99 %, dark.surface); dark surfaces 100 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "u043_desktop_en-US_Trend-weight.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.9949382716049383,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9950617283950617,
+          "light": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u043|small-phone|tr-TR|Trend: weight",
+      "variant": "u043",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Trend: weight",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"1 yıl\""
+        },
+        "chip_checked": {
+          "status": "PASS",
+          "detail": "checkbox \"1 yıl\" aria-checked=true; picked: aria-checked false → true"
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (97 %, dark.surface); dark surfaces 97 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "8 labels read, no English word"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "5 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "u043_small-phone_tr-TR_Trend-weight.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.96890625,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9701953125,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u043|desktop|tr-TR|Trend: weight",
+      "variant": "u043",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Trend: weight",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"1 yıl\""
+        },
+        "chip_checked": {
+          "status": "PASS",
+          "detail": "checkbox \"1 yıl\" aria-checked=true; picked: aria-checked false → true"
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (99 %, dark.surface); dark surfaces 100 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "8 labels read, no English word"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 32,
+      "screenshot": "u043_desktop_tr-TR_Trend-weight.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.9948179012345679,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9950061728395062,
+          "light": 0
+        }
+      },
+      "status": "PASS"
+    }
+  ]
+}

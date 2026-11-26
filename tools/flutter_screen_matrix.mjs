@@ -223,6 +223,51 @@ for (const locale of LOCALES) {
   GROUPS.push({ variant: 'q009', vp: 'desktop', locale, screens: Q009_IDS });
   GROUPS.push({ variant: 'q009-text-2x', fontSize: '32px', ref: 'q009', vp: 'small-phone', locale, screens: Q009_IDS });
 }
+// U046 (after Q009): the pages U046 changed. Derived with its first
+// "Technical details" opened (plain names as titles, the machine IDs only
+// there, each on one line); the body guide's heart page (its parts plain
+// text, not chips or buttons); Genetics and Plant chemicals (the reading
+// column); About (the version this build was not given, in the page's
+// language); and, last because it changes the theme, Settings with the
+// Matrix palette chosen (the note on what "Light or dark" controls). At
+// 320x640 (1× and 2× text) and on the desktop, in both languages.
+const U046_IDS = [
+  'Derived: technical details',
+  'Learn: body guide parts',
+  'Genetics',
+  'Plant chemicals',
+  'About: version',
+  'Settings: theme under palette',
+];
+for (const locale of LOCALES) {
+  GROUPS.push({ variant: 'u046', vp: 'small-phone', locale, screens: U046_IDS });
+  GROUPS.push({ variant: 'u046', vp: 'desktop', locale, screens: U046_IDS });
+  GROUPS.push({ variant: 'u046-text-2x', fontSize: '32px', ref: 'u046', vp: 'small-phone', locale, screens: U046_IDS });
+}
+// The words the U046 cells look for (lib/src/l10n/strings.dart,
+// lib/src/domain/guide/body_guide.dart).
+const V_TEXT = {
+  'en-US': {
+    details: 'Technical details',
+    plainNames: ['Body mass index (BMI)', 'Waist-to-height ratio'],
+    idLabel: 'Formula ID, version 1: DERIVED-BMI-1',
+    heartParts: ['Heart', 'Arteries', 'Veins', 'Capillaries'],
+    genetics: 'Genetics', geneticsIntro: 'See which variants your raw DNA file contains. Everything stays on this device.',
+    phyto: 'Plant chemicals', phytoIntro: /^On phytochem\.nal\.usda\.gov open a chemical/,
+    versionKey: 'Version', notGiven: 'unknown',
+    themeNote: /^The Matrix palette \(below\) sets light or dark now\./,
+  },
+  'tr-TR': {
+    details: 'Teknik ayrıntılar',
+    plainNames: ['Vücut kitle indeksi (VKİ)', 'Bel-boy oranı'],
+    idLabel: 'Formül kimliği, sürüm 1: DERIVED-BMI-1',
+    heartParts: ['Kalp', 'Atardamarlar', 'Toplardamarlar', 'Kılcal damarlar'],
+    genetics: 'Genetik', geneticsIntro: 'Ham DNA dosyanın hangi varyantları içerdiğini gör. Her şey bu cihazda kalır.',
+    phyto: 'Bitki kimyasalları', phytoIntro: /^phytochem\.nal\.usda\.gov sitesinde bir madde/,
+    versionKey: 'Sürüm', notGiven: 'bilinmiyor',
+    themeNote: /^Açık ya da koyu görünümü şu an aşağıdaki Matrix paleti belirliyor\./,
+  },
+};
 // U044: every 2× group (one with a browser font size) is checked by
 // `text_scaled_2x` against the 1× group it names in `ref`, whatever its
 // variant is called (Q007: `u043-light-2x` was skipped because only
@@ -1326,6 +1371,87 @@ async function runPass(root, mode) {
       },
     });
 
+    // U046 cells.
+    const V = V_TEXT[g.locale];
+    // The intro's box, for the reading column (U036: at most 840 dp,
+    // centred; the page padding is 16).
+    let introBox = null;
+    let paletteChosen = null;
+    const readIntro = async (loc) => {
+      await toTop(await pageX());
+      introBox = await loc.boundingBox({ timeout: 3_000 }).catch(() => null);
+    };
+    Object.assign(EXTRA, {
+      'Derived: technical details': {
+        label: V.idLabel,
+        target: () => page.getByLabel(V.idLabel, { exact: true }).or(page.getByText(V.idLabel, { exact: true })).first(),
+        x: () => null,
+        col: true,
+        go: async () => {
+          await pushTool('Today', T.derivedTitle, T.derivedTitle);
+          const b = page.getByRole('button', { name: new RegExp(`^${esc(V.details)}`) }).first();
+          await reveal(b, await pageX());
+          if ((await b.getAttribute('aria-expanded').catch(() => null)) !== 'true') await tap(b);
+          await page.waitForTimeout(700);
+        },
+      },
+      'Learn: body guide parts': {
+        label: V.heartParts[0],
+        target: () => page.getByText(V.heartParts[0], { exact: true }).or(page.getByLabel(V.heartParts[0], { exact: true })).first(),
+        x: () => null,
+        col: true,
+        go: async () => EXTRA['Learn: body guide'].go(),
+      },
+      Genetics: {
+        label: V.genetics,
+        target: () => xh(V.genetics),
+        title: () => xh(V.genetics),
+        x: () => null,
+        col: true,
+        go: async () => {
+          await pushTool('Today', V.genetics, V.genetics);
+          await readIntro(textLoc(V.geneticsIntro));
+        },
+      },
+      'Plant chemicals': {
+        label: V.phyto,
+        target: () => xh(V.phyto),
+        title: () => xh(V.phyto),
+        x: () => null,
+        col: true,
+        go: async () => {
+          await pushTool('Today', V.phyto, V.phyto);
+          await readIntro(page.getByText(V.phytoIntro).or(page.getByLabel(V.phytoIntro)).first());
+        },
+      },
+      'About: version': {
+        label: `${V.versionKey}: ${V.notGiven}`,
+        target: () => page.getByText(V.notGiven, { exact: true }).or(page.getByLabel(V.notGiven, { exact: true })).first(),
+        x: () => null,
+        col: true,
+        go: async () => EXTRA['Settings: about'].go(),
+      },
+      'Settings: theme under palette': {
+        label: SETTINGS_FIRST_HEADING[g.locale],
+        target: () => page.getByText(V.themeNote).or(page.getByLabel(V.themeNote)).first(),
+        x: () => null,
+        col: true,
+        setsPalette: true,
+        go: async () => {
+          await open('Settings');
+          await H(names.Settings.heading).waitFor({ timeout: 15_000 });
+          const swatch = page.getByRole('button', { name: 'Matrix', exact: true }).first();
+          await reveal(swatch, await pageX());
+          await tap(swatch);
+          await page.waitForTimeout(800);
+          const ac = await swatch.getAttribute('aria-checked').catch(() => null);
+          const as = await swatch.getAttribute('aria-selected').catch(() => null);
+          paletteChosen = ac === 'true' || as === 'true' ? 'true' : `aria-checked ${ac}, aria-selected ${as}`;
+          await toTop(await pageX());
+        },
+      },
+    });
+
     // The light-theme group chooses Light in Settings first (dark is the
     // default).
     let themeApplied = null;
@@ -1501,7 +1627,7 @@ async function runPass(root, mode) {
         cell.screenshot = shot;
         // U045: the theme is checked on the rendered colours (dark unless
         // the group chose Light in Settings), not only on the chip's state.
-        if (!g.palette || g.theme) {
+        if ((!g.palette || g.theme) && !ex?.setsPalette) {
           const want = g.theme ?? 'dark';
           const col = await surfaceColours(join(out, shot)).catch((e) => ({ error: e.message.split('\n')[0] }));
           cell.colours = col;
@@ -1666,6 +1792,50 @@ async function runPass(root, mode) {
         set('about_sections_clear', hasBuild && hasCaps ? 'PASS' : 'FAIL',
           `headings "${T.aboutBuild}": ${hasBuild}, "${T.aboutCaps}": ${hasCaps}`);
       }
+      // U046: Derived's titles are plain names; a machine ID is never a
+      // heading, and under "Technical details" it is read whole, its two
+      // lines (name and ID) at most 42 px tall per 1× of text (a line of
+      // bodySmall is about 17 px, 33 at 2×: an ID broken onto a second
+      // line makes three).
+      if (mode === 'release' && reached && id === 'Derived: technical details') {
+        const idHeads = [...headingsSeen].filter((h) => /DERIVED-|MP-CORE/.test(h.replace(/\u2060/g, '')));
+        const missing = V.plainNames.filter((n) => !headingsSeen.has(n));
+        set('derived_plain_titles', idHeads.length === 0 && missing.length === 0 ? 'PASS' : 'FAIL',
+          `plain titles ${V.plainNames.map((n) => `"${n}"`).join(', ')}${missing.length ? `; missing: ${missing.join(', ')}` : ''}; headings with a machine ID: ${idHeads.length ? idHeads.map((h) => `"${h.slice(0, 50)}"`).join(', ') : 'none'}`);
+        await reveal(ex.target(), x);
+        const b = await ex.target().boundingBox({ timeout: 2_000 }).catch(() => null);
+        const lineMax = 42 * (g.fontSize ? 2 : 1);
+        set('machine_id_whole', b && b.height <= lineMax && b.x >= 0 && b.x + b.width <= vp.width + 0.5 ? 'PASS' : 'FAIL',
+          b ? `"${V.idLabel}" box ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}, at most ${lineMax} px tall (name and ID, one line each)` : 'not found under Technical details');
+      }
+      // U046: the body guide's parts are text, not controls.
+      if (mode === 'release' && reached && id === 'Learn: body guide parts') {
+        const shown = V.heartParts.filter((p) => labelsSeen.has(p));
+        const controls = [...seen.values()].filter((n) => V.heartParts.includes(n.name));
+        set('parts_not_buttons', shown.length === V.heartParts.length && controls.length === 0 ? 'PASS' : 'FAIL',
+          `${shown.length} of ${V.heartParts.length} parts read as text; as a control: ${controls.length ? controls.map((n) => `"${n.name}" ${n.role}`).join(', ') : 'none'}`);
+      }
+      // U046: Genetics and Plant chemicals sit in the reading column.
+      if (mode === 'release' && reached && (id === 'Genetics' || id === 'Plant chemicals')) {
+        const side = vp.width > 840 ? (vp.width - 840) / 2 : 0;
+        const b = introBox;
+        set('reading_column', b && Math.abs(b.x - (side + 16)) <= 2 && b.x + b.width <= vp.width - side - 16 + 2 ? 'PASS' : 'FAIL',
+          b ? `intro ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}; column ${side + 16}..${vp.width - side - 16}` : 'intro not found');
+      }
+      // U046: a version the build was not given is said in the page's
+      // language (the matrix builds pass no APP_VERSION).
+      if (mode === 'release' && reached && id === 'About: version') {
+        const all = [...labelsSeen];
+        const foreign = g.locale === 'tr-TR' ? all.filter((l) => /\bunknown\b/i.test(l)) : [];
+        set('version_localised', all.includes(V.notGiven) && foreign.length === 0 ? 'PASS' : 'FAIL',
+          `"${V.notGiven}" shown: ${all.includes(V.notGiven)}${g.locale === 'tr-TR' ? `; "unknown": ${foreign.length ? foreign.map((l) => `"${l.slice(0, 40)}"`).join(', ') : 'none'}` : ''}`);
+      }
+      // U046: with a palette chosen, "Light or dark" says what it controls.
+      if (mode === 'release' && reached && id === 'Settings: theme under palette') {
+        const note = [...labelsSeen].find((l) => V.themeNote.test(l));
+        set('theme_note_shown', note && paletteChosen === 'true' ? 'PASS' : 'FAIL',
+          `Matrix chosen: ${paletteChosen}; note: ${note ? `"${note.slice(0, 80)}…"` : 'missing'}`);
+      }
       // Labs -> Same test over time (F004-S4/Q003): the section heading on
       // Labs is its own heading and the chart carries its spoken summary.
       if (mode === 'release' && reached && id === 'Labs: same test over time') {
@@ -1829,6 +1999,12 @@ const meta = {
     no_english_on_tr: 'Q005, tr-TR cells: no accessible label or heading seen while sweeping the screen contains an English word from a fixed list (names shared by both languages allowed)',
     theme_applied: 'U045: every group without a palette: the cell\'s screenshot is read back and its most common colour is a surface, card or raised container of the expected theme, or one of them under the black 54 % modal barrier (dark by default; light in the groups that chose Light in Settings, whose chip must also read as checked), those three covering at least 25 % of the window (every 4th pixel, each channel within 3)',
     chip_checked: 'Q007 (U043) chip cells: the chip the cell selected is a semantics checkbox with aria-checked=true; U044: the cell selected it itself (it was not checked before its tap, and is after); a chip that starts checked fails',
+    derived_plain_titles: 'U046: Derived titles are the plain names (EN/TR); no heading holds a machine ID',
+    machine_id_whole: 'U046: under Technical details, the formula ID is read whole and drawn on its own line (name and ID at most 42 px tall per 1× of text)',
+    parts_not_buttons: 'U046: the heart page\'s parts are read as text and none is a button, checkbox or other control',
+    reading_column: 'U046: Genetics and Plant chemicals: the intro starts 16 px inside the centred 840 dp reading column (at 16 on a narrow window)',
+    version_localised: 'U046: About shows the missing version in the page\'s language ("unknown" / "bilinmiyor"); no "unknown" on a TR page',
+    theme_note_shown: 'U046: with Matrix chosen, the note under "Light or dark" says the palette sets light or dark',
     title_whole: 'Q005: first run, Summary, Derived and how-to titles: the title box lies wholly inside the window at the top of the page',
     howto_no_numbers: 'Q005 (U041): the how-to has at least six task headings and no heading or label starts with a number',
     switch_help_read_with_switch: 'Q005 (U041): the Timeline "show deleted and withdrawn" switch is one control whose accessible name includes its help line',

@@ -1401,11 +1401,13 @@ class S {
   );
   String get derivedDetailsTitle =>
       _t('Technical details', 'Teknik ayrıntılar');
-  String derivedModelIdLabel(String version) =>
-      _t('Formula ID, version $version', 'Formül kimliği, sürüm $version');
+  String derivedModelIdLabel(String version) => _t(
+    'Formula ID, version\u00A0$version',
+    'Formül kimliği, sürüm\u00A0$version',
+  );
   String derivedPackIdLabel(String version) => _t(
-    'Formula set ID, version $version',
-    'Formül seti kimliği, sürüm $version',
+    'Formula set ID, version\u00A0$version',
+    'Formül seti kimliği, sürüm\u00A0$version',
   );
   String get derivedUsedTitle => _t('Records used', 'Kullanılan kayıtlar');
   String derivedUsedLine(String kind, String value, String when) =>

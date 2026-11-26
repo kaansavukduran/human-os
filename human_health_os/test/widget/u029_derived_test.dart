@@ -87,7 +87,7 @@ void main() {
     await tester.ensureVisible(details);
     await tester.tap(details);
     await tester.pumpAndSettle();
-    expect(find.text('Formula ID, version 1'), findsOneWidget);
+    expect(find.text('Formula ID, version\u00A01'), findsOneWidget);
     expect(find.text(unbrokenId('DERIVED-BMI-1')), findsOneWidget);
     expect(
       find.byKey(ValueKey('$bmiKey-used-${RecordKind.bodyWeight.code}')),

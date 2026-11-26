@@ -194,10 +194,10 @@ void main() {
               final tops = {for (final b in lines) b.top.round()};
               expect(tops.length, 1, reason: '$id on one line');
             }
+            // Read as the name, then the ID without its word joiners.
+            expect(find.text(s.derivedModelIdLabel('1')), findsOneWidget);
             expect(
-              find.bySemanticsLabel(
-                '${s.derivedModelIdLabel('1')}: DERIVED-WAIST_HEIGHT_RATIO-1',
-              ),
+              find.bySemanticsLabel('DERIVED-WAIST_HEIGHT_RATIO-1'),
               findsOneWidget,
             );
             expect(tester.takeException(), isNull);

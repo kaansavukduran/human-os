@@ -240,7 +240,7 @@ class _DerivedCard extends StatelessWidget {
 /// support and for checking, but a reader needs none of them to understand
 /// the card. Each ID is drawn on its own line and never broken inside
 /// (word joiners after its hyphens; drawn smaller only if it is wider than
-/// the whole line).
+/// the whole line). A version number stays with its word ("version 1").
 class _TechnicalDetails extends StatelessWidget {
   const _TechnicalDetails({
     super.key,
@@ -258,19 +258,20 @@ class _TechnicalDetails extends StatelessWidget {
     final muted = text.bodySmall?.copyWith(
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
+    // The name, then the ID on its own line; the ID is read without its
+    // word joiners.
     Widget fact(String label, String id) => Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Semantics(
-        container: true,
-        label: '$label: $id',
-        excludeSemantics: true,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: muted),
-            WholeWordText(unbrokenId(id), style: muted),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: muted),
+          Semantics(
+            label: id,
+            excludeSemantics: true,
+            child: WholeWordText(unbrokenId(id), style: muted),
+          ),
+        ],
       ),
     );
     return ExpansionTile(

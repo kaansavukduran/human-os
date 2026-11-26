@@ -212,6 +212,17 @@ for (const locale of LOCALES) {
     GROUPS.push({ variant: 'q008-rail-text-2x', fontSize: '32px', ref: 'q008-rail', vp, locale, screens: RAIL_IDS, rail: true });
   }
 }
+// Q009 (after U045): the Labs add sheet's sample-date field with its
+// helper (the whole date pattern, TR "YYYY-AA-GG", on one line) and a
+// Timeline correction whose typed time is not valid, with its error
+// message shown under the field. At 320x640 (1× and 2× text) and on the
+// desktop, in both languages.
+const Q009_IDS = ['Labs: date helper', 'Timeline: correction error'];
+for (const locale of LOCALES) {
+  GROUPS.push({ variant: 'q009', vp: 'small-phone', locale, screens: Q009_IDS });
+  GROUPS.push({ variant: 'q009', vp: 'desktop', locale, screens: Q009_IDS });
+  GROUPS.push({ variant: 'q009-text-2x', fontSize: '32px', ref: 'q009', vp: 'small-phone', locale, screens: Q009_IDS });
+}
 // U044: every 2× group (one with a browser font size) is checked by
 // `text_scaled_2x` against the 1× group it names in `ref`, whatever its
 // variant is called (Q007: `u043-light-2x` was skipped because only
@@ -240,6 +251,9 @@ const U_TEXT = {
     actAdd: 'Add an activity', actWhen: /^When/,
     glucoseValue: /^Blood glucose, as the meter showed/, saveMeasurement: 'Save measurement', glucoseRow: /^Blood glucose/,
     correct: 'Correct', correctWhen: /^When it was measured/,
+    // Q009: the lab date helper and the error of a time that is no time.
+    dateHelper: 'YYYY-MM-DD', badTime: '25:99', saveCorrection: 'Save correction',
+    timeError: 'Write the time on a 24-hour clock as YYYY-MM-DD HH:MM or HH:MM, e.g. 2026-11-07 07:30 or 07:30.',
   },
   'tr-TR': {
     light: 'Açık',
@@ -257,6 +271,8 @@ const U_TEXT = {
     actAdd: 'Aktivite ekle', actWhen: /^Ne zaman/,
     glucoseValue: /^Kan şekeri, cihazın gösterdiği/, saveMeasurement: 'Ölçümü kaydet', glucoseRow: /^Kan şekeri/,
     correct: 'Düzelt', correctWhen: /^Ölçüm zamanı/,
+    dateHelper: 'YYYY-AA-GG', badTime: '25:99', saveCorrection: 'Düzeltmeyi kaydet',
+    timeError: 'Zamanı 24 saatlik düzende YYYY-AA-GG SS:DD ya da SS:DD yaz, ör. 2026-11-07 07:30 ya da 07:30.',
   },
 };
 // The words the extra cells look for (lib/src/l10n/strings.dart).
@@ -1266,6 +1282,50 @@ async function runPass(root, mode) {
       },
     });
 
+    // Q009 cells. A date pattern carries a word joiner (U+2060) after each
+    // hyphen (U045): the text is matched with or without it.
+    const joinerRe = (t) => new RegExp(esc(t).replace(/-/g, '-⁠?'));
+    const dumpNodes = async (re) => {
+      if (!process.env.MATRIX_VERBOSE) return;
+      const d = await page.evaluate((src) => {
+        const r = new RegExp(src);
+        return [...document.querySelectorAll('flt-semantics-host *')].filter((e) => r.test(e.getAttribute('aria-label') ?? '') || [...e.childNodes].some((n) => n.nodeType === 3 && r.test(n.textContent)))
+          .map((e) => { const b = e.getBoundingClientRect(); return `${e.tagName} role=${e.getAttribute('role')} label=${JSON.stringify((e.getAttribute('aria-label') ?? '').slice(0, 120))} text=${JSON.stringify([...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').slice(0, 120))} ${Math.round(b.left)},${Math.round(b.top)} ${Math.round(b.width)}x${Math.round(b.height)}`; });
+      }, re.source).catch((e) => [e.message]);
+      for (const l of d) log('node', l);
+    };
+    Object.assign(EXTRA, {
+      'Labs: date helper': {
+        label: `${T.labDate.source.slice(1)}: ${U.dateHelper}`,
+        target: () => page.getByText(joinerRe(U.dateHelper)).or(page.getByLabel(joinerRe(U.dateHelper))).first(),
+        sheet: true,
+        x: () => sheetX,
+        dateHelper: true,
+        go: async () => {
+          if (!sheetOpen) await EXTRA['Labs: add sheet'].go();
+          await reveal(page.getByRole('textbox', { name: T.labDate }).first(), sheetX, true);
+          await page.waitForTimeout(400);
+          await dumpNodes(/YYYY/);
+        },
+      },
+      'Timeline: correction error': {
+        label: U.timeError,
+        target: () => page.getByText(joinerRe(U.timeError)).or(page.getByLabel(joinerRe(U.timeError))).first(),
+        sheet: true,
+        x: () => sheetX,
+        probeHeight: () => areaHeadingHeight,
+        go: async () => {
+          await EXTRA['Timeline: correction'].go();
+          await fillInSheet(U.correctWhen, U.badTime, true);
+          const save = page.getByRole('button', { name: U.saveCorrection, exact: true }).first();
+          await reveal(save, sheetX, true);
+          await tap(save);
+          await page.waitForTimeout(900);
+          await dumpNodes(/24|SS:DD|HH:MM/);
+        },
+      },
+    });
+
     // The light-theme group chooses Light in Settings first (dark is the
     // default).
     let themeApplied = null;
@@ -1371,6 +1431,27 @@ async function runPass(root, mode) {
           const selected = !!p && p.tapped && p.before !== 'true' && p.after === 'true';
           const how = !p ? 'the cell did not pick it' : p.tapped ? `picked: aria-checked ${p.before} → ${p.after}` : `already checked before the cell (aria-checked ${p.before}): no selection was made`;
           set('chip_checked', selected && ac === 'true' ? 'PASS' : 'FAIL', `checkbox "${ex.label}" aria-checked=${ac}; ${how}`);
+        }
+        // Q009: the lab date helper is the whole pattern of the language on
+        // one line (a line of bodySmall is about 17 px at 1× and 33 at 2×:
+        // more than 24 px per 1× of text is a second line); the correction's
+        // error says the whole message and lies within the window.
+        if (ex && (id === 'Labs: date helper' || id === 'Timeline: correction error')) {
+          const el = reached ? await ex.target().evaluate((e) => {
+            const r = e.getBoundingClientRect();
+            return { t: (e.getAttribute('aria-label') || e.textContent || '').replace(/⁠/g, '').trim(), x: r.left, y: r.top, w: r.width, h: r.height };
+          }).catch(() => null) : null;
+          cell.textBox = el;
+          const box = el ? `box ${Math.round(el.x)},${Math.round(el.y)} ${Math.round(el.w)}x${Math.round(el.h)}` : 'not found';
+          const inWindow = !!el && el.x >= 0 && el.x + el.w <= vp.width + 0.5 && el.y >= 0 && el.y + el.h <= vp.height;
+          if (id === 'Labs: date helper') {
+            const lineMax = 24 * (g.fontSize ? 2 : 1);
+            set('date_helper_one_line', el && el.t === U.dateHelper && el.h <= lineMax && inWindow ? 'PASS' : 'FAIL',
+              el ? `"${el.t}" ${box}, one line at most ${lineMax} px tall` : 'helper not found');
+          } else {
+            set('error_shown_whole', el && el.t === U.timeError && inWindow ? 'PASS' : 'FAIL',
+              el ? `"${el.t.slice(0, 50)}…" (${el.t === U.timeError ? 'whole message' : 'NOT the whole message'}) ${box}` : `no error after typing "${U.badTime}" and ${U.saveCorrection}`);
+          }
         }
         // Q008 (U044): the compact rail stays 80 dp wide and every one of
         // its 11 items (4 primary, 6 areas, Settings) lies whole inside
@@ -1752,6 +1833,8 @@ const meta = {
     howto_no_numbers: 'Q005 (U041): the how-to has at least six task headings and no heading or label starts with a number',
     switch_help_read_with_switch: 'Q005 (U041): the Timeline "show deleted and withdrawn" switch is one control whose accessible name includes its help line',
     rail_in_window: 'Q008 compact-rail groups only (840 and 1000 wide): at least 11 rail items (4 primary, 6 areas, Settings), each ending within 81 px from the left and above the window bottom (U044: the rail stays 80 dp wide); U045: only buttons and tabs inside the rail\'s own semantics node count (the outermost node within 81 px of the left edge, at least 200 px tall, above a control near the left edge)',
+    date_helper_one_line: 'Q009: Labs add sheet: the sample-date helper is the whole date pattern of the language (EN YYYY-MM-DD, TR YYYY-AA-GG; word joiners ignored) on one line (its box at most 24 px tall per 1× of text) inside the window',
+    error_shown_whole: 'Q009: Timeline correction: after typing an invalid time (25:99) and Save correction, the error under the time field reads the whole TIME_FORMAT message and its box lies inside the window (whether its lines are drawn uncut is judged by eye)',
     text_scaled_2x: '2× text cells only (every group with a browser font size, against the 1× group it names, U044): the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app',
   },
   counts,

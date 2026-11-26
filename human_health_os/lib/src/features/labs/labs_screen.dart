@@ -827,7 +827,7 @@ class _LabSheetState extends State<_LabSheet> {
           s.labSampleDate,
           'lab-date',
           'date',
-          helper: 'YYYY-MM-DD',
+          helper: s.dateHelperYmd,
           date: true,
         ),
         SheetSection(s.labSectionAlso),

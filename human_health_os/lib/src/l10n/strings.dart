@@ -83,6 +83,7 @@ class S {
   /// The typed-date pattern in this language, whole on one line (U045).
   String get _ymd => _t(ymdEn, ymdTr);
   String get _ymdHm => _t(ymdHmEn, ymdHmTr);
+  String get dateHelperYmd => _ymd;
 
   String get appTitle => 'Human OS';
   String get more => _t('More', 'Diğer');

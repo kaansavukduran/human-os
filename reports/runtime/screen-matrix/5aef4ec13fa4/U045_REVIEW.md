@@ -54,3 +54,13 @@ Per check (script): heading_visible, controls_named, no_page_errors, no_console_
 ## Screenshots
 
 32 are kept (21 cell shots, 11 sweep shots); the other 304 were deleted for disk space. Their checks remain in `matrix.json`, whose `screenshot` field still names the deleted files.
+
+## Commit hashes on the branch
+
+The worktree commits were cherry-picked (identical trees): 7a758bb → 6ad415a, 5aef4ec → 9dd6f05, f8d74bc → e7feada. The folder name keeps the matrix's source hash.
+
+## Independent review (APPROVE) and follow-ups
+
+- The lab sample-date helper was a hardcoded English `YYYY-MM-DD`; it now uses `S.dateHelperYmd` (TR `YYYY-AA-GG`, whole), with `test/widget/u045_lab_date_helper_test.dart`. Widget-tested only, not in this matrix run.
+- `theme_applied` also runs for a group that sets both a palette and a theme (none today).
+- Open: `theme_applied` can false-FAIL on a screen dominated by an image, a chart or a non-standard scrim; it does not check the accent colour.

@@ -1420,7 +1420,7 @@ async function runPass(root, mode) {
         cell.screenshot = shot;
         // U045: the theme is checked on the rendered colours (dark unless
         // the group chose Light in Settings), not only on the chip's state.
-        if (!g.palette) {
+        if (!g.palette || g.theme) {
           const want = g.theme ?? 'dark';
           const col = await surfaceColours(join(out, shot)).catch((e) => ({ error: e.message.split('\n')[0] }));
           cell.colours = col;

@@ -15,7 +15,7 @@ const _en =
     'A prescription or reminder is not an intake. "No interaction found" '
     'is not "safe".';
 const _tr =
-    'Reçete ya da hatırlatma, ilacı aldığın anlamına gelmez. '
+    'Reçete ya da hatırlatma olması, dozu aldığın anlamına gelmez. '
     '"Etkileşim bulunamadı", "güvenli" demek değildir.';
 
 void main() {

@@ -76,3 +76,12 @@ At 5c2702f: `dart format` (0 changed), `flutter analyze` (no issues), `TZ=UTC fl
 - 33af491: Q009 tool: the two cells and their checks (the matrix's source hash, this folder).
 - 5c2702f: the two fixes with their EN/TR widget tests.
 - the commit holding this report.
+
+## Commit hashes on the branch and timing
+
+Cherry-picked with identical trees: 33af491 → 92f253b, 5c2702f → 7dc3c7c, 4e3b89b → 0afb6b5. The fix commit was written between the first and the restarted matrix invocation; the restarted one ran with 33af491 checked out again, on the same builds (pinned by hash) and a cache keyed by commit, so the 420 results are for 33af491.
+
+## Independent review (APPROVE) and follow-ups
+
+- Turkish promise made exact (Medications also covers supplements): "Reçete ya da hatırlatma olması, dozu aldığın anlamına gelmez." Widget-tested; not re-run in the matrix.
+- Open: the trend reading-column test checks the list span, not the content's right edge, and only the empty state; `error_shown_whole` finds the message anywhere in the window and does not check that nothing was saved; the 1180 landscape trend page was checked by code only.

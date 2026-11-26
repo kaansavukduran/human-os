@@ -154,7 +154,7 @@ const List<Destination> destinations = [
     // Built in F008: products, plans and recorded doses kept apart.
     plannedForge: null,
     principleEn: 'A prescription or reminder is not an intake. "No interaction found" is not "safe".',
-    principleTr: 'Reçete ya da hatırlatma, ilacı aldığın anlamına gelmez. "Etkileşim bulunamadı", "güvenli" demek değildir.',
+    principleTr: 'Reçete ya da hatırlatma olması, dozu aldığın anlamına gelmez. "Etkileşim bulunamadı", "güvenli" demek değildir.',
     canDoEn: 'Add a medicine or supplement, write how it is meant to be taken, and note each dose you took or skipped.',
     canDoTr: 'Bir ilaç ya da takviye ekle, nasıl kullanılacağını yaz ve aldığın ya da atladığın her dozu not et.',
   ),

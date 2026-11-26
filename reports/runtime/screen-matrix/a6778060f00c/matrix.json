@@ -1,0 +1,3020 @@
+{
+  "tool": "tools/flutter_screen_matrix.mjs",
+  "ran_at": "2026-11-26T06:24:13.953Z",
+  "git_head": "a6778060f00cc42a88f8d5916035c1a217b81a05",
+  "working_tree_dirty": false,
+  "browser": "chromium 153.0.8010.12",
+  "release_build": "/tmp/claude-0/-home-user/98b402a0-dcb1-563e-9879-a47a1ee158c6/scratchpad/web-release",
+  "release_main_dart_js_sha256": "8c7a063ca13d1929c2d8b0ff0157b1c8aec727864e02f30746bc706f8d32aada",
+  "debug_build": "/tmp/claude-0/-home-user/98b402a0-dcb1-563e-9879-a47a1ee158c6/scratchpad/web-debug",
+  "debug_main_dart_js_sha256": "9d4b5874764de758458b933384317af2bfaf09e8357a51b91354b657b4fedad4",
+  "viewports": {
+    "small-phone": {
+      "width": 320,
+      "height": 640,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36"
+    },
+    "phone": {
+      "width": 390,
+      "height": 844,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36"
+    },
+    "tablet-portrait": {
+      "width": 820,
+      "height": 1180,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+    },
+    "tablet-landscape": {
+      "width": 1180,
+      "height": 820,
+      "touch": true,
+      "ua": "Mozilla/5.0 (Linux; Android 14; Pixel Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+    },
+    "desktop": {
+      "width": 1440,
+      "height": 900,
+      "touch": false,
+      "ua": null
+    },
+    "compact-840": {
+      "width": 840,
+      "height": 900,
+      "touch": false,
+      "ua": null
+    },
+    "compact-1000": {
+      "width": 1000,
+      "height": 900,
+      "touch": false,
+      "ua": null
+    }
+  },
+  "min_touch_target_css_px": 48,
+  "checks": {
+    "heading_visible": "the screen heading (semantics role heading) is on screen",
+    "palette_applied": "palette groups only: the palette was chosen through the Settings UI and its note appeared",
+    "no_page_errors": "no uncaught page errors while the cell was open (load errors count to the first cell of a page)",
+    "no_console_errors": "no console messages of type error",
+    "no_failed_requests": "no failed request and no HTTP status >= 400",
+    "no_horizontal_scroll": "document scrollWidth <= viewport width at every scroll position",
+    "controls_named": "every semantics button, link and tab has a non-empty accessible name",
+    "touch_targets": "touch viewports: every enabled semantics button/link/tab/checkbox/switch/radio/slider or tappable node is >= 48x48 CSS px (48 dp since Q005) (largest size seen while scrolling the whole screen); the modal barrier above a sheet (\"Scrim\") is not counted",
+    "no_flutter_overflow": "debug build of the same revision: the console has no \"overflowed by N pixels\" report while the screen is opened and scrolled",
+    "no_flutter_exceptions": "debug build: no other Flutter framework exception report",
+    "lock_state_clear": "Settings: app lock: in a build without an encrypted vault the reason text is shown and every lock control (minute chips, lock-when-hidden switch) is disabled",
+    "about_sections_clear": "Settings: about: both section titles (\"This build\" and \"Capabilities on this device\", EN/TR) are exposed as standalone headings, not merged with their cards",
+    "lab_group_chart_spoken": "Labs: same test over time: \"Same test over time\" is exposed as its own heading on Labs and the group chart carries its spoken dated-values summary",
+    "restore_chooser_opens": "Today: restore from file: tapping the entry opens the browser file chooser",
+    "restore_cancel_reported": "Today: restore from file: closing the chooser without a file shows \"No file chosen. Nothing was changed.\" on screen within 1 s",
+    "not_cut_at_list_end": "U042: every target the script scrolled to ended at least 2 px above the bottom navigation bar (in a sheet, above its pinned Save bar, U044; else the window bottom); one that stops moving at the end of its list with its bottom still under the bar is a finding (cut at list end), not in view",
+    "no_stacked_headings": "Q005: no heading has another heading as the next visible text directly below it in the same column (less than 32 px between them, nothing in between)",
+    "no_english_on_tr": "Q005, tr-TR cells: no accessible label or heading seen while sweeping the screen contains an English word from a fixed list (names shared by both languages allowed)",
+    "theme_applied": "U045: every group without a palette: the cell's screenshot is read back and its most common colour is a surface, card or raised container of the expected theme, or one of them under the black 54 % modal barrier (dark by default; light in the groups that chose Light in Settings, whose chip must also read as checked), those three covering at least 25 % of the window (every 4th pixel, each channel within 3)",
+    "chip_checked": "Q007 (U043) chip cells: the chip the cell selected is a semantics checkbox with aria-checked=true; U044: the cell selected it itself (it was not checked before its tap, and is after); a chip that starts checked fails",
+    "derived_plain_titles": "U046: Derived titles are the plain names (EN/TR); no heading holds a machine ID",
+    "machine_id_whole": "U046: under Technical details, the formula ID is its own node, read whole (no word joiners) and drawn on one line (at most 24 px tall per 1× of text)",
+    "parts_not_buttons": "U046: the heart page's parts are read as text and none is a button, checkbox or other control",
+    "reading_column": "U046: Genetics and Plant chemicals: the intro starts 16 px inside the centred 840 dp reading column (at 16 on a narrow window)",
+    "version_localised": "U046: About shows the missing version in the page's language (\"unknown\" / \"bilinmiyor\"); no \"unknown\" on a TR page",
+    "theme_note_shown": "U046: with Matrix chosen in Settings (its palette note appeared), the note under \"Light or dark\" says the palette sets light or dark",
+    "title_whole": "Q005: first run, Summary, Derived and how-to titles: the title box lies wholly inside the window at the top of the page",
+    "howto_no_numbers": "Q005 (U041): the how-to has at least six task headings and no heading or label starts with a number",
+    "switch_help_read_with_switch": "Q005 (U041): the Timeline \"show deleted and withdrawn\" switch is one control whose accessible name includes its help line",
+    "rail_in_window": "Q008 compact-rail groups only (840 and 1000 wide): at least 11 rail items (4 primary, 6 areas, Settings), each ending within 81 px from the left and above the window bottom (U044: the rail stays 80 dp wide); U045: only buttons and tabs inside the rail's own semantics node count (the outermost node within 81 px of the left edge, at least 200 px tall, above a control near the left edge)",
+    "date_helper_one_line": "Q009: Labs add sheet: the sample-date helper is the whole date pattern of the language (EN YYYY-MM-DD, TR YYYY-AA-GG; word joiners ignored) on one line (its box at most 24 px tall per 1× of text) inside the window",
+    "error_shown_whole": "Q009: Timeline correction: after typing an invalid time (25:99) and Save correction, the error under the time field reads the whole TIME_FORMAT message and its box lies inside the window (whether its lines are drawn uncut is judged by eye)",
+    "text_scaled_2x": "2× text cells only (every group with a browser font size, against the 1× group it names, U044): the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app"
+  },
+  "counts": {
+    "cells": 36,
+    "PASS": 33,
+    "FAIL": 3,
+    "PASS_WITH_NOT_TESTED": 0
+  },
+  "not_tested": [
+    {
+      "what": "Real Android phones and tablets",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Real iPhones and iPads (iOS/iPadOS)",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Windows desktop app",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "macOS desktop app",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Firefox",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Safari",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Screen readers: TalkBack",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Screen readers: VoiceOver",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    },
+    {
+      "what": "Screen readers: NVDA",
+      "status": "NOT_TESTED",
+      "reason": "not available in this container"
+    }
+  ],
+  "cells": [
+    {
+      "id": "u046|small-phone|en-US|Derived: technical details",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Derived: technical details",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #172224 (45 %, dark.card); dark surfaces 88 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "derived_plain_titles": {
+          "status": "PASS",
+          "detail": "plain titles \"Body mass index (BMI)\", \"Waist-to-height ratio\"; headings with a machine ID: none"
+        },
+        "machine_id_whole": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\" box 32,424 88x17, one line: at most 24 px tall"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "2 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 16.941162109375,
+      "screenshot": "u046_small-phone_en-US_Derived-technical-details.png",
+      "colours": {
+        "top": "172224",
+        "topShare": 0.4463671875,
+        "topIs": "dark.card",
+        "share": {
+          "dark": 0.8793359375,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|small-phone|en-US|Learn: body guide parts",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Learn: body guide parts",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Heart\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (91 %, dark.surface); dark surfaces 91 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "parts_not_buttons": {
+          "status": "PASS",
+          "detail": "4 of 4 parts read as text; as a control: none"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "1 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 29.647064208984375,
+      "screenshot": "u046_small-phone_en-US_Learn-body-guide-parts.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.90833984375,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.90833984375,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|small-phone|en-US|Genetics",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Genetics",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Genetics\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #172224 (46 %, dark.card); dark surfaces 85 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,14 86x28 in 320x640"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 16,72 288x76; column 16..304"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "3 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "3 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 76.23529052734375,
+      "screenshot": "u046_small-phone_en-US_Genetics.png",
+      "colours": {
+        "top": "172224",
+        "topShare": 0.46048828125,
+        "topIs": "dark.card",
+        "share": {
+          "dark": 0.849609375,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 14,
+        "width": 85.8125,
+        "height": 28
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|small-phone|en-US|Plant chemicals",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Plant chemicals",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Plant chemicals\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (93 %, dark.surface); dark surfaces 93 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,14 156x28 in 320x640"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 16,72 288x106; column 16..304"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "2 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 105.88235473632812,
+      "screenshot": "u046_small-phone_en-US_Plant-chemicals.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.92791015625,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.92798828125,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 14,
+        "width": 156.015625,
+        "height": 28
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|small-phone|en-US|About: version",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "About: version",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Version: unknown\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #172224 (70 %, dark.card); dark surfaces 91 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "version_localised": {
+          "status": "PASS",
+          "detail": "\"unknown\" shown: true"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "1 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 21.176467895507812,
+      "screenshot": "u046_small-phone_en-US_About-version.png",
+      "colours": {
+        "top": "172224",
+        "topShare": 0.6982421875,
+        "topIs": "dark.card",
+        "share": {
+          "dark": 0.9115625,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|small-phone|en-US|Settings: theme under palette",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Settings: theme under palette",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Light or dark\""
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "theme_note_shown": {
+          "status": "PASS",
+          "detail": "Matrix chosen: true; note: \"The Matrix palette (below) sets light or dark now. The choice ticked here is kep…\""
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "34 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "90 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 63.5294189453125,
+      "screenshot": "u046_small-phone_en-US_Settings-theme-under-palette.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|en-US|Derived: technical details",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Derived: technical details",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (70 %, dark.surface); dark surfaces 98 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "derived_plain_titles": {
+          "status": "PASS",
+          "detail": "plain titles \"Body mass index (BMI)\", \"Waist-to-height ratio\"; headings with a machine ID: none"
+        },
+        "machine_id_whole": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\" box 332,348 88x17, one line: at most 24 px tall"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 16.941162109375,
+      "screenshot": "u046_desktop_en-US_Derived-technical-details.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.6953302469135803,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9781481481481481,
+          "light": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|en-US|Learn: body guide parts",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Learn: body guide parts",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Heart\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (98 %, dark.surface); dark surfaces 98 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "parts_not_buttons": {
+          "status": "PASS",
+          "detail": "4 of 4 parts read as text; as a control: none"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 29.647064208984375,
+      "screenshot": "u046_desktop_en-US_Learn-body-guide-parts.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.9809043209876543,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9809783950617283,
+          "light": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|en-US|Genetics",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Genetics",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Genetics\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (86 %, dark.surface); dark surfaces 97 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,14 86x28 in 1440x900"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 316,72 807x25; column 316..1124"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "3 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 25.411766052246094,
+      "screenshot": "u046_desktop_en-US_Genetics.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.8580216049382716,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9740586419753087,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 14,
+        "width": 85.8125,
+        "height": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|en-US|Plant chemicals",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Plant chemicals",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Plant chemicals\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (99 %, dark.surface); dark surfaces 99 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,14 156x28 in 1440x900"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 316,72 808x42; column 316..1124"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 42.352943420410156,
+      "screenshot": "u046_desktop_en-US_Plant-chemicals.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.9888919753086419,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9889043209876544,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 14,
+        "width": 156.015625,
+        "height": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|en-US|About: version",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "About: version",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Version: unknown\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (63 %, dark.surface); dark surfaces 98 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "version_localised": {
+          "status": "PASS",
+          "detail": "\"unknown\" shown: true"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 21.176467895507812,
+      "screenshot": "u046_desktop_en-US_About-version.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.6251327160493827,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9762777777777778,
+          "light": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|en-US|Settings: theme under palette",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "en-US",
+      "screen": "Settings: theme under palette",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Light or dark\""
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "theme_note_shown": {
+          "status": "PASS",
+          "detail": "Matrix chosen: true; note: \"The Matrix palette (below) sets light or dark now. The choice ticked here is kep…\""
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "34 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 21.176467895507812,
+      "screenshot": "u046_desktop_en-US_Settings-theme-under-palette.png",
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|en-US|Derived: technical details",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Derived: technical details",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #172224 (47 %, dark.card); dark surfaces 88 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "derived_plain_titles": {
+          "status": "PASS",
+          "detail": "plain titles \"Body mass index (BMI)\", \"Waist-to-height ratio\"; headings with a machine ID: none"
+        },
+        "machine_id_whole": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\" box 32,424 171x33, one line: at most 48 px tall"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "2 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 16.941162109375 → 32.888885498046875 (×1.94)"
+        }
+      },
+      "headingHeight": 32.888885498046875,
+      "screenshot": "u046-text-2x_small-phone_en-US_Derived-technical-details.png",
+      "colours": {
+        "top": "172224",
+        "topShare": 0.46974609375,
+        "topIs": "dark.card",
+        "share": {
+          "dark": 0.875,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|en-US|Learn: body guide parts",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Learn: body guide parts",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Heart\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (90 %, dark.surface); dark surfaces 90 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "parts_not_buttons": {
+          "status": "PASS",
+          "detail": "4 of 4 parts read as text; as a control: none"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "1 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 29.647064208984375 → 53.4444580078125 (×1.80)"
+        }
+      },
+      "headingHeight": 53.4444580078125,
+      "screenshot": "u046-text-2x_small-phone_en-US_Learn-body-guide-parts.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.90375,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.90375,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|en-US|Genetics",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Genetics",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Genetics\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (51 %, dark.surface); dark surfaces 89 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,10 115x37 in 320x640"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 16,72 288x247; column 16..304"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "1 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 76.23529052734375 → 246.66665649414062 (×3.24)"
+        }
+      },
+      "headingHeight": 246.66665649414062,
+      "screenshot": "u046-text-2x_small-phone_en-US_Genetics.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.50892578125,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.88611328125,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 9.5,
+        "width": 114.953125,
+        "height": 37
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|en-US|Plant chemicals",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Plant chemicals",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Plant chemicals\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (87 %, dark.surface); dark surfaces 87 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,10 209x37 in 320x640"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 16,72 288x342; column 16..304"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "2 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 105.88235473632812 → 342.25 (×3.23)"
+        }
+      },
+      "headingHeight": 342.25,
+      "screenshot": "u046-text-2x_small-phone_en-US_Plant-chemicals.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.866171875,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.8662109375,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 9.5,
+        "width": 209,
+        "height": 37
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|en-US|About: version",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "About: version",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Version: unknown\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #172224 (69 %, dark.card); dark surfaces 90 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "version_localised": {
+          "status": "PASS",
+          "detail": "\"unknown\" shown: true"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "1 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 21.176467895507812 → 41.111114501953125 (×1.94)"
+        }
+      },
+      "headingHeight": 41.111114501953125,
+      "screenshot": "u046-text-2x_small-phone_en-US_About-version.png",
+      "colours": {
+        "top": "172224",
+        "topShare": 0.69408203125,
+        "topIs": "dark.card",
+        "share": {
+          "dark": 0.903671875,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|en-US|Settings: theme under palette",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "en-US",
+      "screen": "Settings: theme under palette",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Light or dark\""
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "theme_note_shown": {
+          "status": "PASS",
+          "detail": "Matrix chosen: true; note: \"The Matrix palette (below) sets light or dark now. The choice ticked here is kep…\""
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "34 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "90 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 63.5294189453125 → 246.6666259765625 (×3.88)"
+        }
+      },
+      "headingHeight": 246.6666259765625,
+      "screenshot": "u046-text-2x_small-phone_en-US_Settings-theme-under-palette.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|small-phone|tr-TR|Derived: technical details",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Derived: technical details",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #172224 (48 %, dark.card); dark surfaces 89 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "19 labels read, no English word"
+        },
+        "derived_plain_titles": {
+          "status": "PASS",
+          "detail": "plain titles \"Vücut kitle indeksi (VKİ)\", \"Bel-boy oranı\"; headings with a machine ID: none"
+        },
+        "machine_id_whole": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\" box 32,404 88x17, one line: at most 24 px tall"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "2 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 16.941162109375,
+      "screenshot": "u046_small-phone_tr-TR_Derived-technical-details.png",
+      "colours": {
+        "top": "172224",
+        "topShare": 0.4808984375,
+        "topIs": "dark.card",
+        "share": {
+          "dark": 0.8895703125,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|small-phone|tr-TR|Learn: body guide parts",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Learn: body guide parts",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Kalp\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (91 %, dark.surface); dark surfaces 91 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "18 labels read, no English word"
+        },
+        "parts_not_buttons": {
+          "status": "PASS",
+          "detail": "4 of 4 parts read as text; as a control: none"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "1 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 29.647064208984375,
+      "screenshot": "u046_small-phone_tr-TR_Learn-body-guide-parts.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.9109375,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9109375,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|small-phone|tr-TR|Genetics",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Genetics",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Genetik\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #172224 (42 %, dark.card); dark surfaces 84 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,14 74x28 in 320x640"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "8 labels read, no English word"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 16,72 288x76; column 16..304"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "3 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "3 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 76.23529052734375,
+      "screenshot": "u046_small-phone_tr-TR_Genetics.png",
+      "colours": {
+        "top": "172224",
+        "topShare": 0.42466796875,
+        "topIs": "dark.card",
+        "share": {
+          "dark": 0.83841796875,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 14,
+        "width": 74.109375,
+        "height": 28
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|small-phone|tr-TR|Plant chemicals",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Plant chemicals",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Bitki kimyasalları\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (92 %, dark.surface); dark surfaces 92 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,14 165x28 in 320x640"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "FAIL",
+          "detail": "\"GeriBitki kimyasallarıphytochem.nal.usda.gov sitesinde bir madde, etki\" (results); \"phytochem.nal.usda.gov sitesinde bir madde, etki ya da bitki aç, sonra\" (results)"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 16,72 288x85; column 16..304"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "2 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 84.70588684082031,
+      "screenshot": "u046_small-phone_tr-TR_Plant-chemicals.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.92294921875,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.92294921875,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 14,
+        "width": 164.96875,
+        "height": 28
+      },
+      "smallTargets": [],
+      "status": "FAIL"
+    },
+    {
+      "id": "u046|small-phone|tr-TR|About: version",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "About: version",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Sürüm: bilinmiyor\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #172224 (70 %, dark.card); dark surfaces 91 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "41 labels read, no English word"
+        },
+        "version_localised": {
+          "status": "PASS",
+          "detail": "\"bilinmiyor\" shown: true; \"unknown\": none"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "1 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 21.176467895507812,
+      "screenshot": "u046_small-phone_tr-TR_About-version.png",
+      "colours": {
+        "top": "172224",
+        "topShare": 0.7026171875,
+        "topIs": "dark.card",
+        "share": {
+          "dark": 0.91419921875,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|small-phone|tr-TR|Settings: theme under palette",
+      "variant": "u046",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Settings: theme under palette",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Açık veya koyu\""
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "107 labels read, no English word"
+        },
+        "theme_note_shown": {
+          "status": "PASS",
+          "detail": "Matrix chosen: true; note: \"Açık ya da koyu görünümü şu an aşağıdaki Matrix paleti belirliyor. Burada işaret…\""
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "34 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "91 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 63.5294189453125,
+      "screenshot": "u046_small-phone_tr-TR_Settings-theme-under-palette.png",
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|tr-TR|Derived: technical details",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Derived: technical details",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (70 %, dark.surface); dark surfaces 98 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "17 labels read, no English word"
+        },
+        "derived_plain_titles": {
+          "status": "PASS",
+          "detail": "plain titles \"Vücut kitle indeksi (VKİ)\", \"Bel-boy oranı\"; headings with a machine ID: none"
+        },
+        "machine_id_whole": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\" box 332,328 88x17, one line: at most 24 px tall"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 16.941162109375,
+      "screenshot": "u046_desktop_tr-TR_Derived-technical-details.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.695037037037037,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9799475308641975,
+          "light": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|tr-TR|Learn: body guide parts",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Learn: body guide parts",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Kalp\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (98 %, dark.surface); dark surfaces 98 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "18 labels read, no English word"
+        },
+        "parts_not_buttons": {
+          "status": "PASS",
+          "detail": "4 of 4 parts read as text; as a control: none"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 29.647064208984375,
+      "screenshot": "u046_desktop_tr-TR_Learn-body-guide-parts.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.9808672839506173,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9809691358024691,
+          "light": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|tr-TR|Genetics",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Genetics",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Genetik\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (86 %, dark.surface); dark surfaces 97 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,14 74x28 in 1440x900"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "8 labels read, no English word"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 316,72 808x25; column 316..1124"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "3 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 25.411766052246094,
+      "screenshot": "u046_desktop_tr-TR_Genetics.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.8584043209876543,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9741697530864197,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 14,
+        "width": 74.109375,
+        "height": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|tr-TR|Plant chemicals",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Plant chemicals",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Bitki kimyasalları\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (99 %, dark.surface); dark surfaces 99 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,14 165x28 in 1440x900"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "FAIL",
+          "detail": "\"GeriBitki kimyasallarıphytochem.nal.usda.gov sitesinde bir madde, etki\" (results); \"phytochem.nal.usda.gov sitesinde bir madde, etki ya da bitki aç, sonra\" (results)"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 316,72 808x42; column 316..1124"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 42.352943420410156,
+      "screenshot": "u046_desktop_tr-TR_Plant-chemicals.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.9879506172839506,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9879506172839506,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 14,
+        "width": 164.96875,
+        "height": 28
+      },
+      "status": "FAIL"
+    },
+    {
+      "id": "u046|desktop|tr-TR|About: version",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "About: version",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Sürüm: bilinmiyor\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (62 %, dark.surface); dark surfaces 98 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "32 labels read, no English word"
+        },
+        "version_localised": {
+          "status": "PASS",
+          "detail": "\"bilinmiyor\" shown: true; \"unknown\": none"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 21.176467895507812,
+      "screenshot": "u046_desktop_tr-TR_About-version.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.6248395061728395,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.9756111111111111,
+          "light": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "u046|desktop|tr-TR|Settings: theme under palette",
+      "variant": "u046",
+      "viewport": "desktop",
+      "size": "1440x900",
+      "locale": "tr-TR",
+      "screen": "Settings: theme under palette",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Açık veya koyu\""
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "107 labels read, no English word"
+        },
+        "theme_note_shown": {
+          "status": "PASS",
+          "detail": "Matrix chosen: true; note: \"Açık ya da koyu görünümü şu an aşağıdaki Matrix paleti belirliyor. Burada işaret…\""
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 1440 vs viewport 1440"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "34 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "NOT_APPLICABLE",
+          "detail": "desktop pointer viewport"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        }
+      },
+      "headingHeight": 42.352935791015625,
+      "screenshot": "u046_desktop_tr-TR_Settings-theme-under-palette.png",
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|tr-TR|Derived: technical details",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Derived: technical details",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #172224 (57 %, dark.card); dark surfaces 87 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "34 labels read, no English word"
+        },
+        "derived_plain_titles": {
+          "status": "PASS",
+          "detail": "plain titles \"Vücut kitle indeksi (VKİ)\", \"Bel-boy oranı\"; headings with a machine ID: none"
+        },
+        "machine_id_whole": {
+          "status": "PASS",
+          "detail": "\"DERIVED-BMI-1\" box 32,262 171x33, one line: at most 48 px tall"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "2 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 16.941162109375 → 32.888916015625 (×1.94)"
+        }
+      },
+      "headingHeight": 32.888916015625,
+      "screenshot": "u046-text-2x_small-phone_tr-TR_Derived-technical-details.png",
+      "colours": {
+        "top": "172224",
+        "topShare": 0.5740625,
+        "topIs": "dark.card",
+        "share": {
+          "dark": 0.8659375,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|tr-TR|Learn: body guide parts",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Learn: body guide parts",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Kalp\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (89 %, dark.surface); dark surfaces 89 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "30 labels read, no English word"
+        },
+        "parts_not_buttons": {
+          "status": "PASS",
+          "detail": "4 of 4 parts read as text; as a control: none"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "1 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 29.647064208984375 → 53.4444580078125 (×1.80)"
+        }
+      },
+      "headingHeight": 53.4444580078125,
+      "screenshot": "u046-text-2x_small-phone_tr-TR_Learn-body-guide-parts.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.8891796875,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.8891796875,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|tr-TR|Genetics",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Genetics",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Genetik\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (51 %, dark.surface); dark surfaces 89 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,10 99x37 in 320x640"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "10 labels read, no English word"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 16,72 288x247; column 16..304"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "1 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 76.23529052734375 → 246.66665649414062 (×3.24)"
+        }
+      },
+      "headingHeight": 246.66665649414062,
+      "screenshot": "u046-text-2x_small-phone_tr-TR_Genetics.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.509140625,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.88640625,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 9.5,
+        "width": 99.265625,
+        "height": 37
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|tr-TR|Plant chemicals",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Plant chemicals",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Bitki kimyasalları\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #101819 (85 %, dark.surface); dark surfaces 85 %, light surfaces 0 %"
+        },
+        "title_whole": {
+          "status": "PASS",
+          "detail": "title box 72,10 221x37 in 320x640"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "FAIL",
+          "detail": "\"GeriBitki kimyasallarıphytochem.nal.usda.gov sitesinde bir madde, etki\" (results); \"phytochem.nal.usda.gov sitesinde bir madde, etki ya da bitki aç, sonra\" (results)"
+        },
+        "reading_column": {
+          "status": "PASS",
+          "detail": "intro 16,72 288x266; column 16..304"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "2 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "2 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 84.70588684082031 → 266.1944580078125 (×3.14)"
+        }
+      },
+      "headingHeight": 266.1944580078125,
+      "screenshot": "u046-text-2x_small-phone_tr-TR_Plant-chemicals.png",
+      "colours": {
+        "top": "101819",
+        "topShare": 0.8526171875,
+        "topIs": "dark.surface",
+        "share": {
+          "dark": 0.85265625,
+          "light": 0
+        }
+      },
+      "titleBox": {
+        "x": 72,
+        "y": 9.5,
+        "width": 220.984375,
+        "height": 37
+      },
+      "smallTargets": [],
+      "status": "FAIL"
+    },
+    {
+      "id": "u046-text-2x|small-phone|tr-TR|About: version",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "About: version",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Sürüm: bilinmiyor\""
+        },
+        "theme_applied": {
+          "status": "PASS",
+          "detail": "want dark; most common colour #172224 (70 %, dark.card); dark surfaces 91 %, light surfaces 0 %"
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "61 labels read, no English word"
+        },
+        "version_localised": {
+          "status": "PASS",
+          "detail": "\"bilinmiyor\" shown: true; \"unknown\": none"
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "1 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "1 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 21.176467895507812 → 41.111114501953125 (×1.94)"
+        }
+      },
+      "headingHeight": 41.111114501953125,
+      "screenshot": "u046-text-2x_small-phone_tr-TR_About-version.png",
+      "colours": {
+        "top": "172224",
+        "topShare": 0.69876953125,
+        "topIs": "dark.card",
+        "share": {
+          "dark": 0.9071484375,
+          "light": 0
+        }
+      },
+      "smallTargets": [],
+      "status": "PASS"
+    },
+    {
+      "id": "u046-text-2x|small-phone|tr-TR|Settings: theme under palette",
+      "variant": "u046-text-2x",
+      "viewport": "small-phone",
+      "size": "320x640",
+      "locale": "tr-TR",
+      "screen": "Settings: theme under palette",
+      "checks": {
+        "heading_visible": {
+          "status": "PASS",
+          "detail": "\"Açık veya koyu\""
+        },
+        "no_stacked_headings": {
+          "status": "PASS",
+          "detail": "no heading directly above another"
+        },
+        "no_english_on_tr": {
+          "status": "PASS",
+          "detail": "107 labels read, no English word"
+        },
+        "theme_note_shown": {
+          "status": "PASS",
+          "detail": "Matrix chosen: true; note: \"Açık ya da koyu görünümü şu an aşağıdaki Matrix paleti belirliyor. Burada işaret…\""
+        },
+        "not_cut_at_list_end": {
+          "status": "PASS",
+          "detail": "every revealed target ended at least 2 px above the bottom bar"
+        },
+        "no_page_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_console_errors": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_failed_requests": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_horizontal_scroll": {
+          "status": "PASS",
+          "detail": "scrollWidth 320 vs viewport 320"
+        },
+        "controls_named": {
+          "status": "PASS",
+          "detail": "34 buttons/links/tabs named"
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "detail": "90 targets >= 48x48"
+        },
+        "no_flutter_overflow": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "no_flutter_exceptions": {
+          "status": "PASS",
+          "detail": ""
+        },
+        "text_scaled_2x": {
+          "status": "PASS",
+          "detail": "heading height 63.5294189453125 → 287.77777099609375 (×4.53)"
+        }
+      },
+      "headingHeight": 287.77777099609375,
+      "screenshot": "u046-text-2x_small-phone_tr-TR_Settings-theme-under-palette.png",
+      "smallTargets": [],
+      "status": "PASS"
+    }
+  ]
+}

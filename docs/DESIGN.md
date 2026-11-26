@@ -201,7 +201,7 @@ The open points after the Q008 screen matrix (`reports/runtime/screen-matrix/e76
 
 ## U046
 
-The open points after the Q009 screen matrix (`reports/runtime/screen-matrix/33af491f7bb0/Q009_REVIEW.md`, "Seen, not a FAIL"). Widget tests: `test/widget/u046_open_points_test.dart` (EN and TR; 320 dp at 1× and 2× text and a 1440x900 desktop where layout matters; each group fails on the code before U046, the checks that hold on both are named below). Matrix cells: the `u046` groups of `tools/flutter_screen_matrix.mjs`.
+The open points after the Q009 screen matrix (`reports/runtime/screen-matrix/33af491f7bb0/Q009_REVIEW.md`, "Seen, not a FAIL"). Widget tests: `test/widget/u046_open_points_test.dart` (EN and TR; 320 dp at 1× and 2× text and a 1440x900 desktop where layout matters; each group fails on the code before U046, the checks that hold on both are named below). Matrix cells: the `u046` groups of `tools/flutter_screen_matrix.mjs`; run: `reports/runtime/screen-matrix/a6778060f00c/U046_REVIEW.md` (36 cells, script 33 PASS and 3 FAIL, all three the English button name quoted in the TR plant-chemicals intro, left open; by eye 5 cells looked at, all PASS, after two findings of an earlier run were fixed).
 
 | # | Point | Choice |
 |---|---|---|

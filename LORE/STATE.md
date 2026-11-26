@@ -2,10 +2,10 @@
 Şu an neredeyiz, sıradaki adım, açık işler. Machine cursor wins: [CURRENT_STATE.json](../project_state/CURRENT_STATE.json).
 
 ## Last verified step
-- CONFIRMED · 2026-11-26 · Q009@v0.32 closed (full screen matrix: 420 cells PASS; by eye 2 findings fixed: trend page reading column, exact Turkish Medications promise); 14 gates PASS (EV-*-F007-1692…1705). U045 closed before it.
+- CONFIRMED · 2026-11-26 · U046@v0.32 closed (plain Derived names, body-guide parts as text, reading column for Genetics and Plant chemicals, localised version fallback, palette theme note, disclosure semantics, glossed USDA label); 14 gates PASS (EV-*-F007-1706…1719). Q009 closed before it.
 
 ## Next step
-- PLANNED · U046@v0.32: open UI points after Q009 (plain names on the Derived page, body-guide labels not tappable-looking, reading column for Genetics and plant compounds, localised version fallback, palette theme chip).
+- PLANNED · Q010@v0.32: full screen matrix after U046 in Chromium (per-line 2x check everywhere, palette note under every palette, aria-expanded read back, synthetic Genetics and Plant chemicals files).
 
 ## Open questions for the owner
 - PROPOSED · GitHub Pages: `pages.yml` needs the one-time setting Settings > Pages > Source: GitHub Actions (owner only).

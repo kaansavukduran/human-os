@@ -287,6 +287,41 @@ void main() {
     }
   });
 
+  // Seen in the U046 matrix (TR, 320 dp, 2× text): the site's address in
+  // the plant-chemicals intro broke inside the word ("phytochem.nal.usda.g
+  // / ov"). It stays whole on one line.
+  group('3b. Plant chemicals: the site address is never broken inside', () {
+    for (final (choice, lang) in _langs) {
+      for (final scale in const [1.0, 2.0]) {
+        testWidgets('${lang.name}, 320 dp, ${scale}x', (tester) async {
+          final s = S(lang);
+          await _launch(
+            tester,
+            language: choice,
+            size: const Size(320, 640),
+            textScale: scale,
+          );
+          await _openToday(tester, 'tool-phyto');
+          final p = tester.renderObject<RenderParagraph>(
+            find.descendant(
+              of: find.byKey(const ValueKey('screen-phyto')),
+              matching: find.byWidgetPredicate(
+                (w) => w is RichText && w.text.toPlainText() == s.phytoHow,
+              ),
+            ),
+          );
+          const url = 'phytochem.nal.usda.gov';
+          final start = s.phytoHow.indexOf(url);
+          final boxes = p.getBoxesForSelection(
+            TextSelection(baseOffset: start, extentOffset: start + url.length),
+          );
+          expect({for (final b in boxes) b.top.round()}.length, 1);
+          expect(tester.takeException(), isNull);
+        });
+      }
+    }
+  });
+
   group('4. About: a version not passed to the build is said in the '
       'person\'s language', () {
     for (final (choice, lang) in _langs) {

@@ -8,6 +8,7 @@ import '../../domain/phyto/phyto_table.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/whole_label_field.dart';
+import '../../presentation/widgets/whole_words.dart';
 import '../genetics/genome_file_picker.dart';
 import '../guide/glossary_screen.dart' show foldForSearch;
 
@@ -105,7 +106,9 @@ class _PhytoScreenState extends State<PhytoScreen> {
           key: const ValueKey('screen-phyto'),
           padding: readingPadding(context, const EdgeInsets.all(16)),
           children: [
-            Text(s.phytoHow, style: text.bodyMedium),
+            // The site's address is one long word: drawn just small enough
+            // to stay whole rather than broken inside it (U042, U046).
+            WholeWordText(s.phytoHow, style: text.bodyMedium),
             const SizedBox(height: 12),
             Wrap(
               spacing: 12,

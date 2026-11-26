@@ -32,6 +32,11 @@ const String ymdTr = 'YYYY-\u2060AA-\u2060GG';
 const String ymdHmEn = '$ymdEn HH:MM';
 const String ymdHmTr = '$ymdTr SS:DD';
 
+/// The USDA plant-chemicals site's own English button, quoted verbatim in
+/// both languages so the person finds it on that English-only site; the
+/// Turkish text glosses it (U046).
+const String usdaCsvButton = 'Download these results as: CSV';
+
 AppLang langOf(BuildContext context) {
   final code = Localizations.maybeLocaleOf(context)?.languageCode;
   return code == 'tr' ? AppLang.tr : AppLang.en;
@@ -1526,8 +1531,8 @@ class S {
     'USDA bitki maddeleri veritabanından bir tabloya internetsiz bak',
   );
   String get phytoHow => _t(
-    'On phytochem.nal.usda.gov open a chemical, an activity or a plant, then choose "Download these results as: CSV". Load that file here: it is read on this device and not saved.',
-    'phytochem.nal.usda.gov sitesinde bir madde, etki ya da bitki aç, sonra "Download these results as: CSV" seç. O dosyayı buraya yükle: bu cihazda okunur ve kaydedilmez.',
+    'On phytochem.nal.usda.gov open a chemical, an activity or a plant, then choose "$usdaCsvButton". Load that file here: it is read on this device and not saved.',
+    'phytochem.nal.usda.gov sitesinde bir madde, etki ya da bitki aç, sonra "$usdaCsvButton" (Bu sonuçları CSV olarak indir) düğmesini seç. O dosyayı buraya yükle: bu cihazda okunur ve kaydedilmez.',
   );
   String get phytoLoad => _t('Load a CSV file', 'CSV dosyası yükle');
   String phytoRefusal(String code) => switch (code) {

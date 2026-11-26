@@ -207,6 +207,76 @@ void main() {
     },
   );
 
+  group('1b. Derived: "Technical details" is a button that says whether it '
+      'is open', () {
+    for (final (choice, lang) in _langs) {
+      testWidgets(lang.name, (tester) async {
+        final s = S(lang);
+        final services = await _launch(
+          tester,
+          language: choice,
+          size: const Size(320, 640),
+        );
+        await record(tester, services, kg: '80', heightCm: '180');
+        await _openToday(tester, 'tool-derived');
+        final handle = tester.ensureSemantics();
+        const key = 'derived-DERIVED-BMI-1';
+        final title = find.descendant(
+          of: find.byKey(const ValueKey('$key-model')),
+          matching: find.text(s.derivedDetailsTitle),
+        );
+        await tester.scrollUntilVisible(
+          title,
+          200,
+          scrollable: find
+              .descendant(
+                of: find.byKey(const ValueKey('screen-derived')),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        await tester.pumpAndSettle();
+        Matcher header({required bool open}) => matchesSemantics(
+          isButton: true,
+          hasExpandedState: true,
+          isExpanded: open,
+          hasTapAction: true,
+          isFocusable: true,
+          hasFocusAction: true,
+          label: s.derivedDetailsTitle,
+        );
+        expect(tester.getSemantics(title), header(open: false));
+        // The IDs are hidden until it is opened.
+        expect(find.bySemanticsLabel('DERIVED-BMI-1'), findsNothing);
+        await tester.tap(title);
+        await tester.pumpAndSettle();
+        expect(tester.getSemantics(title), header(open: true));
+        expect(find.bySemanticsLabel('DERIVED-BMI-1'), findsOneWidget);
+        await tester.tap(title);
+        await tester.pumpAndSettle();
+        expect(tester.getSemantics(title), header(open: false));
+        expect(find.bySemanticsLabel('DERIVED-BMI-1'), findsNothing);
+        handle.dispose();
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
+  test('3c. Plant chemicals: the USDA button is quoted as it is on the '
+      'site, and glossed in Turkish', () {
+    const quoted = '"$usdaCsvButton"';
+    expect(usdaCsvButton, 'Download these results as: CSV');
+    expect(const S(AppLang.en).phytoHow, contains(quoted));
+    expect(
+      const S(AppLang.tr).phytoHow,
+      contains('$quoted (Bu sonuçları CSV olarak indir)'),
+    );
+    // Quoted once in each language, nowhere else in English.
+    for (final s in const [S(AppLang.en), S(AppLang.tr)]) {
+      expect(quoted.allMatches(s.phytoHow).length, 1);
+    }
+  });
+
   group('2. Body guide: the parts are plain text, not chips', () {
     for (final (choice, lang) in _langs) {
       testWidgets(lang.name, (tester) async {

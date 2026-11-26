@@ -241,7 +241,9 @@ class _DerivedCard extends StatelessWidget {
 /// the card. Each ID is drawn on its own line and never broken inside
 /// (word joiners after its hyphens; drawn smaller only if it is wider than
 /// the whole line). A version number stays with its word ("version 1").
-class _TechnicalDetails extends StatelessWidget {
+/// The header is one button that says whether it is open (the disclosure
+/// pattern of `FieldDetails`); Material's `ExpansionTile` gave it neither.
+class _TechnicalDetails extends StatefulWidget {
   const _TechnicalDetails({
     super.key,
     required this.modelId,
@@ -252,11 +254,19 @@ class _TechnicalDetails extends StatelessWidget {
   final String version;
 
   @override
+  State<_TechnicalDetails> createState() => _TechnicalDetailsState();
+}
+
+class _TechnicalDetailsState extends State<_TechnicalDetails> {
+  bool _open = false;
+
+  @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final text = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final text = theme.textTheme;
     final muted = text.bodySmall?.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
+      color: theme.colorScheme.onSurfaceVariant,
     );
     // The name, then the ID on its own line; the ID is read without its
     // word joiners.
@@ -274,17 +284,42 @@ class _TechnicalDetails extends StatelessWidget {
         ],
       ),
     );
-    return ExpansionTile(
-      title: Text(s.derivedDetailsTitle, style: text.bodyMedium),
-      tilePadding: EdgeInsets.zero,
-      childrenPadding: EdgeInsets.zero,
-      shape: const Border(),
-      collapsedShape: const Border(),
-      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-      expandedAlignment: AlignmentDirectional.centerStart,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        fact(s.derivedModelIdLabel(version), modelId),
-        fact(s.derivedPackIdLabel(coreDerivedPackVersion), coreDerivedPackId),
+        Semantics(
+          container: true,
+          button: true,
+          expanded: _open,
+          label: s.derivedDetailsTitle,
+          child: InkWell(
+            onTap: () => setState(() => _open = !_open),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: Row(
+                children: [
+                  Expanded(
+                    // Said once, by the Semantics above.
+                    child: ExcludeSemantics(
+                      child: Text(
+                        s.derivedDetailsTitle,
+                        style: text.bodyMedium,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    _open ? Icons.expand_less : Icons.expand_more,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (_open) ...[
+          fact(s.derivedModelIdLabel(widget.version), widget.modelId),
+          fact(s.derivedPackIdLabel(coreDerivedPackVersion), coreDerivedPackId),
+        ],
       ],
     );
   }

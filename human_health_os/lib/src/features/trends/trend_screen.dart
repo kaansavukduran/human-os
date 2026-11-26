@@ -9,6 +9,7 @@ import '../../domain/trends/trend.dart';
 import '../../l10n/strings.dart';
 import '../measurements/measurement_format.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/whole_chip.dart';
 
 enum TrendRange { days30, days90, year, all }
@@ -83,124 +84,127 @@ class _TrendScreenState extends State<TrendScreen> {
           child: Text(s.trendTitle(s.recordKind(widget.kind))),
         ),
       ),
-      body: ListView(
-        key: const ValueKey('screen-trend'),
-        padding: const EdgeInsets.all(16),
-        children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final r in TrendRange.values)
-                WholeChip.choice(
-                  key: ValueKey('trend-range-${r.name}'),
-                  label: s.trendRange(r.name),
-                  selected: _range == r,
-                  onSelected: (_) => setState(() {
-                    _range = r;
-                    _picked = null;
-                  }),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (!_loaded)
-            const SizedBox.shrink()
-          else if (points.isEmpty)
-            Text(s.trendNone, key: const ValueKey('trend-none'))
-          else ...[
-            // The one unit drawn is named over the chart and in its
-            // spoken summary (D-048).
-            if (unitOf(points.last) case final u? when u.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: ExcludeSemantics(
-                  child: Text(
-                    s.trendAxisUnit(s.unit(u)),
-                    key: const ValueKey('trend-axis-unit'),
-                    style: text.bodySmall?.copyWith(color: scheme.outline),
+      // One centred reading column on a wide window (U036; Q009).
+      body: ReadingWidth.builder(
+        builder: (context) => ListView(
+          key: const ValueKey('screen-trend'),
+          padding: readingPadding(context, const EdgeInsets.all(16)),
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final r in TrendRange.values)
+                  WholeChip.choice(
+                    key: ValueKey('trend-range-${r.name}'),
+                    label: s.trendRange(r.name),
+                    selected: _range == r,
+                    onSelected: (_) => setState(() {
+                      _range = r;
+                      _picked = null;
+                    }),
                   ),
-                ),
-              ),
-            Semantics(
-              key: const ValueKey('trend-chart-summary'),
-              label: s.trendChartSpoken(
-                points.length,
-                unit: switch (unitOf(points.last)) {
-                  final u? when u.isNotEmpty => s.spokenUnit(u),
-                  _ => null,
-                },
-              ),
-              child: SizedBox(
-                height: 220,
-                child: LayoutBuilder(
-                  builder: (context, box) => GestureDetector(
-                    key: const ValueKey('trend-chart'),
-                    onTapDown: (d) => setState(
-                      () => _picked = _nearest(
-                        points,
-                        d.localPosition,
-                        box.biggest,
-                      ),
-                    ),
-                    child: CustomPaint(
-                      size: box.biggest,
-                      painter: TrendPainter(
-                        points: points,
-                        minSpan: minSpanFor(widget.kind, unitOf(points.last)),
-                        decimal: s.lang == AppLang.tr ? ',' : '.',
-                        line: scheme.primary,
-                        second: scheme.onSurface,
-                        grid: scheme.outlineVariant,
-                        label: scheme.outline,
-                        picked: picked,
-                        textStyle: text.labelSmall ?? const TextStyle(),
-                      ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (!_loaded)
+              const SizedBox.shrink()
+            else if (points.isEmpty)
+              Text(s.trendNone, key: const ValueKey('trend-none'))
+            else ...[
+              // The one unit drawn is named over the chart and in its
+              // spoken summary (D-048).
+              if (unitOf(points.last) case final u? when u.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: ExcludeSemantics(
+                    child: Text(
+                      s.trendAxisUnit(s.unit(u)),
+                      key: const ValueKey('trend-axis-unit'),
+                      style: text.bodySmall?.copyWith(color: scheme.outline),
                     ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              widget.kind == RecordKind.bloodPressure
-                  ? s.trendLegendBp
-                  : s.trendLegend,
-              style: text.bodySmall?.copyWith(color: scheme.outline),
-            ),
-            if (otherUnits > 0) ...[
-              const SizedBox(height: 4),
-              Text(
-                s.trendOtherUnits(
-                  s.unit(unitOf(points.last) ?? ''),
-                  otherUnits,
+              Semantics(
+                key: const ValueKey('trend-chart-summary'),
+                label: s.trendChartSpoken(
+                  points.length,
+                  unit: switch (unitOf(points.last)) {
+                    final u? when u.isNotEmpty => s.spokenUnit(u),
+                    _ => null,
+                  },
                 ),
-                key: const ValueKey('trend-other-units'),
-                style: text.bodySmall?.copyWith(color: scheme.outline),
+                child: SizedBox(
+                  height: 220,
+                  child: LayoutBuilder(
+                    builder: (context, box) => GestureDetector(
+                      key: const ValueKey('trend-chart'),
+                      onTapDown: (d) => setState(
+                        () => _picked = _nearest(
+                          points,
+                          d.localPosition,
+                          box.biggest,
+                        ),
+                      ),
+                      child: CustomPaint(
+                        size: box.biggest,
+                        painter: TrendPainter(
+                          points: points,
+                          minSpan: minSpanFor(widget.kind, unitOf(points.last)),
+                          decimal: s.lang == AppLang.tr ? ',' : '.',
+                          line: scheme.primary,
+                          second: scheme.onSurface,
+                          grid: scheme.outlineVariant,
+                          label: scheme.outline,
+                          picked: picked,
+                          textStyle: text.labelSmall ?? const TextStyle(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ],
-            if (picked != null) ...[
               const SizedBox(height: 8),
               Text(
-                '${measurementValue(s, picked.record)} · ${fmtWhen(picked.at)}',
-                key: const ValueKey('trend-picked'),
-                style: text.titleSmall,
+                widget.kind == RecordKind.bloodPressure
+                    ? s.trendLegendBp
+                    : s.trendLegend,
+                style: text.bodySmall?.copyWith(color: scheme.outline),
               ),
-            ],
-            const SizedBox(height: 16),
-            Text(s.trendAllPoints, style: text.titleSmall),
-            for (final p in listed.reversed)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(
-                  '${fmtWhen(p.at)} — ${measurementValue(s, p.record)}',
-                  style: text.bodyMedium?.copyWith(
-                    fontFeatures: const [FontFeature.tabularFigures()],
+              if (otherUnits > 0) ...[
+                const SizedBox(height: 4),
+                Text(
+                  s.trendOtherUnits(
+                    s.unit(unitOf(points.last) ?? ''),
+                    otherUnits,
+                  ),
+                  key: const ValueKey('trend-other-units'),
+                  style: text.bodySmall?.copyWith(color: scheme.outline),
+                ),
+              ],
+              if (picked != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '${measurementValue(s, picked.record)} · ${fmtWhen(picked.at)}',
+                  key: const ValueKey('trend-picked'),
+                  style: text.titleSmall,
+                ),
+              ],
+              const SizedBox(height: 16),
+              Text(s.trendAllPoints, style: text.titleSmall),
+              for (final p in listed.reversed)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    '${fmtWhen(p.at)} — ${measurementValue(s, p.record)}',
+                    style: text.bodyMedium?.copyWith(
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
                 ),
-              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

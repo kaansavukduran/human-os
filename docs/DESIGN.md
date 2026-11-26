@@ -216,3 +216,11 @@ Seen in the U046 matrix run (by eye, TR, 320 dp, 2× text): the plant-chemicals 
 Seen in the same run (TR About, 320 dp, 2× text): the build profile broke inside the word ("GELİŞTİR / ME"). Every name and value of "This build" is now `WholeWordText`, so a word wider than its half of the row is drawn just small enough to stay whole. Test: group 4b (EN "DEVELOPMENT" and TR "GELİŞTİRME", failing on the old code in both).
 
 Seen while testing: with the note above the chips, the A001 contrast test measured the "Aa" pill of a palette card on a new scroll position and read its anti-aliased edge as the background (white on the Trans pink measured 2.51:1; on the pill's own colour it is about 6:1). The pill's padding above and below is now 4 dp (was 2), so the ring around its text lies on the pill's colour. No check was changed.
+
+Review follow-ups (`reports/runtime/screen-matrix/bf01414c32e2/U046_FOLLOWUP.md`, 36 cells, script 36 PASS, by eye 5 cells, all PASS):
+
+- **"Technical details" is a disclosure button.** Its header is one `Semantics(button: true, expanded: …)` node (the `FieldDetails` pattern). Test: group 1b, EN and TR; it fails on the `ExpansionTile`.
+- **The quoted USDA button is one constant.** `usdaCsvButton` ("Download these results as: CSV") is used by both languages. The Turkish text adds a gloss: `"Download these results as: CSV" (Bu sonuçları CSV olarak indir) düğmesini seç`. Test: 3c.
+- **Recorded exception.** The matrix's `no_english_on_tr` has one exact allow-list entry (`EN_ON_TR_EXCEPTIONS`): screen Plant chemicals, `tr-TR`, the quoted substring `"Download these results as: CSV"`, reason "foreign site UI label, glossed". Only that substring is removed before the check: any other English, on that screen or any other, still fails, and quoted text in general is never allowed.
+- **2× text on paragraphs is measured per line.** `text_scaled_2x` measures the Genetics and Plant chemicals intros and the palette note by height per line, the lines counted from the screenshot, so text that only wraps onto more lines cannot pass.
+- **The machine ID is read without joiners.** `machine_id_whole` also requires a node named or reading exactly the ID, without word joiners.

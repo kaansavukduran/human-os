@@ -1409,6 +1409,9 @@ async function runPass(root, mode) {
         label: V.genetics,
         target: () => xh(V.genetics),
         title: () => xh(V.genetics),
+        // The top bar caps its title near 1.34× (Material), so 2× text
+        // is measured on the intro, the page's first text.
+        probe: () => textLoc(V.geneticsIntro),
         x: () => null,
         col: true,
         go: async () => {
@@ -1420,6 +1423,9 @@ async function runPass(root, mode) {
         label: V.phyto,
         target: () => xh(V.phyto),
         title: () => xh(V.phyto),
+        // The top bar caps its title near 1.34× (Material), so 2× text
+        // is measured on the intro, the page's first text.
+        probe: () => page.getByText(V.phytoIntro).or(page.getByLabel(V.phytoIntro)).first(),
         x: () => null,
         col: true,
         go: async () => {

@@ -396,7 +396,17 @@ const EN_WORDS = new Set(('the and of to your you add save saved record records 
   + 'light dark system palette standard lock learn guide body medicines supplements nutrition activity conditions symptoms documents '
   + 'preventive vaccinations screenings check ups more menu search clear dismiss scrim').split(/\s+/));
 const EN_ALLOWED = new Set(['human', 'os', 'hba1c', 'english', 'matrix', 'axolotl', 'trans', 'vitamin', 'd']);
-const englishIn = (label) => {
+// U046 follow-up: the one named exception, exact. The TR plant-chemicals
+// intro quotes the USDA site's English button (the person has to find it on
+// an English-only site) and glosses it in Turkish. Only this quoted
+// substring, on this screen and in this locale, is removed before the check,
+// so any other English in the same label still fails. Quoted text in
+// general is never allowed.
+const EN_ON_TR_EXCEPTIONS = [
+  { screen: 'Plant chemicals', locale: 'tr-TR', text: '"Download these results as: CSV"', reason: 'foreign site UI label, glossed' },
+];
+const englishIn = (label, screen = null, locale = null) => {
+  for (const e of EN_ON_TR_EXCEPTIONS) if (e.screen === screen && e.locale === locale) label = label.split(e.text).join(' ');
   const words = label.toLowerCase().split(/[^\p{L}\p{N}']+/u).map((w) => w.replace(/'.*$/, '')).filter(Boolean);
   return words.filter((w) => EN_WORDS.has(w) && !EN_ALLOWED.has(w));
 };
@@ -478,6 +488,51 @@ async function surfaceColours(file) {
     const topTheme = tokens.find((x) => near(top, x.v));
     return { top, topShare: topN / n, topIs: topTheme ? `${topTheme.t}.${topTheme.k}` : null, share: Object.fromEntries(Object.keys(themes).map((t) => [t, share(t)])) };
   }, { b64, themes: THEME_SURFACES });
+}
+
+// U046 follow-up: 2× text measured on a paragraph is normalised by its
+// line count, so a paragraph that only wraps onto more lines (text scaled
+// 1.3× gives about 1.3² the height) cannot pass. The paragraph's box is
+// cut from a screenshot and its rows of ink counted: a line is a run of
+// rows with ink (a pixel at least 60 away, in some channel, from the
+// crop's most common colour), separated by at least one row without; runs
+// lower than 40 % of the tallest (the dot of an i, an accent) are not
+// lines. Returns null when the box is not wholly inside the window.
+async function perLine(page, loc, vp) {
+  const b = await loc.boundingBox({ timeout: 2_000 }).catch(() => null);
+  if (!b || b.height < 4 || b.x < 0 || b.y < 0 || b.x + b.width > vp.width + 0.5 || b.y + b.height > vp.height + 0.5) return null;
+  const clip = { x: Math.floor(b.x), y: Math.floor(b.y), width: Math.max(1, Math.min(vp.width - Math.floor(b.x), Math.ceil(b.width))), height: Math.max(1, Math.min(vp.height - Math.floor(b.y), Math.ceil(b.height))) };
+  const png = await page.screenshot({ clip }).catch(() => null);
+  if (!png) return null;
+  colourPage ??= await browser.newPage();
+  const bands = await colourPage.evaluate(async (b64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0);
+    const d = ctx.getImageData(0, 0, c.width, c.height).data;
+    const counts = new Map();
+    for (let i = 0; i < d.length; i += 4) { const k = (d[i] << 16) | (d[i + 1] << 8) | d[i + 2]; counts.set(k, (counts.get(k) ?? 0) + 1); }
+    const bg = [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    const bgc = [(bg >> 16) & 255, (bg >> 8) & 255, bg & 255];
+    const runs = [];
+    let start = -1;
+    for (let y = 0; y <= c.height; y++) {
+      let ink = false;
+      if (y < c.height) for (let x = 0; x < c.width && !ink; x++) { const i = (y * c.width + x) * 4; ink = Math.abs(d[i] - bgc[0]) >= 60 || Math.abs(d[i + 1] - bgc[1]) >= 60 || Math.abs(d[i + 2] - bgc[2]) >= 60; }
+      if (ink && start < 0) start = y;
+      if (!ink && start >= 0) { runs.push(y - start); start = -1; }
+    }
+    return runs;
+  }, png.toString('base64'));
+  const tall = Math.max(0, ...bands);
+  const lines = bands.filter((h) => h >= 0.4 * tall).length;
+  if (!lines) return null;
+  return { height: b.height, lines, lineHeight: Math.round((b.height / lines) * 10) / 10 };
 }
 
 async function runPass(root, mode) {
@@ -1412,6 +1467,7 @@ async function runPass(root, mode) {
         // The top bar caps its title near 1.34× (Material), so 2× text
         // is measured on the intro, the page's first text.
         probe: () => textLoc(V.geneticsIntro),
+        perLine: true,
         x: () => null,
         col: true,
         go: async () => {
@@ -1426,6 +1482,7 @@ async function runPass(root, mode) {
         // The top bar caps its title near 1.34× (Material), so 2× text
         // is measured on the intro, the page's first text.
         probe: () => page.getByText(V.phytoIntro).or(page.getByLabel(V.phytoIntro)).first(),
+        perLine: true,
         x: () => null,
         col: true,
         go: async () => {
@@ -1443,6 +1500,8 @@ async function runPass(root, mode) {
       'Settings: theme under palette': {
         label: SETTINGS_FIRST_HEADING[g.locale],
         target: () => page.getByText(V.themeNote).or(page.getByLabel(V.themeNote)).first(),
+        // The note is a paragraph: 2× text is measured per line.
+        perLine: true,
         x: () => null,
         col: true,
         setsPalette: true,
@@ -1533,7 +1592,12 @@ async function runPass(root, mode) {
           if (!ex.firstRun) await leaveFirstRun();
           await ex.go();
           x = ex.x() ?? (ex.firstRun ? await headX(ex.label) : ex.area ? await wheelX(ex.area) : ex.col ? await pageX() : await wheelX('Today'));
-          if (ex.probe) { await toTop(x); probeHeight = (await ex.probe().boundingBox({ timeout: 2_000 }).catch(() => null))?.height ?? null; }
+          if (ex.probe && ex.perLine) {
+            await toTop(x);
+            const pl = await perLine(page, ex.probe(), vp);
+            cell.probeLines = pl;
+            probeHeight = pl?.lineHeight ?? null;
+          } else if (ex.probe) { await toTop(x); probeHeight = (await ex.probe().boundingBox({ timeout: 2_000 }).catch(() => null))?.height ?? null; }
           else if (ex.probeHeight) probeHeight = ex.probeHeight();
           // A title sits in the top bar (from y 0), like a sheet's content.
           reached = await reveal(ex.target(), x, !!ex.sheet || !!ex.title);
@@ -1558,6 +1622,10 @@ async function runPass(root, mode) {
       if (!ex && reached && id !== 'Settings') await toTop(x);
       if (mode === 'release') {
         const hb = reached ? await targetLoc.boundingBox({ timeout: 2_000 }).catch(() => null) : null;
+        if (reached && ex?.perLine && !ex.probe) {
+          cell.probeLines = await perLine(page, targetLoc, vp);
+          probeHeight = cell.probeLines?.lineHeight ?? null;
+        }
         const what = `"${ex ? ex.label : names[id].heading}"`;
         set('heading_visible', reached && hb && hb.y >= 0 && hb.y + hb.height <= vp.height ? 'PASS' : 'FAIL', reached ? what : `${what} not shown${cell.navError ? `: ${cell.navError}` : ''}`);
         if (g.palette) set('palette_applied', paletteApplied ? 'PASS' : 'FAIL', `${g.palette} chosen in Settings`);
@@ -1635,7 +1703,7 @@ async function runPass(root, mode) {
         // is in the top bar, whose text Flutter caps at about 1.34×, so the
         // first heading of its content is measured there.
         const probe = id === 'Settings' ? H(SETTINGS_FIRST_HEADING[g.locale]) : null;
-        cell.headingHeight = ex?.probe || ex?.probeHeight ? probeHeight : probe ? (await probe.boundingBox().catch(() => null))?.height ?? null : hb?.height ?? null;
+        cell.headingHeight = ex?.probe || ex?.probeHeight || ex?.perLine ? probeHeight : probe ? (await probe.boundingBox().catch(() => null))?.height ?? null : hb?.height ?? null;
         const shot = `${g.variant}_${g.vp}_${g.locale}_${id.replace(/[^A-Za-z]+/g, '-')}.png`;
         await page.screenshot({ path: join(out, shot) }).catch(() => {});
         cell.screenshot = shot;
@@ -1774,8 +1842,8 @@ async function runPass(root, mode) {
       if (mode === 'release' && reached) {
         set('no_stacked_headings', stackedSeen.size === 0 ? 'PASS' : 'FAIL', stackedSeen.size ? [...stackedSeen].slice(0, 6).join('; ') : 'no heading directly above another');
         if (g.locale === 'tr-TR') {
-          const hits = [...new Set([...labelsSeen, ...headingsSeen].filter((l) => englishIn(l).length).map((l) => `"${l.slice(0, 70)}" (${englishIn(l).join(', ')})`))];
-          set('no_english_on_tr', hits.length === 0 ? 'PASS' : 'FAIL', hits.length ? hits.slice(0, 6).join('; ') : `${labelsSeen.size} labels read, no English word`);
+          const hits = [...new Set([...labelsSeen, ...headingsSeen].filter((l) => englishIn(l, id, g.locale).length).map((l) => `"${l.slice(0, 70)}" (${englishIn(l, id, g.locale).join(', ')})`))];
+          set('no_english_on_tr', hits.length === 0 ? 'PASS' : 'FAIL', hits.length ? hits.slice(0, 6).join('; ') : `${labelsSeen.size} labels read, no English word${EN_ON_TR_EXCEPTIONS.some((e) => e.screen === id && e.locale === g.locale) ? `; excepted: ${EN_ON_TR_EXCEPTIONS.filter((e) => e.screen === id && e.locale === g.locale).map((e) => `${e.text} (${e.reason})`).join('; ')}` : ''}`);
         }
       }
       // The how-to (U041): its tasks carry no numbers in front of them.
@@ -1818,8 +1886,14 @@ async function runPass(root, mode) {
         await reveal(ex.target(), x);
         const b = await ex.target().boundingBox({ timeout: 2_000 }).catch(() => null);
         const lineMax = 24 * (g.fontSize ? 2 : 1);
-        set('machine_id_whole', b && b.height <= lineMax && b.x >= 0 && b.x + b.width <= vp.width + 0.5 ? 'PASS' : 'FAIL',
-          b ? `"${V.modelId}" box ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}, one line: at most ${lineMax} px tall` : 'not found under Technical details');
+        // U046 follow-up: the node must also be read as the ID itself,
+        // without word joiners (its accessible name, or its text as the
+        // semantics tree puts it in the page), not only drawn whole.
+        const byName = await page.getByLabel(V.modelId, { exact: true }).count();
+        const byText = await page.getByText(V.modelId, { exact: true }).count();
+        const readWhole = byName + byText > 0;
+        set('machine_id_whole', readWhole && b && b.height <= lineMax && b.x >= 0 && b.x + b.width <= vp.width + 0.5 ? 'PASS' : 'FAIL',
+          `${b ? `"${V.modelId}" box ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}, one line: at most ${lineMax} px tall` : 'not found under Technical details'}; read without word joiners: ${readWhole ? `yes (${byName} by name, ${byText} by text)` : 'no node named or reading exactly the ID'}`);
       }
       // U046: the body guide's parts are text, not controls.
       if (mode === 'release' && reached && id === 'Learn: body guide parts') {
@@ -1969,7 +2043,9 @@ for (const c of cells.filter((c) => TWO_X_REF.has(c.variant))) {
   const ratio = ref?.headingHeight && c.headingHeight ? c.headingHeight / ref.headingHeight : null;
   c.checks.text_scaled_2x = ratio == null
     ? { status: 'NOT_TESTED', detail: 'heading not measured at 1× or 2×' }
-    : { status: ratio >= 1.6 ? 'PASS' : 'FAIL', detail: `heading height ${ref.headingHeight} → ${c.headingHeight} (×${ratio.toFixed(2)})` };
+    : { status: ratio >= 1.6 ? 'PASS' : 'FAIL', detail: c.probeLines || ref.probeLines
+      ? `height per line ${ref.headingHeight} → ${c.headingHeight} (×${ratio.toFixed(2)}; ${ref.probeLines?.height} px / ${ref.probeLines?.lines} lines → ${c.probeLines?.height} px / ${c.probeLines?.lines} lines)`
+      : `heading height ${ref.headingHeight} → ${c.headingHeight} (×${ratio.toFixed(2)})` };
   const st = Object.values(c.checks).map((k) => k.status);
   c.status = st.includes('FAIL') ? 'FAIL' : st.includes('NOT_TESTED') ? 'PASS_WITH_NOT_TESTED' : 'PASS';
 }
@@ -2009,11 +2085,11 @@ const meta = {
     restore_cancel_reported: 'Today: restore from file: closing the chooser without a file shows "No file chosen. Nothing was changed." on screen within 1 s',
     not_cut_at_list_end: 'U042: every target the script scrolled to ended at least 2 px above the bottom navigation bar (in a sheet, above its pinned Save bar, U044; else the window bottom); one that stops moving at the end of its list with its bottom still under the bar is a finding (cut at list end), not in view',
     no_stacked_headings: 'Q005: no heading has another heading as the next visible text directly below it in the same column (less than 32 px between them, nothing in between)',
-    no_english_on_tr: 'Q005, tr-TR cells: no accessible label or heading seen while sweeping the screen contains an English word from a fixed list (names shared by both languages allowed)',
+    no_english_on_tr: 'Q005, tr-TR cells: no accessible label or heading seen while sweeping the screen contains an English word from a fixed list (names shared by both languages allowed; one exact exception, U046: on Plant chemicals the quoted USDA button "Download these results as: CSV", glossed in Turkish)',
     theme_applied: 'U045: every group without a palette: the cell\'s screenshot is read back and its most common colour is a surface, card or raised container of the expected theme, or one of them under the black 54 % modal barrier (dark by default; light in the groups that chose Light in Settings, whose chip must also read as checked), those three covering at least 25 % of the window (every 4th pixel, each channel within 3)',
     chip_checked: 'Q007 (U043) chip cells: the chip the cell selected is a semantics checkbox with aria-checked=true; U044: the cell selected it itself (it was not checked before its tap, and is after); a chip that starts checked fails',
     derived_plain_titles: 'U046: Derived titles are the plain names (EN/TR); no heading holds a machine ID',
-    machine_id_whole: 'U046: under Technical details, the formula ID is its own node, read whole (no word joiners) and drawn on one line (at most 24 px tall per 1× of text)',
+    machine_id_whole: 'U046: under Technical details, the formula ID is its own node, read whole (a node named or reading exactly the ID, no word joiners) and drawn on one line (at most 24 px tall per 1× of text)',
     parts_not_buttons: 'U046: the heart page\'s parts are read as text and none is a button, checkbox or other control',
     reading_column: 'U046: Genetics and Plant chemicals: the intro starts 16 px inside the centred 840 dp reading column (at 16 on a narrow window)',
     version_localised: 'U046: About shows the missing version in the page\'s language ("unknown" / "bilinmiyor"); no "unknown" on a TR page',
@@ -2024,7 +2100,7 @@ const meta = {
     rail_in_window: 'Q008 compact-rail groups only (840 and 1000 wide): at least 11 rail items (4 primary, 6 areas, Settings), each ending within 81 px from the left and above the window bottom (U044: the rail stays 80 dp wide); U045: only buttons and tabs inside the rail\'s own semantics node count (the outermost node within 81 px of the left edge, at least 200 px tall, above a control near the left edge)',
     date_helper_one_line: 'Q009: Labs add sheet: the sample-date helper is the whole date pattern of the language (EN YYYY-MM-DD, TR YYYY-AA-GG; word joiners ignored) on one line (its box at most 24 px tall per 1× of text) inside the window',
     error_shown_whole: 'Q009: Timeline correction: after typing an invalid time (25:99) and Save correction, the error under the time field reads the whole TIME_FORMAT message and its box lies inside the window (whether its lines are drawn uncut is judged by eye)',
-    text_scaled_2x: '2× text cells only (every group with a browser font size, against the 1× group it names, U044): the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app',
+    text_scaled_2x: '2× text cells only (every group with a browser font size, against the 1× group it names, U044): the heading (on Settings the first content heading; Flutter caps top-bar titles near 1.34×) is at least 1.6× as tall as at 1×, so the setting reached the app; where a paragraph is measured (Genetics and Plant chemicals intro, the palette note) its height per line, its lines counted from the screenshot, so text that only wraps onto more lines cannot pass',
   },
   counts,
   not_tested: NOT_TESTED_PLATFORMS,

@@ -15,8 +15,9 @@ import 'whole_words.dart';
 ///
 /// [WholeChip.choice] stands for a choice or filter chip (a tick when
 /// selected; [onSelected] gets the new state, null disables it),
-/// [WholeChip.action] for an action chip and [WholeChip.plain] for a
-/// label that does nothing.
+/// [WholeChip.action] for an action chip. A label that does nothing is
+/// not a chip: it is drawn as plain text, so it never looks tappable
+/// (U046).
 class WholeChip extends StatelessWidget {
   const WholeChip.choice({
     super.key,
@@ -39,14 +40,6 @@ class WholeChip extends StatelessWidget {
   }) : selected = false,
        onSelected = null,
        _kind = _Kind.action;
-
-  const WholeChip.plain({super.key, required this.label, this.semanticsLabel})
-    : selected = false,
-      onSelected = null,
-      onPressed = null,
-      tooltip = null,
-      focusNode = null,
-      _kind = _Kind.plain;
 
   /// What the chip says, drawn whole.
   final String label;
@@ -73,7 +66,6 @@ class WholeChip extends StatelessWidget {
   VoidCallback? get _tap => switch (_kind) {
     _Kind.choice => onSelected == null ? null : () => onSelected!(!selected),
     _Kind.action => onPressed,
-    _Kind.plain => null,
   };
 
   @override
@@ -81,7 +73,7 @@ class WholeChip extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final tap = _tap;
-    final enabled = _kind == _Kind.plain || tap != null;
+    final enabled = tap != null;
     final on = _kind == _Kind.choice && selected;
     final ink = !enabled
         ? scheme.onSurface.withValues(alpha: 0.38)
@@ -164,8 +156,8 @@ class WholeChip extends StatelessWidget {
     if (tooltip != null) chip = Tooltip(message: tooltip, child: chip);
     return Semantics(
       container: true,
-      button: _kind != _Kind.plain,
-      enabled: _kind == _Kind.plain ? null : enabled,
+      button: true,
+      enabled: enabled,
       // As Material's chip: on the web aria-selected is ignored on a button,
       // so a selected chip is announced as checked there (a checkbox).
       selected: _kind == _Kind.choice && !kIsWeb ? selected : null,
@@ -201,4 +193,4 @@ Decoration _focusRing(BuildContext context, ColorScheme scheme) {
   );
 }
 
-enum _Kind { choice, action, plain }
+enum _Kind { choice, action }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../app/app_services.dart';
 import '../../domain/phyto/phyto_table.dart';
 import '../../l10n/strings.dart';
+import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/whole_label_field.dart';
 import '../genetics/genome_file_picker.dart';
 import '../guide/glossary_screen.dart' show foldForSearch;
@@ -97,84 +98,88 @@ class _PhytoScreenState extends State<PhytoScreen> {
           ];
     return Scaffold(
       appBar: AppBar(title: Text(s.phytoTitle)),
-      body: ListView(
-        key: const ValueKey('screen-phyto'),
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(s.phytoHow, style: text.bodyMedium),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            children: [
-              FilledButton.icon(
-                key: const ValueKey('phyto-load'),
-                onPressed: _busy ? null : _choose,
-                icon: const Icon(Icons.folder_open_outlined),
-                label: Text(s.phytoLoad),
-              ),
-              if (t != null)
-                TextButton(
-                  key: const ValueKey('phyto-clear'),
-                  onPressed: () => setState(() {
-                    _table = null;
-                    _name = null;
-                  }),
-                  child: Text(s.phytoClear),
+      // One centred reading column on a wide window, the list itself
+      // the full width so it scrolls anywhere (U039, U046).
+      body: ReadingWidth.builder(
+        builder: (context) => ListView(
+          key: const ValueKey('screen-phyto'),
+          padding: readingPadding(context, const EdgeInsets.all(16)),
+          children: [
+            Text(s.phytoHow, style: text.bodyMedium),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  key: const ValueKey('phyto-load'),
+                  onPressed: _busy ? null : _choose,
+                  icon: const Icon(Icons.folder_open_outlined),
+                  label: Text(s.phytoLoad),
                 ),
-            ],
-          ),
-          if (_refusal != null) ...[
-            const SizedBox(height: 8),
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                s.phytoRefusal(_refusal!),
-                key: const ValueKey('phyto-refusal'),
-                style: text.bodyMedium?.copyWith(color: scheme.error),
+                if (t != null)
+                  TextButton(
+                    key: const ValueKey('phyto-clear'),
+                    onPressed: () => setState(() {
+                      _table = null;
+                      _name = null;
+                    }),
+                    child: Text(s.phytoClear),
+                  ),
+              ],
+            ),
+            if (_refusal != null) ...[
+              const SizedBox(height: 8),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  s.phytoRefusal(_refusal!),
+                  key: const ValueKey('phyto-refusal'),
+                  style: text.bodyMedium?.copyWith(color: scheme.error),
+                ),
               ),
-            ),
-          ],
-          if (t != null) ...[
-            const SizedBox(height: 16),
-            Text(
-              s.phytoLoaded(_name ?? '', t.rows.length),
-              key: const ValueKey('phyto-loaded'),
-              style: text.titleSmall,
-            ),
-            if (t.skipped > 0)
+            ],
+            if (t != null) ...[
+              const SizedBox(height: 16),
               Text(
-                s.phytoSkipped(t.skipped),
+                s.phytoLoaded(_name ?? '', t.rows.length),
+                key: const ValueKey('phyto-loaded'),
+                style: text.titleSmall,
+              ),
+              if (t.skipped > 0)
+                Text(
+                  s.phytoSkipped(t.skipped),
+                  style: text.bodySmall?.copyWith(color: scheme.outline),
+                ),
+              const SizedBox(height: 8),
+              Text(
+                s.phytoNote,
+                key: const ValueKey('phyto-note'),
                 style: text.bodySmall?.copyWith(color: scheme.outline),
               ),
-            const SizedBox(height: 8),
-            Text(
-              s.phytoNote,
-              key: const ValueKey('phyto-note'),
-              style: text.bodySmall?.copyWith(color: scheme.outline),
-            ),
-            const SizedBox(height: 12),
-            WholeLabelField(
-              label: s.phytoSearch,
-              reserve: 48,
-              field: (labelText) => TextField(
-                key: const ValueKey('phyto-search'),
-                controller: _search,
-                decoration: InputDecoration(
-                  labelText: labelText,
-                  prefixIcon: const Icon(Icons.search),
+              const SizedBox(height: 12),
+              WholeLabelField(
+                label: s.phytoSearch,
+                reserve: 48,
+                field: (labelText) => TextField(
+                  key: const ValueKey('phyto-search'),
+                  controller: _search,
+                  decoration: InputDecoration(
+                    labelText: labelText,
+                    prefixIcon: const Icon(Icons.search),
+                  ),
+                  onChanged: (v) => setState(() => _q = v),
                 ),
-                onChanged: (v) => setState(() => _q = v),
               ),
-            ),
-            const SizedBox(height: 8),
-            if (rows.isEmpty)
-              Text(s.phytoNone, key: const ValueKey('phyto-none'))
-            else
-              for (final r in rows.take(_shown)) _row(s, text, scheme, t, r),
-            if (rows.length > _shown) Text(s.phytoMore(_shown, rows.length)),
+              const SizedBox(height: 8),
+              if (rows.isEmpty)
+                Text(s.phytoNone, key: const ValueKey('phyto-none'))
+              else
+                for (final r in rows.take(_shown)) _row(s, text, scheme, t, r),
+              if (rows.length > _shown) Text(s.phytoMore(_shown, rows.length)),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

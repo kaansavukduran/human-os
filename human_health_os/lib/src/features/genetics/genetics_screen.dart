@@ -14,6 +14,7 @@ import '../../domain/genetics/sample_data.dart';
 import '../../domain/genetics/uniprot.dart';
 import '../guide/glossary_screen.dart' show foldForSearch;
 import '../../l10n/strings.dart';
+import '../../presentation/theme/spacing.dart';
 import 'genome_file_picker.dart';
 import '../../presentation/widgets/whole_chip.dart';
 import '../../presentation/widgets/whole_label_field.dart';
@@ -322,70 +323,74 @@ class _GeneticsScreenState extends State<GeneticsScreen> {
     final file = _file;
     return Scaffold(
       appBar: AppBar(title: Text(s.geneticsTitle)),
-      body: ListView(
-        key: const ValueKey('screen-genetics'),
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(s.geneticsIntro, style: text.bodyLarge),
-          const SizedBox(height: 16),
-          if (file == null) _notice(s, text, scheme),
-          if (file == null) const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            children: [
-              FilledButton.icon(
-                key: const ValueKey('genetics-choose'),
-                onPressed: _busy ? null : _choose,
-                icon: const Icon(Icons.folder_open_outlined),
-                label: Text(s.geneticsChoose),
-              ),
-              OutlinedButton(
-                key: const ValueKey('genetics-sample'),
-                onPressed: _busy
-                    ? null
-                    : () => _use(
-                        parseRawGenome(sampleGenomeText),
-                        'sample',
-                        sample: true,
-                      ),
-                child: Text(s.geneticsSample),
-              ),
-              if (file != null)
-                TextButton(
-                  key: const ValueKey('genetics-clear'),
-                  onPressed: _busy ? null : _clear,
-                  child: Text(s.geneticsClear),
-                ),
-            ],
-          ),
-          if (_busy) ...[
-            const SizedBox(height: 12),
-            Row(
+      // One centred reading column on a wide window, the list itself
+      // the full width so it scrolls anywhere (U039, U046).
+      body: ReadingWidth.builder(
+        builder: (context) => ListView(
+          key: const ValueKey('screen-genetics'),
+          padding: readingPadding(context, const EdgeInsets.all(16)),
+          children: [
+            Text(s.geneticsIntro, style: text.bodyLarge),
+            const SizedBox(height: 16),
+            if (file == null) _notice(s, text, scheme),
+            if (file == null) const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
               children: [
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                FilledButton.icon(
+                  key: const ValueKey('genetics-choose'),
+                  onPressed: _busy ? null : _choose,
+                  icon: const Icon(Icons.folder_open_outlined),
+                  label: Text(s.geneticsChoose),
                 ),
-                const SizedBox(width: 12),
-                Semantics(liveRegion: true, child: Text(s.geneticsReading)),
+                OutlinedButton(
+                  key: const ValueKey('genetics-sample'),
+                  onPressed: _busy
+                      ? null
+                      : () => _use(
+                          parseRawGenome(sampleGenomeText),
+                          'sample',
+                          sample: true,
+                        ),
+                  child: Text(s.geneticsSample),
+                ),
+                if (file != null)
+                  TextButton(
+                    key: const ValueKey('genetics-clear'),
+                    onPressed: _busy ? null : _clear,
+                    child: Text(s.geneticsClear),
+                  ),
               ],
             ),
-          ],
-          if (_refusal != null) ...[
-            const SizedBox(height: 12),
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                s.geneticsRefusal(_refusal!),
-                key: const ValueKey('genetics-refusal'),
-                style: text.bodyMedium?.copyWith(color: scheme.error),
+            if (_busy) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 12),
+                  Semantics(liveRegion: true, child: Text(s.geneticsReading)),
+                ],
               ),
-            ),
+            ],
+            if (_refusal != null) ...[
+              const SizedBox(height: 12),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  s.geneticsRefusal(_refusal!),
+                  key: const ValueKey('genetics-refusal'),
+                  style: text.bodyMedium?.copyWith(color: scheme.error),
+                ),
+              ),
+            ],
+            if (file != null) ..._loaded(s, text, scheme, file),
           ],
-          if (file != null) ..._loaded(s, text, scheme, file),
-        ],
+        ),
       ),
     );
   }

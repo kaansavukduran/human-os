@@ -5,7 +5,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/tool_row.dart';
-import '../../presentation/widgets/whole_chip.dart';
+import '../../presentation/widgets/whole_words.dart';
 
 String _pick(S s, Bilingual b) => s.lang == AppLang.tr ? b.$2 : b.$1;
 
@@ -111,14 +111,22 @@ class BodySystemScreen extends StatelessWidget {
           children: [
             Text(_pick(s, system.what), style: text.bodyLarge),
             heading(s.guideParts),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final p in system.parts)
-                  WholeChip.plain(label: _pick(s, p)),
-              ],
-            ),
+            // The parts are names, not controls: a plain list, no chip,
+            // outline or ink that would look tappable (U046).
+            for (final (i, p) in system.parts.indexed)
+              Padding(
+                key: ValueKey('guide-part-$i'),
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ExcludeSemantics(child: Text('•  ', style: text.bodyLarge)),
+                    Expanded(
+                      child: WholeWordText(_pick(s, p), style: text.bodyLarge),
+                    ),
+                  ],
+                ),
+              ),
             heading(s.guideWhoCares),
             for (final id in system.specialties)
               Container(

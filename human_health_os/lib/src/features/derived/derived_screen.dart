@@ -10,13 +10,15 @@ import '../../l10n/strings.dart';
 import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/wrapping_title_bar.dart';
 import '../../presentation/widgets/read_failed_note.dart';
+import '../../presentation/widgets/whole_words.dart';
 import '../measurements/measurement_format.dart';
 import '../timeline/timeline_screen.dart' show fmtWhen;
 
 /// "Worked out from your records" (U029, D-039): read-only. For each
 /// MP-CORE-DERIVED-1 model the person's records can feed, the number with
-/// its unit, "worked out, not measured", the model ID and version, the
-/// records used (value and date) and the model's limitations. A missing
+/// its unit, "worked out, not measured", the records used (value and date),
+/// the model's limitations and, under "Technical details", the model and
+/// pack IDs and versions (U046: plain names as titles, IDs secondary). A missing
 /// input is named ("needs: height"), never shown as a number. No category,
 /// band, judgement, advice or colour that means good or bad.
 class DerivedScreen extends StatefulWidget {
@@ -92,7 +94,8 @@ class _DerivedScreenState extends State<DerivedScreen> {
                   Text(s.derivedIntro, style: text.bodyMedium),
                   const SizedBox(height: 4),
                   Text(
-                    s.derivedPack(coreDerivedPackId, coreDerivedPackVersion),
+                    s.derivedPack(coreDerivedPackVersion),
+                    key: const ValueKey('derived-pack'),
                     style: text.bodySmall,
                   ),
                   const SizedBox(height: 16),
@@ -182,12 +185,6 @@ class _DerivedCard extends StatelessWidget {
                 row.needs.isNotEmpty &&
                 row.unresolved.isNotEmpty)
               Text(kinds(row.needs), style: text.bodyMedium),
-            const SizedBox(height: 8),
-            Text(
-              s.derivedModel(m.modelId, m.version),
-              key: ValueKey('$key-model'),
-              style: text.bodySmall,
-            ),
             if (row.used.isNotEmpty) ...[
               const SizedBox(height: 12),
               Semantics(
@@ -225,9 +222,69 @@ class _DerivedCard extends StatelessWidget {
                   key: ValueKey('$key-limitation-$i'),
                   style: text.bodyMedium,
                 ),
+            const SizedBox(height: 4),
+            _TechnicalDetails(
+              key: ValueKey('$key-model'),
+              modelId: m.modelId,
+              version: m.version,
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The machine IDs behind a number, folded away under "Technical details"
+/// (U046): they record which formula and version made the number, for
+/// support and for checking, but a reader needs none of them to understand
+/// the card. Each ID is drawn on its own line and never broken inside
+/// (word joiners after its hyphens; drawn smaller only if it is wider than
+/// the whole line).
+class _TechnicalDetails extends StatelessWidget {
+  const _TechnicalDetails({
+    super.key,
+    required this.modelId,
+    required this.version,
+  });
+
+  final String modelId;
+  final String version;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final text = Theme.of(context).textTheme;
+    final muted = text.bodySmall?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+    Widget fact(String label, String id) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Semantics(
+        container: true,
+        label: '$label: $id',
+        excludeSemantics: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: muted),
+            WholeWordText(unbrokenId(id), style: muted),
+          ],
+        ),
+      ),
+    );
+    return ExpansionTile(
+      title: Text(s.derivedDetailsTitle, style: text.bodyMedium),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: EdgeInsets.zero,
+      shape: const Border(),
+      collapsedShape: const Border(),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      expandedAlignment: AlignmentDirectional.centerStart,
+      children: [
+        fact(s.derivedModelIdLabel(version), modelId),
+        fact(s.derivedPackIdLabel(coreDerivedPackVersion), coreDerivedPackId),
+      ],
     );
   }
 }

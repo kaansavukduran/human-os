@@ -41,11 +41,20 @@ class AboutScreen extends StatelessWidget {
               child: Column(
                 children: [
                   _KeyValue(s.profile, s.profileName(services.config.profile)),
-                  _KeyValue(s.version, services.config.version),
+                  _KeyValue(s.version, s.buildFact(services.config.version)),
                   _KeyValue(s.platform, services.registry.platform.name),
-                  _KeyValue(s.sourceRevision, services.config.shortRevision),
-                  _KeyValue(s.flutterVersion, services.config.flutterVersion),
-                  _KeyValue(s.dartVersion, services.config.dartVersion),
+                  _KeyValue(
+                    s.sourceRevision,
+                    s.buildFact(services.config.shortRevision),
+                  ),
+                  _KeyValue(
+                    s.flutterVersion,
+                    s.buildFact(services.config.flutterVersion),
+                  ),
+                  _KeyValue(
+                    s.dartVersion,
+                    s.buildFact(services.config.dartVersion),
+                  ),
                   _KeyValue(
                     s.recordSchema,
                     'v${HealthRecord.currentSchemaVersion}',

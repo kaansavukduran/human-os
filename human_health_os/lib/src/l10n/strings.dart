@@ -24,6 +24,10 @@ enum AppLang { en, tr }
 /// have no non-breaking hyphen (U+2011). The date and the time may go on
 /// two lines, between them, when both do not fit on one.
 const String ymdEn = 'YYYY-\u2060MM-\u2060DD';
+
+/// A machine ID ("MP-CORE-DERIVED-1") with a word joiner after each hyphen,
+/// so a line never breaks inside it (U046, as the date patterns above).
+String unbrokenId(String id) => id.replaceAll('-', '-\u2060');
 const String ymdTr = 'YYYY-\u2060AA-\u2060GG';
 const String ymdHmEn = '$ymdEn HH:MM';
 const String ymdHmTr = '$ymdTr SS:DD';
@@ -129,6 +133,11 @@ class S {
   String technicalDetail(String code) =>
       _t('Technical detail: $code', 'Teknik ayrıntı: $code');
   String get version => _t('Version', 'Sürüm');
+
+  /// A build fact that was not passed to the build (`APP_VERSION` and the
+  /// others default to `unknown`), in the person's language (U046).
+  String buildFact(String value) =>
+      value == 'unknown' ? _t('unknown', 'bilinmiyor') : value;
   String get platform => _t('Platform', 'Platform');
   String get sourceRevision => _t('Source revision', 'Kaynak kodu sürümü');
   String get flutterVersion => _t('Flutter', 'Flutter');
@@ -1376,17 +1385,28 @@ class S {
       'Waist-to-height ratio',
       'Bel-boy oranı',
     ),
-    _ => modelId,
+    // An unknown model is never titled by its machine ID (U046).
+    _ => _t('A worked-out number', 'Hesaplanan bir sayı'),
   };
   String derivedUnit(String? unit) => switch (unit) {
     'kg/m2' => 'kg/m²',
     '1' || null => _t('ratio, no unit', 'oran, birimsiz'),
     _ => unit,
   };
-  String derivedModel(String id, String version) =>
-      _t('Model: $id, version $version', 'Model: $id, sürüm $version');
-  String derivedPack(String id, String version) =>
-      _t('Model pack: $id $version', 'Model paketi: $id $version');
+  // The machine IDs stay, as the record of which formula made a number,
+  // but only under "Technical details", never as a title (U046).
+  String derivedPack(String version) => _t(
+    'Formulas built into the app, version $version',
+    'Uygulamanın kendi formülleri, sürüm $version',
+  );
+  String get derivedDetailsTitle =>
+      _t('Technical details', 'Teknik ayrıntılar');
+  String derivedModelIdLabel(String version) =>
+      _t('Formula ID, version $version', 'Formül kimliği, sürüm $version');
+  String derivedPackIdLabel(String version) => _t(
+    'Formula set ID, version $version',
+    'Formül seti kimliği, sürüm $version',
+  );
   String get derivedUsedTitle => _t('Records used', 'Kullanılan kayıtlar');
   String derivedUsedLine(String kind, String value, String when) =>
       '$kind: $value · $when';
@@ -1701,6 +1721,16 @@ class S {
     PaletteChoice.axolotl => _t('Axolotl', 'Aksolotl'),
     PaletteChoice.trans => _t('Trans', 'Trans'),
   };
+
+  /// Under "Light or dark" while a palette other than Standard is chosen
+  /// (U046): the palette sets the look, the chips keep a choice for later.
+  String themeUnderPalette(String name) => _t(
+    'The $name palette (below) sets light or dark now. The choice ticked '
+        'here is kept and used again when you pick Standard.',
+    'Açık ya da koyu görünümü şu an aşağıdaki $name paleti belirliyor. '
+        'Burada işaretli seçim saklanır, Standart\'ı seçince yeniden '
+        'kullanılır.',
+  );
   String paletteNote(String name) => _t(
     '$name has its own light or dark look; your theme and accent choices are kept for Standard.',
     '$name paletinin kendi açık ya da koyu görünümü var; tema ve renk seçimlerin Standart için saklanır.',

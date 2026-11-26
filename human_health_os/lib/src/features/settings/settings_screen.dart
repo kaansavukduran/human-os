@@ -125,15 +125,33 @@ class SettingsScreen extends StatelessWidget {
               // last.
               section(
                 s.settingsTheme,
-                choices(
-                  'set-theme',
-                  [
-                    (ThemeChoice.light, s.settingsLight),
-                    (ThemeChoice.dark, s.settingsDark),
-                    (ThemeChoice.system, s.settingsSystem),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // With a palette chosen, the palette sets light or
+                    // dark; the ticked chip is the choice kept for
+                    // Standard. Said before the chips, so neither the eye
+                    // nor a screen reader takes the tick for the page's
+                    // look (U046).
+                    if (a.palette != PaletteChoice.standard) ...[
+                      Text(
+                        s.themeUnderPalette(s.paletteName(a.palette)),
+                        key: const ValueKey('theme-palette-note'),
+                        style: text.bodyMedium,
+                      ),
+                      const SizedBox(height: Space.s),
+                    ],
+                    choices(
+                      'set-theme',
+                      [
+                        (ThemeChoice.light, s.settingsLight),
+                        (ThemeChoice.dark, s.settingsDark),
+                        (ThemeChoice.system, s.settingsSystem),
+                      ],
+                      a.theme,
+                      (v) => set(a.copyWith(theme: v)),
+                    ),
                   ],
-                  a.theme,
-                  (v) => set(a.copyWith(theme: v)),
                 ),
               ),
               section(
@@ -538,7 +556,10 @@ class _UpdatesAndAbout extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          s.settingsInstalledVersion(config.version, config.shortRevision),
+          s.settingsInstalledVersion(
+            s.buildFact(config.version),
+            s.buildFact(config.shortRevision),
+          ),
           key: const ValueKey('settings-version'),
           style: text.bodyLarge,
         ),
@@ -817,9 +838,12 @@ class _PaletteSwatch extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Container(
+                // 4 dp above and below (was 2): the ring around "Aa" lies
+                // on the pill's own colour, not on its anti-aliased edge,
+                // so its contrast is measured against the pill (U046).
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
-                  vertical: 2,
+                  vertical: 4,
                 ),
                 decoration: BoxDecoration(
                   color: t.primary,

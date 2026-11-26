@@ -79,7 +79,16 @@ void main() {
     expect(value.data, '24.7 kg/m²');
     expect(find.byKey(const ValueKey('$bmiKey-worked-out')), findsOneWidget);
     expect(find.text('worked out, not measured'), findsWidgets);
-    expect(find.text('Model: DERIVED-BMI-1, version 1'), findsOneWidget);
+    // The model ID and version are kept under "Technical details" (U046).
+    final details = find.descendant(
+      of: find.byKey(const ValueKey('$bmiKey-model')),
+      matching: find.text('Technical details'),
+    );
+    await tester.ensureVisible(details);
+    await tester.tap(details);
+    await tester.pumpAndSettle();
+    expect(find.text('Formula ID, version 1'), findsOneWidget);
+    expect(find.text(unbrokenId('DERIVED-BMI-1')), findsOneWidget);
     expect(
       find.byKey(ValueKey('$bmiKey-used-${RecordKind.bodyWeight.code}')),
       findsOneWidget,
@@ -184,8 +193,10 @@ void main() {
         s.derivedModelName('DERIVED-WAIST_HEIGHT_RATIO-1'),
         s.derivedUnit('kg/m2'),
         s.derivedUnit('1'),
-        s.derivedModel('DERIVED-BMI-1', '1'),
-        s.derivedPack('MP-CORE-DERIVED-1', '1.0.0'),
+        s.derivedPack('1.0.0'),
+        s.derivedDetailsTitle,
+        s.derivedModelIdLabel('1'),
+        s.derivedPackIdLabel('1.0.0'),
         s.derivedUsedTitle,
         s.derivedLimitsTitle,
         s.derivedNoLimitations,

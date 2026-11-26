@@ -213,4 +213,6 @@ The open points after the Q009 screen matrix (`reports/runtime/screen-matrix/33a
 
 Seen in the U046 matrix run (by eye, TR, 320 dp, 2× text): the plant-chemicals intro broke the site's address inside the word ("phytochem.nal.usda.g / ov"; the widget test shows the address split over two lines at 1× too, in both languages). The intro is now `WholeWordText`: the address is one word, so the intro is drawn just small enough for it to stay whole (U042). Test: group 3b of `u046_open_points_test.dart`, failing on the old code at 1× and 2×, EN and TR.
 
+Seen in the same run (TR About, 320 dp, 2× text): the build profile broke inside the word ("GELİŞTİR / ME"). Every name and value of "This build" is now `WholeWordText`, so a word wider than its half of the row is drawn just small enough to stay whole. Test: group 4b (EN "DEVELOPMENT" and TR "GELİŞTİRME", failing on the old code in both).
+
 Seen while testing: with the note above the chips, the A001 contrast test measured the "Aa" pill of a palette card on a new scroll position and read its anti-aliased edge as the background (white on the Trans pink measured 2.51:1; on the pill's own colour it is about 6:1). The pill's padding above and below is now 4 dp (was 2), so the ring around its text lies on the pill's colour. No check was changed.

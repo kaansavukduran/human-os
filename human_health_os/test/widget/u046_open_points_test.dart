@@ -351,6 +351,36 @@ void main() {
     });
   });
 
+  // Seen in the U046 matrix (TR, 320 dp, 2× text): About's build profile
+  // broke inside the word ("GELİŞTİR / ME"). Every fact stays whole.
+  group('4b. About: no build fact is broken inside a word', () {
+    for (final (choice, lang) in _langs) {
+      testWidgets('${lang.name}, 320 dp, 2x', (tester) async {
+        final s = S(lang);
+        await _launch(
+          tester,
+          language: choice,
+          size: const Size(320, 640),
+          textScale: 2,
+        );
+        await openAbout(tester);
+        final word = s.profileName(BuildProfile.development);
+        final f = find.descendant(
+          of: find.byKey(const ValueKey('screen-about')),
+          matching: find.byWidgetPredicate(
+            (w) => w is RichText && w.text.toPlainText() == word,
+          ),
+        );
+        final p = tester.renderObject<RenderParagraph>(f);
+        final boxes = p.getBoxesForSelection(
+          TextSelection(baseOffset: 0, extentOffset: word.length),
+        );
+        expect({for (final b in boxes) b.top.round()}.length, 1, reason: word);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
   group('5. With a palette chosen, "Light or dark" says what it controls', () {
     for (final (choice, lang) in _langs) {
       for (final palette in PaletteChoice.values) {

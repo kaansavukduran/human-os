@@ -6,6 +6,7 @@ import '../../domain/records/health_record.dart';
 import '../../l10n/strings.dart';
 import '../../presentation/theme/spacing.dart';
 import '../../presentation/widgets/status_chip.dart';
+import '../../presentation/widgets/whole_words.dart';
 
 /// Settings → About Human OS (U032): the facts about this build (version,
 /// source revision, Flutter and Dart, record schema, build profile and
@@ -176,10 +177,13 @@ class _KeyValue extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Text(k, style: text.bodyMedium)),
+          // Never broken inside a word: a word wider than its half is drawn
+          // just small enough to stay whole ("GELİŞTİRME" at 2× text on a
+          // 320 dp phone broke as "GELİŞTİR / ME"; U046).
+          Expanded(child: WholeWordText(k, style: text.bodyMedium)),
           const SizedBox(width: 8),
           Flexible(
-            child: Text(
+            child: WholeWordText(
               v,
               textAlign: TextAlign.end,
               style: text.bodyMedium?.copyWith(
